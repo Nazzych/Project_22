@@ -109,7 +109,7 @@ export const ProjectCard = ({
             )}
             <CardHeader className='py-2'>
                 <div className='flex flex-row justify-between items-center py-1'>
-                    <p className="flex flex-row text-xs text-muted-foreground truncate"><User className='w-4 h-4 mr-1' /> @{owner.username}</p>
+                    <p className="flex flex-row text-xs text-muted-foreground truncate hover:underline hover:cursor-pointer"><User className='w-4 h-4 mr-1' /> @{owner.username}</p>
                     <div className='space-x-2'>
                         <button className='hover:nz-background-secondary p-1 rounded-full'
                             onClick={(e) => {

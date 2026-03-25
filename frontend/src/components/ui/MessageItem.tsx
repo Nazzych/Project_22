@@ -21,10 +21,10 @@ export function ToastItem({
     };
 
     const styles = {
-        success: 'border-green-400/50 bg-green-950/50 backdrop background-blur-lg text-white',
-        error: 'border-red-400/50 bg-red-950/50 backdrop-blur-lg text-white',
-        warning: 'border-amber-400/50 bg-amber-950/50 backdrop-blur-lg text-white',
-        info: 'border-blue-400/50 bg-blue-950/50 backdrop-blur-lg text-white',
+        success: 'border-green-400/50 bg-green-950/95 backdrop background-blur-lg text-white',
+        error: 'border-red-400/50 bg-red-950/95 backdrop-blur-lg text-white',
+        warning: 'border-amber-400/50 bg-amber-950/95 backdrop-blur-lg text-white',
+        info: 'border-blue-400/50 bg-blue-950/95 backdrop-blur-lg text-white',
     };
 
     const iconColors = {

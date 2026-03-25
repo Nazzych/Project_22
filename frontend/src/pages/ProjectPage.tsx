@@ -18,7 +18,7 @@ import { useProfile } from '../contexts/ProfileContext';
 import { useModal } from '../hooks/useModal';
 import { FileExplorerProps } from '../types/projects';
 import { CodeEditor } from '../components/CodeEditor';
-import { ActionsCell } from '../components/ActionCell';
+import { ActionsCellProj } from '../components/ActionCell';
 import { cn } from '../lib/cn';
 
 
@@ -475,7 +475,7 @@ const ProjectPage = () => {
                                     alt="-"
                                     className="w-8 h-8 border object-cover rounded-full"
                                 />
-                                <span className="font-medium nz-foreground">@{project.owner.username}</span>
+                                <span className="font-medium nz-foreground hover:underline hover:cursor-pointer">@{project.owner.username}</span>
                             </div>
                             <span className='text-xl font-bold'>•</span>
                             <div className="flex items-center gap-1">
@@ -715,7 +715,7 @@ const ProjectPage = () => {
                                                             </td>
                                                             <td className="px-4 py-2">{entry.content || "-"}</td>
                                                             <td className="px-4 py-2">{entry.uploaded_at || "-"}</td>
-                                                            <td><ActionsCell entry={entry} startRename={startRename} onDelete={() => {}} onShare={() => {}} /></td>
+                                                            <td><ActionsCellProj entry={entry} startRename={startRename} onDelete={() => {}} onShare={() => {}} /></td>
                                                         </tr>
                                                     ))}
                                                 </tbody>

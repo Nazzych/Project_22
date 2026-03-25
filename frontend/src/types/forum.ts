@@ -59,3 +59,9 @@ export type EditablePost = {
     content: string;
     channel_id: number;
 };
+
+export interface ActionsCellPropsForum {
+    onEdit: () => void;
+    onDelete: () => void;
+    onShare: () => void;
+}
