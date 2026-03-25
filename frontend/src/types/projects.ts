@@ -75,7 +75,7 @@ export type FileNode = {
     children?: FileNode[];
 };
 
-export interface ActionsCellProps {
+export interface ActionsCellPropsProj {
     entry: FileNode;
     startRename: (entry: FileNode) => void;
     onDelete: () => void;

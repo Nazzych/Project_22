@@ -11,7 +11,7 @@ class PostSerializer (serializers.ModelSerializer):
 
     class Meta:
         model = Post
-        fields = ["author", "channel", "title", "content", "views_count", "likes_count", "dislikes_count", "slug", "is_pinned", "is_edited", "created_at"]
+        fields = ["id", "author", "channel", "title", "content", "views_count", "likes_count", "dislikes_count", "slug", "is_pinned", "is_edited", "created_at"]
 
 #Клас серелізатора каналу.
 class ChannelSerializer (serializers.ModelSerializer):
@@ -21,7 +21,7 @@ class ChannelSerializer (serializers.ModelSerializer):
 
     class Meta:
         model = Channel
-        fields = ["owner", "moderators", "subscribers", "name", "slug", "description", "logo", "banner", "is_approved", "is_private", "created_at"]
+        fields = ["id", "owner", "moderators", "subscribers", "name", "slug", "description", "logo", "banner", "is_approved", "is_private", "created_at"]
 
 #Клас серелізатора коментаріїв.
 class CommentSerializer (serializers.ModelSerializer):
@@ -31,4 +31,4 @@ class CommentSerializer (serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = ["author", "content", "likes_count", "dislikes_count", "parent", "created_at", "updated_at", "is_edited"]
+        fields = ["id", "author", "content", "likes_count", "dislikes_count", "parent", "created_at", "updated_at", "is_edited"]

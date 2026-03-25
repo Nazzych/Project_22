@@ -76,9 +76,9 @@ export function PostManage({ onSuccess, onDelete, post }: PostFormProps) {
 
     const isEditMode = !!post;
     return (
-        <form onSubmit={handleSubmit} className='px-2'>
+        <form onSubmit={handleSubmit}>
             {/* Content */}
-            <div className="space-y-6">
+            <div className="space-y-6 px-2 overflow-y-hidden">
                 <div className="space-y-2">
                     <label className="flex items-center text-sm font-medium"><FileText className='w-4 h-4 mr-2'/>Create title for your post</label>
                     <div className='space-y-1'>
@@ -96,7 +96,7 @@ export function PostManage({ onSuccess, onDelete, post }: PostFormProps) {
                     <label className="flex items-center text-sm font-medium"><MessageCircle className="w-4 h-4 mr-2" />Content for your cool post 😉</label>
                     <div className='space-y-0'>
                         <Textarea
-                            rows={5}
+                            rows={8}
                             name="content"
                             value={form.content || ''}
                             onChange={handleChange}
@@ -117,7 +117,7 @@ export function PostManage({ onSuccess, onDelete, post }: PostFormProps) {
                         Cancel
                     </Button>
                     <Button type="submit" variant={post ? "btn_warning" : "btn_success"} disabled={loading}>
-                        {loading ? <LoadingSpinner text="Saving..." /> : isEditMode ? 'Edit Post' : 'Create Post'}
+                        {loading ? <LoadingSpinner text="Saving..." /> : isEditMode ? 'Edit Post' : 'Submit Post'}
                     </Button>
                 </div>
             </div>

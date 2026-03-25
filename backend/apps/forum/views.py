@@ -10,7 +10,7 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework import viewsets, status
 from storage3.exceptions import StorageApiError
-from users.permissions import isAuthenticated, IsAdministrator
+from users.permissions import isAuthenticated
 from .models import Post, Channel, Comment
 from .serializers import PostSerializer, ChannelSerializer, CommentSerializer
 # from .permissions import IsAdminOrReadOnly
@@ -76,3 +76,8 @@ def add_post (request):
             "type": "error",
             "message": f"Server error: {str (e)}"
         }, status = status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view (["POST"])
+@permission_classes ([isAuthenticated])
+def edit_post (request):
+    ...

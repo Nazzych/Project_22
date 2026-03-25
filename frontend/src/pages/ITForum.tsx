@@ -10,6 +10,7 @@ import { Posts, Channels } from '../types/forum'
 import { PostManage } from '../components/shared/modal/modals/forum/PostManage'
 import { useModal } from '../hooks/useModal';
 import { useProfile } from '../contexts/ProfileContext'
+import { ActionsCellForum } from '../components/ActionCell';
 import { formatDateNumeric } from '../lib/formatDate'
 import {
     XCircle,
@@ -22,7 +23,6 @@ import {
     Pen,
     Heart,
     Repeat,
-    MoreVertical,
     ChevronDown,
     ChevronUp,
     MessageCirclePlusIcon,
@@ -40,7 +40,7 @@ export function ITForum() {
     const [loadingChannels, setLoadingChannels] = useState(true);
     const [posts, setPosts] = useState<Posts[]>([]);
     const [channels, setChannels] = useState<Channels[]>([]);
-    const [expandedPosts, setExpandedPosts] = useState<{[id: number]: boolean}>({});
+    const [expandedPosts, setExpandedPosts] = useState<Record<number, boolean>>({});
 
     function toggleExpand(id: number) {
         setExpandedPosts(prev => ({
@@ -84,8 +84,8 @@ export function ITForum() {
 
     const OpenAddPost = () => {
         openModal({
-            id: 'admin-challange',
-            width: "xl",
+            id: 'forum-post',
+            width: "lg",
             title: (
                 <span className="flex items-center gap-2">
                     <div className="w-fit nz-background-accent rounded-lg py-1 px-4 flex flex-row justify-center items-center gap-2">
@@ -102,6 +102,30 @@ export function ITForum() {
             ),
         });
     }
+
+    const OpenEditPost = (post: Posts) => {
+        openModal({
+            id: 'forum-post',
+            width: "lg",
+            x: false,
+            title: (
+                <span className="flex items-center gap-2">
+                    <div className="w-fit nz-background-accent rounded-lg py-1 px-4 flex flex-row justify-center items-center gap-2">
+                        <MessageCirclePlusIcon className="w-4 h-4" />
+                        <span className="nz-foreground line-clamp-1">Edit post - "{post.title}"</span>
+                    </div>
+                </span>
+            ),
+            content: (
+                <PostManage 
+                    post={post}
+                    onSuccess={() => {loadPoasts()}}
+                    onDelete={() => closeModal()}
+                />
+            ),
+        });
+    }
+
 
     return (
         <div className="space-y-6">
@@ -253,7 +277,7 @@ export function ITForum() {
                                     posts.map((post) => (
                                         <div className='mb-8'>
                                             <div className='grid grid-cols-3 gap-2'>
-                                                <div className="col-span-2 nz-background-secondary rounded-2xl p-4 max-h-[400px] space-y-4 cursor-default overflow-auto">
+                                                <div className="col-span-2 nz-background-secondary rounded-2xl p-4 max-h-[500px] space-y-4 cursor-default overflow-auto">
                                                     <div className='relative flex items-center mb-2'>
                                                         <div className="w-12 h-12 nz-background-accent rounded-full flex items-center justify-center text-white font-bold border-2">
                                                             {post.author.profile.avatar_url ? <img className='rounded-full' src={post.author.profile.avatar_url} alt={post.author.username} /> : <span>{post.author.first_name[0]}{post.author.last_name[0]}</span>}
@@ -263,14 +287,12 @@ export function ITForum() {
                                                             <p className="nz-text-muted text-sm">{formatDateNumeric (post.created_at)}</p>
                                                         </div>
                                                         {profile?.username === post.author.username && (
-                                                            <button className='nz-background-accent p-2 rounded-full hover:nz-bg-hover absolute right-1 top-1'>
-                                                                <MoreVertical className='w-4 h-4' />
-                                                            </button>
+                                                            <ActionsCellForum onEdit={() => OpenEditPost (post)} onDelete={() => {}} onShare={() => {}} />
                                                         )}
                                                     </div>
                                                     <div className='space-y-3'>
                                                         {/* <p className="w-fit text-xl nz-text-primary nz-background-accent font-bold mb-2 p-1 rounded-md">{post.title}</p> */}
-                                                        <p className="w-fit text-xl nz-text-primary font-bold mb-2">{post.title}</p>
+                                                        <p className="text-xl nz-text-primary font-bold break-words mb-2">{post.title}</p>
                                                         {expandedPosts[post.id] && (
                                                             <button
                                                                 onClick={() => toggleExpand(post.id)}
@@ -279,13 +301,13 @@ export function ITForum() {
                                                                 <span className='flex items-center gap-1'><ChevronUp className='w-4 h-4' />Show less</span>
                                                             </button>
                                                         )}
-                                                        <p className={`text-justify break-words mb-3 transition-all ${
+                                                        <p className={`text-justify break-words mb-3 transition-all duration-300 overflow-hidden ${
                                                             expandedPosts[post.id] ? "line-clamp-none" : "line-clamp-4"
                                                         }`}>
                                                             {post.content}
                                                         </p>
 
-                                                        {post.content.split(" ").length > 20 && (
+                                                        {post.content.length > 372 && (
                                                             <button
                                                                 onClick={() => toggleExpand(post.id)}
                                                                 className="nz-text-accent hover:underline text-sm"
@@ -308,7 +330,7 @@ export function ITForum() {
                                                         )}
                                                     </div>
                                                 </div>
-                                                <div className="col-span-1 overflow-y-auto max-h-[400px]">
+                                                <div className="col-span-1 overflow-y-auto max-h-[500px]">
                                                     <div className="md:col-span-1 h-full overflow-hidden rounded-2xl bg-gradient-to-br from-gray-900 to-black flex items-center justify-center">
                                                         <p className="text-gray-500 text-sm">Media placeholder</p>
                                                     </div>
