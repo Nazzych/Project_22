@@ -12,6 +12,9 @@ import { useModal } from '../hooks/useModal';
 import { useProfile } from '../contexts/ProfileContext'
 import { ActionsCellForum } from '../components/ActionCell';
 import { formatDateNumeric } from '../lib/formatDate'
+import { getCsrfToken } from '../api/auth'
+import { deletePost } from '../api/forum'
+import axios from 'axios';
 import {
     XCircle,
     MessageSquare,
@@ -26,6 +29,7 @@ import {
     ChevronDown,
     ChevronUp,
     MessageCirclePlusIcon,
+    
 } from 'lucide-react'
 import { forumList, channelList } from '../api/forum'
 
@@ -82,6 +86,26 @@ export function ITForum() {
     }, []);
 
 
+    const handleDelete = async (post_id: number) => {
+        try {
+            if (post_id) {
+                await getCsrfToken();
+                await deletePost (post_id);
+                loadPoasts();
+                showToast('success', 'Post deleted', 'Your post has been successfully deleted.');
+            }
+        } catch (err) {
+            console.error('Error deleting post:', err);
+            if (axios.isAxiosError(err) && err.response?.data) {
+                const { type, message } = err.response.data;
+                showToast(type || 'error', 'Deleting failed', message || 'Unknown error');
+            } else {
+                showToast('error', 'Deleting failed', 'Something went wrong while deleting your post.');
+            }
+        }
+    }
+
+
     const OpenAddPost = () => {
         openModal({
             id: 'forum-post',
@@ -120,11 +144,35 @@ export function ITForum() {
                 <PostManage 
                     post={post}
                     onSuccess={() => {loadPoasts()}}
+                    onDelete={() => {handleDelete (post.id); closeModal()}}
+                />
+            ),
+        });
+    }
+
+
+    const OpenAddChannel = () => {
+        openModal({
+            id: 'forum-channell',
+            width: "lg",
+            title: (
+                <span className="flex items-center gap-2">
+                    <div className="w-fit nz-background-accent rounded-lg py-1 px-4 flex flex-row justify-center items-center gap-2">
+                        <MessageCirclePlusIcon className="w-5 h-5" />
+                        <span className="nz-foreground">Create channell</span>
+                    </div>
+                </span>
+            ),
+            content: (
+                <PostManage 
+                    onSuccess={() => {loadPoasts()}}
                     onDelete={() => closeModal()}
                 />
             ),
         });
     }
+
+
 
 
     return (
@@ -171,7 +219,7 @@ export function ITForum() {
                                                 Total Posts
                                             </p>
                                             <p className="text-2xl font-bold text-cyan-400">
-                                                10 000{/* {FORUM_POSTS.length} */}
+                                                {posts.length} {/* 10 000 */}
                                             </p>
                                         </div>
                                         <MessageSquare className="h-8 w-8 text-cyan-400" />
@@ -287,7 +335,7 @@ export function ITForum() {
                                                             <p className="nz-text-muted text-sm">{formatDateNumeric (post.created_at)}</p>
                                                         </div>
                                                         {profile?.username === post.author.username && (
-                                                            <ActionsCellForum onEdit={() => OpenEditPost (post)} onDelete={() => {}} onShare={() => {}} />
+                                                            <ActionsCellForum onEdit={() => OpenEditPost (post)} onDelete={() => {handleDelete (post.id)}} onShare={() => {}} />
                                                         )}
                                                     </div>
                                                     <div className='space-y-3'>

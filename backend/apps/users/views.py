@@ -301,17 +301,27 @@ class CurrentUserView (APIView):
 def update_profile (request):
     user = request.user
     data = request.data
+    username = data.get ("username", user.username)
+    email = data.get ("email", user.email)
 
+    existing_username = User.objects.filter (username = username).first()
+    if existing_username and existing_username.id != user.id:
+        return Response ({"warning": True, "message": "This \"username\" is already taken by another user."}, status = status.HTTP_302_FOUND)
+    
+    existing_useremail = User.objects.filter (email = email).first()
+    if existing_useremail and existing_useremail.id != user.id:
+        return Response ({"warning": True, "message": "This \"E-mail\" is already taken by another user."}, status = status.HTTP_302_FOUND)
+
+    user.email = email
+    user.username = username
     user.first_name = data.get ("first_name", user.first_name)
     user.last_name = data.get ("last_name", user.last_name)
-    user.username = data.get ("username", user.username)
-    user.email = data.get ("email", user.email)
     user.profile.bio = data.get ("bio", user.profile.bio)
+    user.profile.git = data.get ("git", user.profile.git)
     user.profile.address = data.get ("address", user.profile.address)
     user.profile.youtube = data.get ("youtube", user.profile.youtube)
     user.profile.twitter = data.get ("twitter", user.profile.twitter)
     user.profile.linkedin = data.get ("linkedin", user.profile.linkedin)
-    user.profile.git = data.get ("git", user.profile.git)
 
     user.save()
     user.profile.save()

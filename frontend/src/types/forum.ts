@@ -48,6 +48,7 @@ export type Channels = {
     created_at: string;
 };
 
+
 export interface PostFormProps {
     onSuccess: () => void;
     onDelete?: () => void;
@@ -65,3 +66,19 @@ export interface ActionsCellPropsForum {
     onDelete: () => void;
     onShare: () => void;
 }
+
+
+export interface ChannellFormProps {
+    onSuccess: () => void;
+    onDelete?: () => void;
+    channel?: Channels;
+}
+
+export type EditableChannell = {
+    name: string;
+    description: string;
+    logo: string;
+    banner: string;
+    is_private: boolean;
+};
+

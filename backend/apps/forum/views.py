@@ -77,7 +77,68 @@ def add_post (request):
             "message": f"Server error: {str (e)}"
         }, status = status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-@api_view (["POST"])
+@api_view (["PUT"])
 @permission_classes ([isAuthenticated])
-def edit_post (request):
-    ...
+def edit_post (request, post_id):
+    data = request.data
+    title = data.get ("title", "")
+    content = data.get ("content", "")
+
+    post = get_object_or_404 (Post, id = post_id)
+
+    if not (request.user.is_staff or post.author == request.user):
+        return Response (
+            {"type": "error", "message": "You do not have permission to edit this post."},
+            status = status.HTTP_403_FORBIDDEN
+        )
+
+    if Post.objects.filter (title = title).exclude (id = post.id).exists():
+        return Response ({
+            "type": "warning",
+            "message": "Post exist with this title. Please rename."
+        }, status = status.HTTP_400_BAD_REQUEST)
+
+    try:
+        with transaction.atomic():
+            post.title = title or post.title
+            post.content = content or post.content
+            post.save()
+
+        return Response (
+            {"success": True, "message": "Post updated successfully."},
+            status = status.HTTP_200_OK
+        )
+    except Exception as e:
+        print ("Error creating post:", str (e))
+        return Response ({
+            "type": "error",
+            "message": f"Server error: {str (e)}"
+        }, status = status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view (["DELETE"])
+@permission_classes ([isAuthenticated])
+def delete_post (request, post_id):
+    if not post_id:
+        return JsonResponse ({
+            "type": "error",
+            "message": "Post ID not provided!"
+        }, status = status.HTTP_400_BAD_REQUEST)
+
+    try:
+        Post.objects.get (id = int (post_id)).delete()
+        return Response ({
+            "type": "success",
+            "message": "Post deleted successfully"
+        }, status = status.HTTP_200_OK)
+    except Post.DoesNotExist:
+        return Response ({
+            "type": "error",
+            "message": "Post not found"
+        }, status = status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        print ("Error deleting post:", str (e))
+        return Response ({
+            "type": "error",
+            "message": f"Server error: {str (e)}"
+        }, status = status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -18,14 +18,14 @@ export async function createPost(form: any) {
 
 // Оновити пост.
 export async function updatePost(id: number, form: any) {
-    const response = await axios.put(`${API_BASE}/forum/post/${id}/`, form, {
+    const response = await axios.put(`${API_BASE}/forum/post/edit/${id}/`, form, {
         withCredentials: true,
     });
     return response.data;
 }
 
 // Видалити пост.
-export async function deletePost(id: string) {
+export async function deletePost(id: number) {
     const response = await axios.delete(`${API_BASE}/forum/post/del/${id}/`, {
         withCredentials: true,
     });
