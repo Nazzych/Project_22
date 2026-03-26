@@ -8,6 +8,7 @@ from . import views
 urlpatterns = [
     path ("posts/", views.get_posts, name = "forum-posts"),
     path ("post/add", views.add_post, name = "post-add"),
-    path ("post/edit", views.edit_post, name = "post-edit"),
+    path ("post/edit/<int:post_id>/", views.edit_post, name = "post-edit"),
+    path ("post/del/<int:post_id>/", views.delete_post, name = "post-delete"),
     path ("channels/", views.get_posts, name = "forum-channels"),
 ]

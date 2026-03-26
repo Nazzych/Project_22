@@ -10,7 +10,7 @@ import { LoadingSpinner } from '../../../../LoadingSpinner';
 import { useToast } from '../../../../../providers/MessageProvider';
 import { useModal } from '../../../../../hooks/useModal';
 import { getCsrfToken } from '../../../../../api/auth';
-import { createPost, updatePost } from '../../../../../api/forum';
+import { createPost, updatePost, deletePost } from '../../../../../api/forum';
 import { PostFormProps, EditablePost } from '../../../../../types/forum';
 import { motion } from 'framer-motion';
 import axios from 'axios';
@@ -52,11 +52,11 @@ export function PostManage({ onSuccess, onDelete, post }: PostFormProps) {
             // Редагування проєкту
             if (post) {
                 await updatePost(post.id, form);
-                showToast('success', 'Project updated', 'Your post has been successfully updated.');
+                showToast('success', 'Post updated', 'Your post has been successfully updated.');
             // Створення нового проєкту
             } else {
                 await createPost(formData);
-                showToast('success', 'Project created', 'Your post has been successfully added.');
+                showToast('success', 'Post created', 'Your post has been successfully added.');
             }
 
             onSuccess();
@@ -110,7 +110,7 @@ export function PostManage({ onSuccess, onDelete, post }: PostFormProps) {
                     {post && (
                         <Button type="button" variant="btn_destructive" disabled={loading} className='relative flex' onDoubleClick={onDelete}>
                             <Trash2 className='w-4 h-4 mr-1' /> Delete
-                            <span className='absolute -bottom-1 text-[8px]'>—•Double click•—</span>
+                            <span className='absolute -bottom-1 text-[8px]'>Double click</span>
                         </Button>
                     )}
                     <Button type="button" variant="btn_secondary" disabled={loading} onClick={closeModal}>
