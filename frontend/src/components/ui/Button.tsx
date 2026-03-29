@@ -14,6 +14,10 @@ const variantStyles: Record<NonNullable<ButtonProps['variant']>, string> = {
     btn_success: 'nz-bg-success border-none',
     btn_warning: 'nz-bg-warning border-none',
     btn_disabled: 'nz-bg-disabled border-none',
+    //TODO: btn_warning: 'border-yellow-500 bg-yellow-300/25 backdrop-blur-xl hover:bg-yellow-400/50 hover:border-yellow-600',
+    //TODO: btn_success: 'border-emerald-500 bg-emerald-300/25 backdrop-blur-xl hover:bg-emerald-400/50 hover:border-emerald-600',
+    //TODO: btn_info: 'border-indigo-500 bg-indigo-300/25 backdrop-blur-xl hover:bg-indigo-400/50 hover:border-indigo-600',
+    //TODO: btn_destructive: 'border-red-500 bg-red-400/25 backdrop-blur-xl hover:bg-red-600/50 hover:border-red-600',
 }
 
 const sizeStyles: Record<NonNullable<ButtonProps['size']>, string> = {
@@ -23,7 +27,7 @@ const sizeStyles: Record<NonNullable<ButtonProps['size']>, string> = {
     wf: 'w-full h-10 text-sm',
     icon: 'h-10 w-10',
 }
-
+{/* hover:nz-bg-hover hover:nz-text-hover */}
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ({ className, variant = 'btn_primary', size = 'md', isLoading, children, disabled, ...props }, ref) => {
         return (

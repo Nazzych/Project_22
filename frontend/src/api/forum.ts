@@ -39,25 +39,37 @@ export async function channelList() {
     return response.data;
 }
 
+// Отримати конкретний канал.
+export async function getChannel(id: number) {
+    const response = await axios.get(`${API_BASE}/forum/channel/${id}/`);
+    return response.data;
+}
+
+// Отримати конкретний пост.
+export async function getChannelPosts(id: number) {
+    const response = await axios.get(`${API_BASE}/forum/channel/${id}/posts`);
+    return response.data;
+}
+
 // Створити завдання
 export async function createChannel(form: any) {
-    const response = await axios.post(`${API_BASE}/forum/post/add`, form, {
+    const response = await axios.post(`${API_BASE}/forum/channel/add`, form, {
         withCredentials: true,
     });
     return response.data;
 }
 
 // Оновити завдання
-export async function updateChannel(id: string, form: any) {
-    const response = await axios.put(`${API_BASE}/forum/post/${id}/`, form, {
+export async function updateChannel(id: number, form: any) {
+    const response = await axios.put(`${API_BASE}/forum/channel/edit/${id}/`, form, {
         withCredentials: true,
     });
     return response.data;
 }
 
 // Видалити завдання
-export async function deleteChannel(id: string) {
-    const response = await axios.delete(`${API_BASE}/forum/post/del/${id}/`, {
+export async function deleteChannel(id: number) {
+    const response = await axios.delete(`${API_BASE}/forum/channel/del/${id}/`, {
         withCredentials: true,
     });
     return response.data;

@@ -14,20 +14,20 @@ from users.permissions import isAuthenticated
 from .models import Post, Channel, Comment
 from .serializers import PostSerializer, ChannelSerializer, CommentSerializer
 # from .permissions import IsAdminOrReadOnly
-import traceback, json, os, re
+#* import traceback, json, os, re
 
 
 @api_view (["GET"])
 @permission_classes ([isAuthenticated])
 def get_posts (request):
-    posts = Post.objects.all()
+    posts = Post.objects.filter (channel = None).all()
     serializer = PostSerializer (posts, many = True)
     return Response (serializer.data)
 
 @api_view (["GET"])
 @permission_classes ([isAuthenticated])
 def get_channels (request):
-    channels = Channel.objects.all()
+    channels = Channel.objects.filter (is_approved = True).all()
     serializer = ChannelSerializer (channels, many = True)
     return Response (serializer.data)
 
@@ -109,12 +109,11 @@ def edit_post (request, post_id):
             status = status.HTTP_200_OK
         )
     except Exception as e:
-        print ("Error creating post:", str (e))
+        print ("Error updating post:", str (e))
         return Response ({
             "type": "error",
             "message": f"Server error: {str (e)}"
         }, status = status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 
 @api_view (["DELETE"])
 @permission_classes ([isAuthenticated])
@@ -138,6 +137,139 @@ def delete_post (request, post_id):
         }, status = status.HTTP_404_NOT_FOUND)
     except Exception as e:
         print ("Error deleting post:", str (e))
+        return Response ({
+            "type": "error",
+            "message": f"Server error: {str (e)}"
+        }, status = status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view (["GET"])
+@permission_classes ([isAuthenticated])
+def get_channel (request, channel_id):
+    channel = get_object_or_404 (Channel, id = channel_id, is_approved = True)
+    serializer = ChannelSerializer (channel)
+    return Response (serializer.data)
+
+@api_view (["GET"])
+@permission_classes ([isAuthenticated])
+def get_channel_posts (request, channel_id):
+    posts = Post.objects.filter (channel_id = channel_id)
+    serializer = PostSerializer (posts, many = True)
+    return Response (serializer.data)
+
+@api_view (["POST"])
+@permission_classes ([isAuthenticated])
+def add_channel (request):
+    data = request.data
+    name = data.get ("name", "")
+    description = data.get ("description", "")
+    logo = data.get ("logo", "")
+    banner = data.get ("banner", "")
+    is_private = data.get ("is_private", "")
+
+    if not name or not description:
+        return JsonResponse ({
+            "type": "warning",
+            "message": "Fields \"name\" and \"description\" is required."
+        }, status = status.HTTP_400_BAD_REQUEST)
+
+    if Channel.objects.filter (name = name).exists():
+        return Response ({
+            "type": "warning",
+            "message": "Channel exist with this name. Please rename."
+        }, status = status.HTTP_400_BAD_REQUEST)
+
+    try:
+        with transaction.atomic():
+            channel = Channel.objects.create (
+                name = name,
+                description = description,
+                logo = logo,
+                banner = banner,
+                is_private = (is_private == "true"),
+                is_approved = request.user.is_staff,
+                owner_id = request.user.id
+            )
+
+        serializer = ChannelSerializer (channel)
+        return Response ({
+            "type": "success",
+            "message": "Channel created successfully",
+            "channel": serializer.data
+        }, status = status.HTTP_201_CREATED)
+    except Exception as e:
+        print ("Error creating channel:", str (e))
+        return Response ({
+            "type": "error",
+            "message": f"Server error: {str (e)}"
+        }, status = status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view (["PUT"])
+@permission_classes ([isAuthenticated])
+def edit_channel (request, channel_id):
+    data = request.data
+    name = data.get ("name", "")
+    description = data.get ("description", "")
+    logo = data.get ("logo", "")
+    banner = data.get ("banner", "")
+    is_private = data.get ("is_private", "")
+
+    channel = get_object_or_404 (Channel, id = channel_id)
+
+    if not (request.user.is_staff or channel.owner == request.user):
+        return Response (
+            {"type": "error", "message": "You do not have permission to edit this channel."},
+            status = status.HTTP_403_FORBIDDEN
+        )
+
+    if Channel.objects.filter (name = name).exclude (id = channel.id).exists():
+        return Response ({
+            "type": "warning",
+            "message": "Channel exist with this name. Please rename."
+        }, status = status.HTTP_400_BAD_REQUEST)
+
+    try:
+        with transaction.atomic():
+            channel.name = name or channel.name
+            channel.description = description or channel.description
+            channel.logo = logo
+            channel.banner = banner
+            channel.is_private = is_private == "true" or channel.is_private
+            channel.save()
+
+        return Response (
+            {"success": True, "message": "Channel updated successfully."},
+            status = status.HTTP_200_OK
+        )
+    except Exception as e:
+        print ("Error updating channel:", str (e))
+        return Response ({
+            "type": "error",
+            "message": f"Server error: {str (e)}"
+        }, status = status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view (["DELETE"])
+@permission_classes ([isAuthenticated])
+def delete_channel (request, channel_id):
+    if not channel_id:
+        return JsonResponse ({
+            "type": "error",
+            "message": "Channel ID not provided!"
+        }, status = status.HTTP_400_BAD_REQUEST)
+
+    try:
+        Channel.objects.get (id = int (channel_id)).delete()
+        return Response ({
+            "type": "success",
+            "message": "Channel deleted successfully"
+        }, status = status.HTTP_200_OK)
+    except Channel.DoesNotExist:
+        return Response ({
+            "type": "error",
+            "message": "Channel not found"
+        }, status = status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        print ("Error deleting channel:", str (e))
         return Response ({
             "type": "error",
             "message": f"Server error: {str (e)}"

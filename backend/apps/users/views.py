@@ -160,7 +160,8 @@ def github_login_callback (request):
             "client_id": settings.GITHUB_CLIENT_ID,
             "client_secret": settings.GITHUB_CLIENT_SECRET,
             "code": code,
-        }
+        },
+        timeout = 10
     )
     token_data = token_res.json()
     access_token = token_data.get ("access_token")

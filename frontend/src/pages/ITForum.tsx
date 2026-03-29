@@ -3,17 +3,20 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card'
+import { Skeleton } from '../components/LoadingSpinner';
+import { PostManage } from '../components/shared/modal/modals/forum/PostManage'
+import { ChannelManage } from '../components/shared/modal/modals/forum/ChannelManager'
+import { ActionsCellForum } from '../components/ActionCell';
+import { ChannelsSection } from '../components/ChannelCard'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '../providers/MessageProvider'
-import { LoadingSpinner, Skeleton } from '../components/LoadingSpinner';
 import { Posts, Channels } from '../types/forum'
-import { PostManage } from '../components/shared/modal/modals/forum/PostManage'
 import { useModal } from '../hooks/useModal';
 import { useProfile } from '../contexts/ProfileContext'
-import { ActionsCellForum } from '../components/ActionCell';
 import { formatDateNumeric } from '../lib/formatDate'
 import { getCsrfToken } from '../api/auth'
-import { deletePost } from '../api/forum'
+import { deletePost, deleteChannel } from '../api/forum'
+import { ConfirmModal } from '../components/shared/modal/ConfirmModal'
 import axios from 'axios';
 import {
     XCircle,
@@ -29,7 +32,8 @@ import {
     ChevronDown,
     ChevronUp,
     MessageCirclePlusIcon,
-    
+    MessageCircleMore,
+    Hash
 } from 'lucide-react'
 import { forumList, channelList } from '../api/forum'
 
@@ -42,6 +46,7 @@ export function ITForum() {
     const [searchQuery, setSearchQuery] = useState('')
     const [loadingPosts, setLoadingPosts] = useState(true);
     const [loadingChannels, setLoadingChannels] = useState(true);
+    const [isExpanded, setIsExpanded] = useState(false);
     const [posts, setPosts] = useState<Posts[]>([]);
     const [channels, setChannels] = useState<Channels[]>([]);
     const [expandedPosts, setExpandedPosts] = useState<Record<number, boolean>>({});
@@ -86,7 +91,28 @@ export function ITForum() {
     }, []);
 
 
-    const handleDelete = async (post_id: number) => {
+    const clickDeletePost = async (post_id: number) => {
+        openModal({
+            id: 'confirm-delete-post',
+            width: "md",
+            content: (
+                <ConfirmModal
+                    message= {
+                        <div className="flex items-center gap-2 relative">
+                            <div className="nz-background-secondary absolute left-1 top-0 h-full w-1.5 rounded-full"></div>
+                            <p className="text-sm pl-4">You really want to delete this post? This action cannot be undone.</p>
+                        </div>
+                    }
+                    onConfirm={() => {handleDeletePost(post_id); closeModal()}}
+                    onCancel={closeModal}
+                    confirmText="Yes, delete"
+                    cancelText="Cancel"
+                />
+            ),
+        });
+    }
+
+    const handleDeletePost = async (post_id: number) => {
         try {
             if (post_id) {
                 await getCsrfToken();
@@ -104,7 +130,6 @@ export function ITForum() {
             }
         }
     }
-
 
     const OpenAddPost = () => {
         openModal({
@@ -144,7 +169,7 @@ export function ITForum() {
                 <PostManage 
                     post={post}
                     onSuccess={() => {loadPoasts()}}
-                    onDelete={() => {handleDelete (post.id); closeModal()}}
+                    onDelete={() => {clickDeletePost (post.id)}}
                 />
             ),
         });
@@ -159,20 +184,81 @@ export function ITForum() {
                 <span className="flex items-center gap-2">
                     <div className="w-fit nz-background-accent rounded-lg py-1 px-4 flex flex-row justify-center items-center gap-2">
                         <MessageCirclePlusIcon className="w-5 h-5" />
-                        <span className="nz-foreground">Create channell</span>
+                        <span className="nz-foreground">Create channel</span>
                     </div>
                 </span>
             ),
             content: (
-                <PostManage 
-                    onSuccess={() => {loadPoasts()}}
+                <ChannelManage
+                    onSuccess={() => {loadChannels()}}
                     onDelete={() => closeModal()}
                 />
             ),
         });
     }
 
+    const OpenEditChannel = (channel: Channels) => {
+        openModal({
+            id: 'forum-channell',
+            width: "lg",
+            x: false,
+            title: (
+                <span className="flex items-center gap-2">
+                    <div className="w-fit nz-background-accent rounded-lg py-1 px-4 flex flex-row justify-center items-center gap-2">
+                        <MessageCirclePlusIcon className="w-5 h-5" />
+                        <span className="nz-foreground">Edit channel</span>
+                    </div>
+                </span>
+            ),
+            content: (
+                <ChannelManage
+                    channel={channel}
+                    onSuccess={() => {loadChannels()}}
+                    onDelete={() => {clickDeleteChannel(channel.id)}}
+                />
+            ),
+        });
+    }
 
+    const handleDeleteChannel = async (channel_id: number) => {
+        try {
+            if (channel_id) {
+                await getCsrfToken();
+                await deleteChannel (channel_id);
+                loadChannels();
+                showToast('success', 'Channel deleted', 'Your channel has been successfully deleted.');
+            }
+        } catch (err) {
+            console.error('Error deleting channel:', err);
+            if (axios.isAxiosError(err) && err.response?.data) {
+                const { type, message } = err.response.data;
+                showToast(type || 'error', 'Deleting failed', message || 'Unknown error');
+            } else {
+                showToast('error', 'Deleting failed', 'Something went wrong while deleting your channel.');
+            }
+        }
+    }
+
+    const clickDeleteChannel = async (channel_id: number) => {
+        openModal({
+            id: 'confirm-delete-channel',
+            width: "md",
+            content: (
+                <ConfirmModal
+                    message= {
+                        <div className="flex items-center gap-2 relative">
+                            <div className="nz-background-secondary absolute left-1 top-0 h-full w-1.5 rounded-full"></div>
+                            <p className="text-sm pl-4">You really want to delete your channel? This action cannot be undone.</p>
+                        </div>
+                    }
+                    onConfirm={() => {handleDeleteChannel(channel_id); closeModal()}}
+                    onCancel={closeModal}
+                    confirmText="Yes, delete"
+                    cancelText="Cancel"
+                />
+            ),
+        });
+    }
 
 
     return (
@@ -265,11 +351,26 @@ export function ITForum() {
                         {/* Categories */}
                         <div>
                             <div className='flex items-center flex-wrap justify-between gap-4 mb-4'>
-                                <h2 className="text-2xl font-bold text-white">
-                                    Categories
-                                </h2>
+                                <div className='flex items-center flex-wrap gap-4'>
+                                    <h2 className="flex items-center text-2xl font-bold text-white gap-1">
+                                        <Hash className="w-5 h-5" />
+                                        Categories
+                                    </h2>
+                                    {channels.length > 4 && (
+                                        <button
+                                            onClick={() => setIsExpanded(!isExpanded)}
+                                            className="flex items-center gap-1.5 text-sm nz-text-muted hover:text-white transition-colors"
+                                        >
+                                            {isExpanded ? (
+                                                <>Show less <ChevronUp className="w-4 h-4" /></>
+                                            ) : (
+                                                <>Show all ({channels.length}) <ChevronDown className="w-4 h-4" /></>
+                                            )}
+                                        </button>
+                                    )}
+                                </div>
                                 <Button variant="btn_secondary"
-                                    onClick={() => navigate('/forum/create')}
+                                    onClick={() => OpenAddChannel()}
                                     className="gap-2"
                                 >
                                     <Plus className="h-4 w-4" />
@@ -279,25 +380,43 @@ export function ITForum() {
                             {loadingChannels ? (
                                 <div className="p-6">
                                     {/* Список проектів */}
-                                    <div className="flex justify-between md:justify-center gap-2">
-                                        <div className='md:w-[75%]'>
-                                            <LoadingSpinner size={24} text='Loading posts ...'  />
-                                        </div>
-                                        <Skeleton className="h-80 w-[50%] lg:w-[25%] rounded-[18px]" />
+                                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                                        {[...Array(4)].map((_, i) => (
+                                            <div key={i}>
+                                                <Skeleton className="h-52 lg:h-72 w-full rounded-[18px]" />
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
                             ) : (
-                                <div className="flex flex-row items-center justify-center py-6 text-center nz-foreground gap-2">
-                                    <XCircle className="w-6 h-6 text-muted-foreground" />
-                                    <p className="text-sm font-medium">No channels found</p>
-                                </div>
+                                channels.length !== 0 ? (
+                                    <ChannelsSection 
+                                        channels={channels}
+                                        isExpanded={isExpanded}
+                                        OpenEditChannel={OpenEditChannel}
+                                        handleDeleteChannel={clickDeleteChannel}
+                                        //? title="Популярні канали" 
+                                    />
+                                ) : (
+                                    <div className="flex flex-row items-center justify-center py-6 text-center nz-foreground gap-2">
+                                        <XCircle className="w-6 h-6 text-muted-foreground" />
+                                        <p className="text-sm font-medium">No channels found</p>
+                                    </div>
+                                )
                             )}
                         </div>
-
+{/* <div className="flex items-center w-full">
+    <hr className="flex-grow border-white" />
+    <span className="mx-4 text-sm font-medium nz-text-muted whitespace-nowrap">
+        Important inputs
+    </span>
+    <hr className="flex-grow border-white" />
+</div> */}
                         {/* Recent Posts */}
                         <div>
                             <div className='flex items-center flex-wrap justify-between gap-4 mb-4'>
-                                <h2 className="text-2xl font-bold text-white">
+                                <h2 className="flex items-center text-2xl font-bold text-white gap-1">
+                                    <MessageCircleMore className="w-5 h-5" />
                                     Recent Discussions
                                 </h2>
                                 <Button variant="btn_secondary"
@@ -312,30 +431,29 @@ export function ITForum() {
                             {loadingPosts ? (
                                 <div className="p-6">
                                     {/* Список проектів */}
-                                    <div className="grid grid-cols-4 gap-4">
-                                        {[...Array(4)].map((_, i) => (
-                                            <div key={i}>
-                                                <Skeleton className="h-72 w-full rounded-[18px]" />
-                                            </div>
-                                        ))}
+                                    <div className="flex gap-4">
+                                        <div className='lg:w-[75%]'>
+                                            <Skeleton className="h-80 w-full rounded-[18px]" />
+                                        </div>
+                                        <Skeleton className="h-80 w-full lg:w-[25%] rounded-[18px]" />
                                     </div>
                                 </div>
                             ) : (
                                 posts.length !== 0 ? (
                                     posts.map((post) => (
                                         <div className='mb-8'>
-                                            <div className='grid grid-cols-3 gap-2'>
+                                            <div className='grid grid-cols-1 lg:grid-cols-3 gap-2'>
                                                 <div className="col-span-2 nz-background-secondary rounded-2xl p-4 max-h-[500px] space-y-4 cursor-default overflow-auto">
                                                     <div className='relative flex items-center mb-2'>
                                                         <div className="w-12 h-12 nz-background-accent rounded-full flex items-center justify-center text-white font-bold border-2">
                                                             {post.author.profile.avatar_url ? <img className='rounded-full' src={post.author.profile.avatar_url} alt={post.author.username} /> : <span>{post.author.first_name[0]}{post.author.last_name[0]}</span>}
                                                         </div>
                                                         <div className="ml-3">
-                                                            <p className="text-white hover:underline hover:cursor-pointer">{post.author.first_name}{post.author.last_name} | <span className='text-[12px] nz-text-muted group-hover:underline'>@{post.author.username}</span></p>
+                                                            <p className="text-white hover:underline hover:cursor-pointer">{post.author.first_name} {post.author.last_name} | <span className='text-[12px] nz-text-muted group-hover:underline'>@{post.author.username}</span></p>
                                                             <p className="nz-text-muted text-sm">{formatDateNumeric (post.created_at)}</p>
                                                         </div>
-                                                        {profile?.username === post.author.username && (
-                                                            <ActionsCellForum onEdit={() => OpenEditPost (post)} onDelete={() => {handleDelete (post.id)}} onShare={() => {}} />
+                                                        {profile?.id === post.author.id && (
+                                                            <ActionsCellForum onEdit={() => OpenEditPost (post)} onDelete={() => {clickDeletePost (post.id)}} onShare={() => {}} />
                                                         )}
                                                     </div>
                                                     <div className='space-y-3'>
@@ -349,13 +467,13 @@ export function ITForum() {
                                                                 <span className='flex items-center gap-1'><ChevronUp className='w-4 h-4' />Show less</span>
                                                             </button>
                                                         )}
-                                                        <p className={`text-justify break-words mb-3 transition-all duration-300 overflow-hidden ${
+                                                        <p className={`text-justify break-words mb-3 transition-all duration-300 overflow-hidden whitespace-pre-wrap ${
                                                             expandedPosts[post.id] ? "line-clamp-none" : "line-clamp-4"
                                                         }`}>
                                                             {post.content}
                                                         </p>
 
-                                                        {post.content.length > 372 && (
+                                                        {post.content.split(/\r\n|\r|\n/).length > 4 && (
                                                             <button
                                                                 onClick={() => toggleExpand(post.id)}
                                                                 className="nz-text-accent hover:underline text-sm"
@@ -378,7 +496,7 @@ export function ITForum() {
                                                         )}
                                                     </div>
                                                 </div>
-                                                <div className="col-span-1 overflow-y-auto max-h-[500px]">
+                                                <div className="col-span-1 overflow-y-auto max-h-[500px] hidden lg:block">
                                                     <div className="md:col-span-1 h-full overflow-hidden rounded-2xl bg-gradient-to-br from-gray-900 to-black flex items-center justify-center">
                                                         <p className="text-gray-500 text-sm">Media placeholder</p>
                                                     </div>

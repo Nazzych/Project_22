@@ -23,20 +23,19 @@ export function Header({ onMenuClick }: HeaderProps) {
             </div>
 
             {/* Привітання — тільки на десктопі */}
-            <h1 className="hidden text-xl md:flex items-center flex-1">
+            <h1 className="hidden text-xl md:flex items-center flex-1 line-clamp-1">
                 Welcome back,<span className="nz-text-primary ml-1 font-semibold">{profile?.first_name}</span>! 👋
             </h1>
 
             {/* Правий бік — дії + профіль */}
-            <div className="flex items-center gap-3 ml-auto">
-                <div className="bg_card px-4 flex items-center justify-center gap-2 rounded-full">
+            <div className="flex items-center gap-3">
+                <div className="nz-background-accent pr-3 flex items-center justify-center gap-2 rounded-xl">
                     <ThemeToggle />
                     <button className="p-0 m-0 bg-transparent border-none text-[hsl(var(--foreground))] hover:nz-text-hover">
                         <Bell className="h-6" />
                     </button>
                 </div>
 
-                <div className="hidden sm:block h-5 w-px bg-border mx-2" />
                 <Link
                     to="/profile"
                     className="flex items-center hover:nz-text-hover transition-opacity"
