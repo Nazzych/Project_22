@@ -1,4 +1,4 @@
-import { Settings, Pen, User, Folders } from 'lucide-react';
+import { Settings, Pen, User, Folders, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { ProjectCardProps, Project } from '../types/projects';
 import { Card, CardHeader, CardContent } from './ui/Card';
@@ -124,11 +124,12 @@ export const ProjectCard = ({
             </CardHeader>
 
             <CardContent>
-                <div className="flex flex-wrap gap-2 relative z-0">
+                <div className="flex items-center flex-wrap gap-2 relative z-0">
                     {technologies.length && (
                         <div className="relative">
                             <span 
                                 ref={tagRef}
+                                onClick={(e) => e.stopPropagation()}
                                 onMouseEnter={handleTagHover}
                                 onMouseLeave={() => setTooltipPos(null)}
                                 className="text-xs nz-background-secondary px-2 py-1 rounded-full text-muted-foreground border cursor-default"
@@ -151,6 +152,10 @@ export const ProjectCard = ({
                             )}
                         </div>
                     )}
+                    <span className="flex items-center text-[10px] nz-text-muted">
+                        <Star className="w-4 h-4 mr-1" />
+                        {proj.stars.toLocaleString()}
+                    </span>
                 </div>
             </CardContent>
         </Card>

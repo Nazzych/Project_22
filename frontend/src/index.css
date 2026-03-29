@@ -257,8 +257,8 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-    background-color: var(--background-muted);
-    /*? border-radius: 9999px; */
+    /*? background-color: var(--background-muted); */
+    border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb {

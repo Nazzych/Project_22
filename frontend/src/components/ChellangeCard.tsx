@@ -170,6 +170,7 @@ export const ChallengeCard = ({
                             <div className="relative">
                                 <span 
                                     ref={tagRef}
+                                    onClick={(e) => e.stopPropagation()}
                                     onMouseEnter={handleTagHover}
                                     onMouseLeave={() => setTooltipPos(null)}
                                     className="text-xs nz-background-secondary px-2 py-1 rounded-full text-muted-foreground border group-hover:nz-background-primary cursor-default"

@@ -15,15 +15,15 @@ import { PostFormProps, EditablePost } from '../../../../../types/forum';
 import { motion } from 'framer-motion';
 import axios from 'axios';
 
-export function PostManage({ onSuccess, onDelete, post }: PostFormProps) {
+export function PostManage({ onSuccess, onDelete, post, content, channel }: PostFormProps) {
     const { showToast } = useToast()
     const { closeModal } = useModal();
     const [loading, setLoading] = useState(false);
 
     const [form, setForm] = useState<EditablePost>({
         title: post?.title || '',
-        content: post?.content || '',
-        channel_id: post?.channel || '',
+        content: post?.content || content || '',
+        channel: post?.channel || channel || '',
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {

@@ -53,12 +53,14 @@ export interface PostFormProps {
     onSuccess: () => void;
     onDelete?: () => void;
     post?: Posts;
+    channel?: number;
+    content?: string;
 }
 
 export type EditablePost = {
     title: string;
     content: string;
-    channel_id: number;
+    channel: number;
 };
 
 export interface ActionsCellPropsForum {
@@ -67,6 +69,12 @@ export interface ActionsCellPropsForum {
     onShare: () => void;
 }
 
+
+export interface ActionsCellPropsChannel {
+    onEdit: () => void;
+    onDelete: () => void;
+    onShare: () => void;
+}
 
 export interface ChannellFormProps {
     onSuccess: () => void;

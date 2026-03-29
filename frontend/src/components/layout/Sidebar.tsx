@@ -6,6 +6,7 @@ import {
     FolderGit2,
     MessageSquareCode,
     ShieldAlert,
+    LibrarySquare,
     LogOut,
     X,
 } from 'lucide-react';
@@ -18,6 +19,7 @@ import { motion } from 'framer-motion';
 const NAV_ITEMS = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
     { icon: Code2, label: 'Challenges', path: '/challenges' },
+    { icon: LibrarySquare, label: 'Courses', path: '/courses' },
     { icon: FolderGit2, label: 'Projects', path: '/projects' },
     { icon: MessageSquareCode, label: 'Forum', path: '/forum' },
 ];

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Laptop, X, XCircle } from 'lucide-react';
+import { Search, Laptop, X, XCircle, Library } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Select';
@@ -10,7 +10,7 @@ import { Tasks } from '../types/tasks';
 import { tasksList } from '../api/tasks';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 
-export function ChallengeList() {
+export function CoursesList() {
     const { showToast } = useToast();
 
     const [search, setSearch] = useState('');
@@ -35,9 +35,9 @@ export function ChallengeList() {
         }
     };
 
-    useEffect(() => {
-        loadTasks();
-    }, []);
+    // useEffect(() => {
+    //     loadTasks();
+    // }, []);
 
     // Фільтрація (пошук + складність + мова)
     useEffect(() => {
@@ -88,12 +88,12 @@ export function ChallengeList() {
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                         <div>
                             <h1 className="text-3xl font-bold nz-foreground flex items-center gap-3">
-                                <Laptop className="h-8 w-8 text-primary" />
-                                Challenges
+                                <Library className="h-8 w-8 text-primary" />
+                                Courses
                             </h1>
-{/* TODO: {count} challenges completed */}
+{/* TODO: {count} courses completed */}
                             <p className="text-muted-foreground mt-1">
-                                {filteredTasks.length} challenges found
+                                {filteredTasks.length} courses found
                             </p>
                         </div>
                         <Button
@@ -110,7 +110,7 @@ export function ChallengeList() {
                         {/* Пошук */}
                         <div className="flex-1 relative">
                             <Input
-                                placeholder="Search challenges or tags..."
+                                placeholder="Search courses or tags..."
                                 icon={<Search className="h-4 w-4" />}
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
@@ -159,8 +159,8 @@ export function ChallengeList() {
                     </div>
 
                     {/* Список завдань */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {loading ? (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {/* {loading ? (
                             <div className="col-span-full flex justify-center items-center py-12">
                                 <LoadingSpinner text="Завантаження завдань..." />
                             </div>
@@ -181,7 +181,7 @@ export function ChallengeList() {
                                     loadChallenges={loadTasks}
                                 />
                             ))
-                        )}
+                        )} */}
                     </div>
                 </div>
             </motion.div>

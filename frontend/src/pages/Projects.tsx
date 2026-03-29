@@ -187,31 +187,24 @@ export function ProjectsHub() {
                                 {activeTab === 'all' ? (
                                     <motion.div key="all" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                                         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
-                                            {/* Example Project Card */}
-                                            <Card variant="card_primary"
-                                                className="cursor-pointer hover:shadow-xl transition duration-300 border"
-                                                onClick={() => handleViewProject('userId', 'projectId')}>
-                                                <CardHeader>
-                                                    <h3 className="text-lg font-semibold text-foreground">Project Name 1</h3>
-                                                </CardHeader>
-                                                <CardContent>
-                                                    <p className="text-sm text-muted-foreground">
-                                                        Short project description goes here.
-                                                    </p>
-                                                </CardContent>
-                                            </Card>
-                                            <Card variant="card_primary"
-                                                className="cursor-pointer hover:shadow-xl transition duration-300 border"
-                                                onClick={() => handleViewProject('userId', 'projectId')}>
-                                                <CardHeader>
-                                                    <h3 className="text-lg font-semibold text-foreground">Project Name 2</h3>
-                                                </CardHeader>
-                                                <CardContent>
-                                                    <p className="text-sm text-muted-foreground">
-                                                        Short project description goes here.
-                                                    </p>
-                                                </CardContent>
-                                            </Card>
+                                            {projects.length === 0 ? (
+                                                <div className="flex flex-row col-span-full p-2 text-center nz-foreground">
+                                                    <XCircle className="mr-2" /> You haven't added any projects yet. Click "Add Project" to create your first one!
+                                                </div>
+                                            ) : projects.map((card) => (
+                                                    <ProjectCard
+                                                        key={card.id}
+                                                        id={card.id}
+                                                        proj={card}
+                                                        title={card.title}
+                                                        description={card.description}
+                                                        technologies={card.technologies.split(', ')}
+                                                        status={card.status}
+                                                        image={card.image}
+                                                        owner={card.owner}
+                                                        loadProjs={() => {}}
+                                                    />
+                                                ))}
                                         </div>
                                     </motion.div>
                                 ) : (
@@ -219,7 +212,7 @@ export function ProjectsHub() {
                                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                                             {/* Left: Projects */}
                                             <div className="lg:col-span-2 space-y-6 max-h-4xl overflow-y-auto">
-                                                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-3 gap-6">
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
                                                     {projects.length === 0 ? (
                                                         <div className="flex flex-row col-span-full p-2 text-center nz-foreground">
                                                             <XCircle className="mr-2" /> You haven't added any projects yet. Click "Add Project" to create your first one!
@@ -305,7 +298,7 @@ export function ProjectsHub() {
                                                         Add Project
                                                     </Button>
                                                     <div className='mb-4'>
-                                                        <Card variant='card_primary' className='border-none'>
+                                                        <Card size='wf' variant='card_primary' className='border-none'>
                                                             <CardContent className='pt-4'>
                                                                 <h1 className='flex flex-row gap-2 items-center nz-text-primary ml-1 text-md font-bold'>
                                                                     <Star className="h-5 w-5" />
@@ -321,7 +314,7 @@ export function ProjectsHub() {
                                                         </Card>
                                                     </div>
                                                     <div>
-                                                        <Card variant='card_primary' className='border-none'>
+                                                        <Card size='wf' variant='card_primary' className='border-none'>
                                                             <CardContent className='pt-4'>
                                                                 <h1 className='flex flex-row gap-2 items-center nz-text-primary ml-1 text-md font-bold'>
                                                                     <Layers2 className="h-5 w-5" />

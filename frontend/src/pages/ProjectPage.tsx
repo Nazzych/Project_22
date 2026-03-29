@@ -291,6 +291,7 @@ const ProjectPage = () => {
         }
     };
 
+    const [getFileError, setGetFileError] = useState(false);
     const handleFileClick = async (file: FileNode) => {
         if (!file) showToast("error", "No file selected", "Please select a file to view.");
         if (file.type === "file") {
@@ -300,6 +301,10 @@ const ProjectPage = () => {
             setFileContent(content);
             setEditContent(content);
             setSelectedFile(file);
+            if (content === "✕ Error retrieving file content") {
+                showToast("error", "Server Error", "Please try again later.");
+                setGetFileError(true);
+            }
         }
     };
 
@@ -462,7 +467,7 @@ const ProjectPage = () => {
                                     <Star className="h-4 w-4 mr-2 fill-current text-yellow-400" />
                                     <span className='text-yellow-400'>Star</span>
                                     <span className="ml-2 px-1.5 py-0.5 bg-yellow-400/20 rounded-full text-xs text-yellow-200">
-                                        128
+                                        {project.stars.toLocaleString()}
                                     </span>
                                 </Button>
                             </div>
@@ -742,109 +747,116 @@ const ProjectPage = () => {
                                                                 )}
                                                             </div>
                                                             <div className="flex flex-wrap sm:flex-nowrap p-4 md:p-2 justify-between items-center gap-2 md:gap-3">
-                                                                <div className="inline-flex flex-wrap sm:flex-nowrap rounded-full overflow-hidden border border-zinc-700 bg-zinc-900/80">
-                                                                    <Button
-                                                                        className="rounded-none rounded-l-full px-4 py-2"
-                                                                        onClick={async () => {
-                                                                            await navigator.clipboard.writeText(editContent);
-                                                                            setCopied(true);
-                                                                            showToast("success", "Copied!", "Content copied to clipboard.");
-                                                                            setTimeout(() => setCopied(false), 1500);
-                                                                        }}
-                                                                        disabled={!editContent}
-                                                                    >
-                                                                        {copied ? (
-                                                                            <CopyCheck className="w-4 h-4 text-green-400" />
-                                                                        ) : (
-                                                                            <Copy className="w-4 h-4" />
-                                                                        )}
-                                                                    </Button>
-                                                                    <Button
-                                                                        className="rounded-none px-4 py-2 relative"
-                                                                        onDoubleClick={() => handleDownloadFile(project.id, selectedFile.path || selectedFile.name, editContent)}
-                                                                        disabled={isSaving || !editContent}
-                                                                    >
-                                                                        <Download className="w-4 h-4" />
-                                                                        <span className='absolute -bottom-1 text-[7px] nz-text-muted'>Double click</span>
-                                                                    </Button>
-                                                                    <span className="relative"
-                                                                        onMouseEnter={(e) => {
-                                                                            const rect = e.currentTarget.getBoundingClientRect();
-                                                                            setTooltipPos({ top: rect.top, left: rect.left + rect.width / 2, text: 'Open fullscreen the file' });
-                                                                        }}
-                                                                        onMouseLeave={() => setTooltipPos(null)}>
+                                                                {getFileError ? (
+                                                                <p className="flex items-center gap-2 font-bold text-red-500">
+                                                                    <TriangleAlert className="w-5 h-5" />
+                                                                    No can get the file!
+                                                                </p>
+                                                                ) : (
+                                                                    <div className="inline-flex flex-wrap sm:flex-nowrap rounded-full overflow-hidden border border-zinc-700 bg-zinc-900/80">
                                                                         <Button
-                                                                            className="relative px-4 py-2 rounded-none"
-                                                                            onClick={() =>
-                                                                                openFile(
-                                                                                    selectedFile.name,
-                                                                                    String (currentFolder?.name + "/" + (selectedFile.path || selectedFile.name))
-                                                                                )
-                                                                            }
+                                                                            className="rounded-none rounded-l-full px-4 py-2"
+                                                                            onClick={async () => {
+                                                                                await navigator.clipboard.writeText(editContent);
+                                                                                setCopied(true);
+                                                                                showToast("success", "Copied!", "Content copied to clipboard.");
+                                                                                setTimeout(() => setCopied(false), 1500);
+                                                                            }}
+                                                                            disabled={!editContent}
                                                                         >
-                                                                            <Fullscreen className="w-4 h-4" />
-                                                                            {/* <span className='absolute -bottom-1 text-[7px] nz-text-muted'>TEHNICAL FIX</span> */}
+                                                                            {copied ? (
+                                                                                <CopyCheck className="w-4 h-4 text-green-400" />
+                                                                            ) : (
+                                                                                <Copy className="w-4 h-4" />
+                                                                            )}
                                                                         </Button>
-                                                                        {tooltipPos && (
-                                                                            <div 
-                                                                                className="fixed w-max max-w-xs nz-background-accent border rounded-md shadow-lg p-2 text-xs nz-text-foreground z-50 whitespace-pre-wrap break-words pointer-events-none animate-in fade-in"
-                                                                                style={{
-                                                                                    top: `${tooltipPos.top}px`,
-                                                                                    left: `${tooltipPos.left}px`,
-                                                                                    transform: 'translate(-50%, -110%)',
-                                                                                }}
-                                                                            >
-                                                                                {tooltipPos.text}
-                                                                            </div>
-                                                                        )}
-                                                                    </span>
-                                                                    <span className="relative"
-                                                                        onMouseEnter={(e) => {
-                                                                            const rect = e.currentTarget.getBoundingClientRect();
-                                                                            setTooltipPos({ top: rect.top, left: rect.left + rect.width / 2, text: 'Delete the current file' });
-                                                                        }}
-                                                                        onMouseLeave={() => setTooltipPos(null)}>
                                                                         <Button
                                                                             className="rounded-none px-4 py-2 relative"
-                                                                            onDoubleClick={() => ClockdeleteFile(project.id, selectedFile.path || selectedFile.name)}
-                                                                            disabled={isSaving}
+                                                                            onDoubleClick={() => handleDownloadFile(project.id, selectedFile.path || selectedFile.name, editContent)}
+                                                                            disabled={isSaving || !editContent}
                                                                         >
-                                                                            <MinusCircle className="w-4 h-4" />
+                                                                            <Download className="w-4 h-4" />
                                                                             <span className='absolute -bottom-1 text-[7px] nz-text-muted'>Double click</span>
                                                                         </Button>
-                                                                        {tooltipPos && (
-                                                                            <div 
-                                                                                className="fixed w-max max-w-xs nz-background-accent border rounded-md shadow-lg p-2 text-xs nz-text-foreground z-50 whitespace-pre-wrap break-words pointer-events-none animate-in fade-in"
-                                                                                style={{
-                                                                                    top: `${tooltipPos.top}px`,
-                                                                                    left: `${tooltipPos.left}px`,
-                                                                                    transform: 'translate(-50%, -110%)',
-                                                                                }}
+                                                                        <span className="relative"
+                                                                            onMouseEnter={(e) => {
+                                                                                const rect = e.currentTarget.getBoundingClientRect();
+                                                                                setTooltipPos({ top: rect.top, left: rect.left + rect.width / 2, text: 'Open fullscreen the file' });
+                                                                            }}
+                                                                            onMouseLeave={() => setTooltipPos(null)}>
+                                                                            <Button
+                                                                                className="relative px-4 py-2 rounded-none"
+                                                                                onClick={() =>
+                                                                                    openFile(
+                                                                                        selectedFile.name,
+                                                                                        String (currentFolder?.name + "/" + (selectedFile.path || selectedFile.name))
+                                                                                    )
+                                                                                }
                                                                             >
-                                                                                {tooltipPos.text}
-                                                                            </div>
-                                                                        )}
-                                                                    </span>
-                                                                    <Button
-                                                                        className="rounded-none rounded-r-full px-4 py-2"
-                                                                        onClick={async () => {
-                                                                            if (!selectedFile?.name) {
-                                                                                showToast("error", "Error", "No path or file");
-                                                                                return;
-                                                                            }
-                                                                            await saveFile(project.id, String(currentFolder?.name + "/" + (selectedFile.path || selectedFile.name)), editContent);
-                                                                            setSaved(true);
-                                                                            setTimeout(() => setSaved(false), 1500);
-                                                                        }}
-                                                                        disabled={!isModified || isSaving}
-                                                                    >
-                                                                        {saved ? (
-                                                                            <Check className="w-4 h-4 text-green-400" />
-                                                                        ) : (
-                                                                            <Save className="w-4 h-4" />
-                                                                        )}
-                                                                    </Button>
-                                                                </div>
+                                                                                <Fullscreen className="w-4 h-4" />
+                                                                                {/* <span className='absolute -bottom-1 text-[7px] nz-text-muted'>TEHNICAL FIX</span> */}
+                                                                            </Button>
+                                                                            {tooltipPos && (
+                                                                                <div 
+                                                                                    className="fixed w-max max-w-xs nz-background-accent border rounded-md shadow-lg p-2 text-xs nz-text-foreground z-50 whitespace-pre-wrap break-words pointer-events-none animate-in fade-in"
+                                                                                    style={{
+                                                                                        top: `${tooltipPos.top}px`,
+                                                                                        left: `${tooltipPos.left}px`,
+                                                                                        transform: 'translate(-50%, -110%)',
+                                                                                    }}
+                                                                                >
+                                                                                    {tooltipPos.text}
+                                                                                </div>
+                                                                            )}
+                                                                        </span>
+                                                                        <span className="relative"
+                                                                            onMouseEnter={(e) => {
+                                                                                const rect = e.currentTarget.getBoundingClientRect();
+                                                                                setTooltipPos({ top: rect.top, left: rect.left + rect.width / 2, text: 'Delete the current file' });
+                                                                            }}
+                                                                            onMouseLeave={() => setTooltipPos(null)}>
+                                                                            <Button
+                                                                                className="rounded-none px-4 py-2 relative"
+                                                                                onDoubleClick={() => ClockdeleteFile(project.id, selectedFile.path || selectedFile.name)}
+                                                                                disabled={isSaving}
+                                                                            >
+                                                                                <MinusCircle className="w-4 h-4" />
+                                                                                <span className='absolute -bottom-1 text-[7px] nz-text-muted'>Double click</span>
+                                                                            </Button>
+                                                                            {tooltipPos && (
+                                                                                <div 
+                                                                                    className="fixed w-max max-w-xs nz-background-accent border rounded-md shadow-lg p-2 text-xs nz-text-foreground z-50 whitespace-pre-wrap break-words pointer-events-none animate-in fade-in"
+                                                                                    style={{
+                                                                                        top: `${tooltipPos.top}px`,
+                                                                                        left: `${tooltipPos.left}px`,
+                                                                                        transform: 'translate(-50%, -110%)',
+                                                                                    }}
+                                                                                >
+                                                                                    {tooltipPos.text}
+                                                                                </div>
+                                                                            )}
+                                                                        </span>
+                                                                        <Button
+                                                                            className="rounded-none rounded-r-full px-4 py-2"
+                                                                            onClick={async () => {
+                                                                                if (!selectedFile?.name) {
+                                                                                    showToast("error", "Error", "No path or file");
+                                                                                    return;
+                                                                                }
+                                                                                await saveFile(project.id, String(currentFolder?.name + "/" + (selectedFile.path || selectedFile.name)), editContent);
+                                                                                setSaved(true);
+                                                                                setTimeout(() => setSaved(false), 1500);
+                                                                            }}
+                                                                            disabled={!isModified || isSaving}
+                                                                        >
+                                                                            {saved ? (
+                                                                                <Check className="w-4 h-4 text-green-400" />
+                                                                            ) : (
+                                                                                <Save className="w-4 h-4" />
+                                                                            )}
+                                                                        </Button>
+                                                                    </div>
+                                                                )}
                                                                 <Button
                                                                     className="rounded-full px-3 py-2"
                                                                     onClick={() => setSelectedFile(null)}

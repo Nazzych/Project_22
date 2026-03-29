@@ -61,6 +61,7 @@ export type Project = {
     live_url?: string;
     technologies: string;
     status: string;
+    stars: number;
     image?: string;
     created_at: string;
 };
