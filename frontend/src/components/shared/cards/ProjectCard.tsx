@@ -1,14 +1,14 @@
 import { Settings, Pen, User, Folders, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { ProjectCardProps, Project } from '../types/projects';
-import { Card, CardHeader, CardContent } from './ui/Card';
+import { ProjectCardProps, Project } from '../../../types/projects';
+import { Card, CardHeader, CardContent } from '../../ui/Card';
 import { useRef, useState } from 'react';
-import { useModal } from '../hooks/useModal';
-import { ConfirmModal } from './shared/modal/ConfirmModal';
-import { ProjectManage } from './shared/modal/modals/projects/ProjectManage';
-import { getCsrfToken } from '../api/auth';
-import { useToast } from '../hooks/useToast';
-import { deleteProject } from '../api/projects';
+import { useModal } from '../../../hooks/useModal';
+import { ConfirmModal } from '../../shared/modal/ConfirmModal';
+import { ProjectManage } from '../../shared/modal/modals/projects/ProjectManage';
+import { getCsrfToken } from '../../../api/auth';
+import { useToast } from '../../../hooks/useToast';
+import { deleteProject } from '../../../api/projects';
 
 export const ProjectCard = ({
     id,
@@ -18,6 +18,7 @@ export const ProjectCard = ({
     title,
     technologies,
     status,
+    canEdit,
     onEdit,
     loadProjs
 }: ProjectCardProps) => {
@@ -110,15 +111,17 @@ export const ProjectCard = ({
             <CardHeader className='py-2'>
                 <div className='flex flex-row justify-between items-center py-1'>
                     <p className="flex flex-row text-xs text-muted-foreground truncate hover:underline hover:cursor-pointer"><User className='w-4 h-4 mr-1' /> @{owner.username}</p>
-                    <div className='space-x-2'>
-                        <button className='hover:nz-background-secondary p-1 rounded-full'
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onEdit?.(id);
-                                handleClick (proj)
-                            }}><Settings className="w-4 h-4" />
-                        </button>
-                    </div>
+                    {canEdit && (
+                        <div className='space-x-2'>
+                            <button className='hover:nz-background-secondary p-1 rounded-full'
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onEdit?.(id);
+                                    handleClick (proj)
+                                }}><Settings className="w-4 h-4" />
+                            </button>
+                        </div>
+                    )}
                 </div>
                 <h3 className="text-lg h-14 font-semibold nz-text-foreground line-clamp-2">{title}</h3>
             </CardHeader>

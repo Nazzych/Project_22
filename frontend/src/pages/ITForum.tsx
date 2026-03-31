@@ -6,14 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card'
 import { Skeleton } from '../components/LoadingSpinner';
 import { PostManage } from '../components/shared/modal/modals/forum/PostManage'
 import { ChannelManage } from '../components/shared/modal/modals/forum/ChannelManager'
-import { ActionsCellForum } from '../components/ActionCell';
-import { ChannelsSection } from '../components/ChannelCard'
+import { ChannelsSection } from '../components/shared/cards/ChannelCard'
+import { PostCard } from '../components/shared/cards/PostCard'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '../providers/MessageProvider'
 import { Posts, Channels } from '../types/forum'
 import { useModal } from '../hooks/useModal';
 import { useProfile } from '../contexts/ProfileContext'
-import { formatDateNumeric } from '../lib/formatDate'
 import { getCsrfToken } from '../api/auth'
 import { deletePost, deleteChannel } from '../api/forum'
 import { ConfirmModal } from '../components/shared/modal/ConfirmModal'
@@ -26,12 +25,9 @@ import {
     TrendingUp,
     Clock,
     ArrowLeft,
-    Pen,
-    Heart,
-    Repeat,
     ChevronDown,
     ChevronUp,
-    MessageCirclePlusIcon,
+    MessageCirclePlus,
     MessageCircleMore,
     Hash
 } from 'lucide-react'
@@ -138,7 +134,7 @@ export function ITForum() {
             title: (
                 <span className="flex items-center gap-2">
                     <div className="w-fit nz-background-accent rounded-lg py-1 px-4 flex flex-row justify-center items-center gap-2">
-                        <MessageCirclePlusIcon className="w-5 h-5" />
+                        <MessageCirclePlus className="w-5 h-5" />
                         <span className="nz-foreground">Create post</span>
                     </div>
                 </span>
@@ -160,8 +156,8 @@ export function ITForum() {
             title: (
                 <span className="flex items-center gap-2">
                     <div className="w-fit nz-background-accent rounded-lg py-1 px-4 flex flex-row justify-center items-center gap-2">
-                        <MessageCirclePlusIcon className="w-4 h-4" />
-                        <span className="nz-foreground line-clamp-1">Edit post - "{post.title}"</span>
+                        <MessageCirclePlus className="w-5 h-5" />
+                        <span className="w-[95%] nz-foreground line-clamp-1">Edit post - "{post.title}"</span>
                     </div>
                 </span>
             ),
@@ -183,7 +179,7 @@ export function ITForum() {
             title: (
                 <span className="flex items-center gap-2">
                     <div className="w-fit nz-background-accent rounded-lg py-1 px-4 flex flex-row justify-center items-center gap-2">
-                        <MessageCirclePlusIcon className="w-5 h-5" />
+                        <MessageCirclePlus className="w-5 h-5" />
                         <span className="nz-foreground">Create channel</span>
                     </div>
                 </span>
@@ -205,7 +201,7 @@ export function ITForum() {
             title: (
                 <span className="flex items-center gap-2">
                     <div className="w-fit nz-background-accent rounded-lg py-1 px-4 flex flex-row justify-center items-center gap-2">
-                        <MessageCirclePlusIcon className="w-5 h-5" />
+                        <MessageCirclePlus className="w-5 h-5" />
                         <span className="nz-foreground">Edit channel</span>
                     </div>
                 </span>
@@ -441,69 +437,17 @@ export function ITForum() {
                             ) : (
                                 posts.length !== 0 ? (
                                     posts.map((post) => (
-                                        <div className='mb-8'>
-                                            <div className='grid grid-cols-1 lg:grid-cols-3 gap-2'>
-                                                <div className="col-span-2 nz-background-secondary rounded-2xl p-4 max-h-[500px] space-y-4 cursor-default overflow-auto">
-                                                    <div className='relative flex items-center mb-2'>
-                                                        <div className="w-12 h-12 nz-background-accent rounded-full flex items-center justify-center text-white font-bold border-2">
-                                                            {post.author.profile.avatar_url ? <img className='rounded-full' src={post.author.profile.avatar_url} alt={post.author.username} /> : <span>{post.author.first_name[0]}{post.author.last_name[0]}</span>}
-                                                        </div>
-                                                        <div className="ml-3">
-                                                            <p className="text-white hover:underline hover:cursor-pointer">{post.author.first_name} {post.author.last_name} | <span className='text-[12px] nz-text-muted group-hover:underline'>@{post.author.username}</span></p>
-                                                            <p className="nz-text-muted text-sm">{formatDateNumeric (post.created_at)}</p>
-                                                        </div>
-                                                        {profile?.id === post.author.id && (
-                                                            <ActionsCellForum onEdit={() => OpenEditPost (post)} onDelete={() => {clickDeletePost (post.id)}} onShare={() => {}} />
-                                                        )}
-                                                    </div>
-                                                    <div className='space-y-3'>
-                                                        {/* <p className="w-fit text-xl nz-text-primary nz-background-accent font-bold mb-2 p-1 rounded-md">{post.title}</p> */}
-                                                        <p className="text-xl nz-text-primary font-bold break-words mb-2">{post.title}</p>
-                                                        {expandedPosts[post.id] && (
-                                                            <button
-                                                                onClick={() => toggleExpand(post.id)}
-                                                                className="nz-text-accent hover:underline text-sm"
-                                                            >
-                                                                <span className='flex items-center gap-1'><ChevronUp className='w-4 h-4' />Show less</span>
-                                                            </button>
-                                                        )}
-                                                        <p className={`text-justify break-words mb-3 transition-all duration-300 overflow-hidden whitespace-pre-wrap ${
-                                                            expandedPosts[post.id] ? "line-clamp-none" : "line-clamp-4"
-                                                        }`}>
-                                                            {post.content}
-                                                        </p>
-
-                                                        {post.content.split(/\r\n|\r|\n/).length > 4 && (
-                                                            <button
-                                                                onClick={() => toggleExpand(post.id)}
-                                                                className="nz-text-accent hover:underline text-sm"
-                                                            >
-                                                                {expandedPosts[post.id] 
-                                                                    ? <span className='flex items-center gap-1'><ChevronUp className='w-4 h-4' />Show less</span> 
-                                                                    : <span className='flex items-center gap-1'><ChevronDown className='w-4 h-4' />Show more</span>
-                                                                }
-                                                            </button>
-                                                        )}
-                                                    </div>
-                                                    <div className="flex justify-between gap-2 nz-text-muted text-sm">
-                                                        <div className='flex gap-6'>
-                                                            <button className="flex items-center hover:text-blue-400 gap-2"><MessageSquare className='w-5 h-5' />{post.views_count}</button>
-                                                            <button className="flex items-center hover:text-red-400 gap-2"><Heart className='w-5 h-5' />{post.likes_count}</button>
-                                                            <button className="flex items-center hover:text-green-400 gap-2"><Repeat className='w-5 h-5' />{post.dislikes_count}</button>
-                                                        </div>
-                                                        {post.is_edited && (
-                                                            <span className='flex items-center text-[10px] nz-text-secondary italic gap-1'><Pen className='w-3 h-3' />Edited</span>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                                <div className="col-span-1 overflow-y-auto max-h-[500px] hidden lg:block">
-                                                    <div className="md:col-span-1 h-full overflow-hidden rounded-2xl bg-gradient-to-br from-gray-900 to-black flex items-center justify-center">
-                                                        <p className="text-gray-500 text-sm">Media placeholder</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <hr className='border-2 mt-4 rounded-xl' />
-                                        </div>
+                                        <PostCard
+                                            key={post.id}
+                                            logo={post.author.profile.avatar_url}
+                                            name={`${post.author.first_name} ${post.author.last_name}`}
+                                            post={post}
+                                            expandedPosts={expandedPosts}
+                                            toggleExpand={toggleExpand}
+                                            OpenEditPost={OpenEditPost}
+                                            clickDeletePost={clickDeletePost}
+                                            profile={profile}
+                                        />
                                     ))
                                 ) : (
                                     <div className="flex flex-row items-center justify-center py-6 text-center nz-foreground gap-2">
@@ -512,22 +456,6 @@ export function ITForum() {
                                     </div>
                                 )
                             )}
-                            {/* <div className="space-y-3">
-                                {FORUM_POSTS.slice(0, 5).map((post) => (
-                                    <PostCard
-                                        key={post.id}
-                                        title={post.title}
-                                        author={post.author}
-                                        avatar={post.avatar}
-                                        date={post.date}
-                                        views={post.views}
-                                        likes={post.likes}
-                                        commentCount={post.comments.length}
-                                        category={post.category}
-                                        onClick={() => navigate(`/forum/post/${post.id}`)}
-                                    />
-                                ))}
-                            </div> */}
                         </div>
                     </motion.div>
                 ) : (

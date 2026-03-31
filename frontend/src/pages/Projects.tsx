@@ -5,7 +5,7 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { useModal } from '../hooks/useModal';
 import { ProgressBar } from '../components/ui/ProgressBar';
-import { ProjectCard } from '../components/ProjectCard';
+import { ProjectCard } from '../components/shared/cards/ProjectCard';
 import { useNavigate } from 'react-router-dom';
 import { Search, FolderGit2, Folder, Plus, X, Flame, CheckCircle, Star, Layers2, Code2, XCircle } from 'lucide-react';
 import { useProfile } from '../contexts/ProfileContext';
@@ -202,6 +202,7 @@ export function ProjectsHub() {
                                                         status={card.status}
                                                         image={card.image}
                                                         owner={card.owner}
+                                                        canEdit={false}
                                                         loadProjs={() => {}}
                                                     />
                                                 ))}
@@ -228,6 +229,7 @@ export function ProjectsHub() {
                                                                 status={card.status}
                                                                 image={card.image}
                                                                 owner={card.owner}
+                                                                canEdit={true}
                                                                 loadProjs={() => {}}
                                                             />
                                                         ))}

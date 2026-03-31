@@ -105,6 +105,10 @@ def delete_challenge (request, chellange_id):
         }, status = Statuse.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+#.
+
+
+
 #?Клас DRF-CRUD завданнями як адміністратор.
 # class ChellangeViewSet (viewsets.ModelViewSet):
 #     queryset = Challange.objects.all()

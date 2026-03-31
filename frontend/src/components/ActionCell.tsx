@@ -236,7 +236,7 @@ export function ActionsCellInChannel({ onEdit, onDelete }: ActionsCellPropsForum
 
                     <button 
                         onClick={(e) => { e.stopPropagation(); setOpen(false); onDelete(); }} 
-                        className="flex items-center w-full text-left px-3 py-2 hover:nz-background-primary"
+                        className="flex items-center w-full text-left px-3 py-2 hover:nz-background-primary rounded-b-md"
                     >
                         <Trash2 className='w-4 h-4 mr-2' /> Delete
                     </button>
