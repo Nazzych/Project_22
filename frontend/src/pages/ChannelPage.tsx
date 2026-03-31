@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Users, ChevronDown, ChevronUp, SendHorizonal, MessageCirclePlusIcon, MessageSquare, Pen, Heart, Repeat, MessageCircleMore, Share2, VolumeOff, XCircle } from 'lucide-react';
+import { ArrowLeft, Users, ChevronDown, ChevronUp, SendHorizonal, MessageCirclePlusIcon, MessageSquare, Pen, Heart, Repeat, MessageCircleMore, Share2, VolumeOff, XCircle, BadgeCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import { cn } from '../lib/cn';
 
-import { Button } from '../components/ui/Button';
-import { Textarea } from '../components/ui/Textarea';
 import { PostManage } from '../components/shared/modal/modals/forum/PostManage'
+import { ChannelManage } from '../components/shared/modal/modals/forum/ChannelManager';
 import { ConfirmModal } from '../components/shared/modal/ConfirmModal'
+import { ActionsCellInChannel } from '../components/ActionCell';
+import { PostCard } from '../components/shared/cards/PostCard';
+import { Textarea } from '../components/ui/Textarea';
+import { Button } from '../components/ui/Button';
 import { formatDateNumeric } from '../lib/formatDate';
 import { getChannel, getChannelPosts, deletePost, deleteChannel } from '../api/forum';
 import { getCsrfToken } from '../api/auth';
@@ -16,8 +19,7 @@ import { Channels, Posts } from '../types/forum';
 import { useToast } from '../providers/MessageProvider';
 import { useModal } from '../hooks/useModal';
 import { useProfile } from '../contexts/ProfileContext';
-import { ActionsCellForum, ActionsCellInChannel } from '../components/ActionCell';
-import { ChannelManage } from '../components/shared/modal/modals/forum/ChannelManager';
+import { Tooltip } from '../components/Tooltip';
 
 
 export function ChannelPage () {
@@ -259,7 +261,7 @@ export function ChannelPage () {
                                 </div>
                             )}
                         </div>
-                        <div className="nz-background-accent p-1 space-y-2 rounded-xl">
+                        <div className="hidden lg:block nz-background-accent p-1 space-y-2 rounded-xl">
                             <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2 tracking-tight line-clamp-2">
                                 {channel.name}
                             </h2>
@@ -273,6 +275,15 @@ export function ChannelPage () {
                             </div>
                         </div>
                     </div>
+                    {channel.owner.is_staff && (
+                        <div className="absolute top-16 right-5">
+                            <Tooltip text="Verified Channel">
+                                <span className="p-2 flex items-center justify-center nz-background-accent rounded-full" onClick={(e) => e.stopPropagation()}>
+                                    <BadgeCheck className="w-6 h-6" />
+                                </span>
+                            </Tooltip>
+                        </div>
+                    )}
                     <button 
                         onClick={() => setShowLogoModal(false)} 
                         className="absolute top-6 right-6 text-white text-xl hover:text-zinc-300"
@@ -299,7 +310,7 @@ export function ChannelPage () {
                 <div className="relative p-6 pt-14 h-full flex flex-col">
                     <div className="flex flex-wrap items-start gap-5 flex-1">
                         {/* Аватар */}
-                        <div onClick={() => setShowLogoModal(true)} className="w-24 h-24 rounded-2xl bg-zinc-800 border-4 border-zinc-900 overflow-hidden flex-shrink-0">
+                        <div onClick={() => setShowLogoModal(true)} className="w-24 h-24 rounded-2xl bg-zinc-800 border-4 border-zinc-900 overflow-hidden flex-shrink-0 cursor-pointer">
                             {channel.logo ? (
                                 <img src={channel.logo} alt={channel.name} className="w-full h-full object-cover" />
                             ) : (
@@ -334,8 +345,8 @@ export function ChannelPage () {
                                         className="mt-6 overflow-hidden"
                                     >
                                         <span className="text-xs text-zinc-500 block">Description</span>
-                                        <p className="text-zinc-200 leading-relaxed text-[15.2px]">
-                                            {channel.description || "Опис каналу відсутній."}
+                                        <p className="text-zinc-200 leading-relaxed font-medium">
+                                            {channel.description || "No description available."}
                                         </p>
                                         <div className="mt-6 flex flex-wrap gap-x-8 gap-y-3 text-sm text-zinc-400">
                                             <div>
@@ -362,6 +373,15 @@ export function ChannelPage () {
                         </div>
                     </div>
                 </div>
+                {channel.owner.is_staff && (
+                    <div className="absolute top-4 left-28">
+                        <Tooltip text="Verified Channel">
+                            <span className="p-2 flex items-center justify-center nz-background-accent rounded-full" onClick={(e) => e.stopPropagation()}>
+                                <BadgeCheck className="w-4 h-4" />
+                            </span>
+                        </Tooltip>
+                    </div>
+                )}
                 <Link to="/forum">
                     <Button variant="btn_glass" size="sm" className="absolute top-4 left-4">
                         <ArrowLeft className="w-4 h-4 mr-2" />
@@ -391,68 +411,17 @@ export function ChannelPage () {
                 </div>
                 {posts && posts.length > 0 ? (
                     posts.map((post) => (
-                        <div className='mb-8'>
-                            <div className='grid grid-cols-1 lg:grid-cols-3 gap-2'>
-                                <div className="col-span-2 nz-background-secondary rounded-2xl p-4 max-h-[500px] space-y-4 cursor-default overflow-auto">
-                                    <div className='relative flex items-center mb-2'>
-                                        <div className="w-12 h-12 nz-background-accent rounded-full flex items-center justify-center text-white font-bold border-2">
-                                            {channel.logo ? <img className='rounded-full object-cover w-full h-full' src={channel.logo} alt={post.author.username} /> : <span>{post.author.first_name[0]}{post.author.last_name[0]}</span>}
-                                        </div>
-                                        <div className="ml-3">
-                                            <p className="pr-8 text-white line-clamp-1">{channel.name}</p>
-                                            <p className="nz-text-muted text-sm">{formatDateNumeric (post.created_at)} | <span className='text-[12px] nz-text-muted hover:underline hover:nz-text-hover hover:cursor-pointer'>@{post.author.username}</span></p>
-                                        </div>
-                                        {profile?.id === post.author.id && (
-                                            <ActionsCellForum onEdit={() => OpenEditPost (post)} onDelete={() => {clickDeletePost (post.id)}} onShare={() => {}} />
-                                        )}
-                                    </div>
-                                    <div className='space-y-3'>
-                                        <p className="text-xl nz-text-primary font-bold break-words mb-2">{post.title}</p>
-                                        {expandedPosts[post.id] && (
-                                            <button
-                                                onClick={() => toggleExpand(post.id)}
-                                                className="nz-text-accent hover:underline text-sm"
-                                            >
-                                                <span className='flex items-center gap-1'><ChevronUp className='w-4 h-4' />Show less</span>
-                                            </button>
-                                        )}
-                                        <p className={`text-justify break-words mb-3 transition-all duration-300 overflow-hidden whitespace-pre-wrap ${
-                                            expandedPosts[post.id] ? "line-clamp-none" : "line-clamp-4"
-                                        }`}>
-                                            {post.content}
-                                        </p>
-
-                                        {post.content.split(/\r\n|\r|\n/).length > 4 && (
-                                            <button
-                                                onClick={() => toggleExpand(post.id)}
-                                                className="nz-text-accent hover:underline text-sm"
-                                            >
-                                                {expandedPosts[post.id] 
-                                                    ? <span className='flex items-center gap-1'><ChevronUp className='w-4 h-4' />Show less</span> 
-                                                    : <span className='flex items-center gap-1'><ChevronDown className='w-4 h-4' />Show more</span>
-                                                }
-                                            </button>
-                                        )}
-                                    </div>
-                                    <div className="flex justify-between gap-2 nz-text-muted text-sm">
-                                        <div className='flex gap-6'>
-                                            <button className="flex items-center hover:text-blue-400 gap-2"><MessageSquare className='w-5 h-5' />{post.views_count}</button>
-                                            <button className="flex items-center hover:text-red-400 gap-2"><Heart className='w-5 h-5' />{post.likes_count}</button>
-                                            <button className="flex items-center hover:text-green-400 gap-2"><Repeat className='w-5 h-5' />{post.dislikes_count}</button>
-                                        </div>
-                                        {post.is_edited && (
-                                            <span className='flex items-center text-[10px] nz-text-secondary italic gap-1'><Pen className='w-3 h-3' />Edited</span>
-                                        )}
-                                    </div>
-                                </div>
-                                <div className="col-span-1 overflow-y-auto max-h-[500px] hidden lg:block">
-                                    <div className="md:col-span-1 h-full overflow-hidden rounded-2xl bg-gradient-to-br from-gray-900 to-black flex items-center justify-center">
-                                        <p className="text-gray-500 text-sm">Media placeholder</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <hr className='border-2 mt-4 rounded-xl' />
-                        </div>
+                        <PostCard
+                            logo={channel.logo}
+                            name={channel.name}
+                            key={post.id}
+                            post={post}
+                            expandedPosts={expandedPosts}
+                            toggleExpand={toggleExpand}
+                            OpenEditPost={OpenEditPost}
+                            clickDeletePost={clickDeletePost}
+                            profile={profile}
+                        />
                     ))
                 ) : (
                     <p className="text-muted-foreground text-center py-16">

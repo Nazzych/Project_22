@@ -4,11 +4,10 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Select';
 import { Button } from '../components/ui/Button';
-import { ChallengeCard } from '../components/ChellangeCard';
 import { useToast } from '../hooks/useToast';
 import { Tasks } from '../types/tasks';
 import { tasksList } from '../api/tasks';
-import { LoadingSpinner } from '../components/LoadingSpinner';
+import { Skeleton } from '../components/LoadingSpinner';
 
 export function CoursesList() {
     const { showToast } = useToast();
@@ -85,7 +84,7 @@ export function CoursesList() {
                 className="space-y-8"
             >
                 <div className="space-y-8">
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div className="flex flex-wrap justify-between items-start md:items-center gap-4">
                         <div>
                             <h1 className="text-3xl font-bold nz-foreground flex items-center gap-3">
                                 <Library className="h-8 w-8 text-primary" />
@@ -160,10 +159,14 @@ export function CoursesList() {
 
                     {/* Список завдань */}
                     <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {/* {loading ? (
-                            <div className="col-span-full flex justify-center items-center py-12">
-                                <LoadingSpinner text="Завантаження завдань..." />
-                            </div>
+                        {loading ? (
+                            Array.from({ length: 8 }).map((_, idx) => (
+                                <div key={idx} className="w-full">
+                                    <Skeleton className="h-32 w-full mb-4" />
+                                    <Skeleton className="h-6 w-3/4 mb-2" />
+                                    <Skeleton className="h-4 w-1/2" />
+                                </div>
+                            ))
                         ) : filteredTasks.length === 0 ? (
                             <div className="col-span-full flex flex-col items-center justify-center py-12 text-center nz-foreground">
                                 <XCircle className="w-12 h-12 mb-4 text-muted-foreground" />
@@ -174,14 +177,11 @@ export function CoursesList() {
                             </div>
                         ) : (
                             filteredTasks.map((card) => (
-                                <ChallengeCard
-                                    key={card.id}
-                                    is_staff={false}
-                                    challenge={card}
-                                    loadChallenges={loadTasks}
-                                />
+                                <div key={card.id} className="col-span-1">
+                                    <p className="text-lg font-bold">{card.title}</p>
+                                </div>
                             ))
-                        )} */}
+                        )}
                     </div>
                 </div>
             </motion.div>

@@ -11,7 +11,7 @@ export function Tooltip({ children, text }: { children: React.ReactNode; text: s
                 onMouseEnter={() => {
                     if (ref.current) {
                         const rect = ref.current.getBoundingClientRect();
-                        setPos({ top: rect.top - 10, left: rect.left + rect.width / 2 });
+                        setPos({ top: rect.top - 5, left: rect.left + rect.width / 2 });
                     }
                 }}
                 onMouseLeave={() => setPos(null)}
@@ -20,7 +20,7 @@ export function Tooltip({ children, text }: { children: React.ReactNode; text: s
             </span>
             {pos && (
                 <div
-                    className="fixed nz-background-accent border rounded-md shadow-lg p-2 text-xs nz-text-foreground z-50"
+                    className="fixed nz-background-accent border rounded-md shadow-lg p-1 text-xs text-center nz-text-foreground z-50"
                     style={{ top: pos.top, left: pos.left, transform: "translate(-50%, -100%)" }}
                 >
                     {text}

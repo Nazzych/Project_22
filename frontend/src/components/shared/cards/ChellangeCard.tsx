@@ -3,14 +3,14 @@ import {
     XCircle, Code2, Pen, Tag, Trophy, Circle, CheckCircle, MoreVertical
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardHeader, CardContent } from './ui/Card';
-import { useModal } from '../hooks/useModal';
-import { ConfirmModal } from './shared/modal/ConfirmModal';
-import { getCsrfToken } from '../api/auth';
-import { useToast } from '../providers/MessageProvider';
-import { ChallangeManage } from './shared/modal/modals/admin/ChallangeManage';
-import { deleteTask } from '../api/admin';
-import { cn } from '../lib/cn';
+import { Card, CardHeader, CardContent } from '../../ui/Card';
+import { useModal } from '../../../hooks/useModal';
+import { ConfirmModal } from '../../shared/modal/ConfirmModal';
+import { getCsrfToken } from '../../../api/auth';
+import { useToast } from '../../../providers/MessageProvider';
+import { ChallangeManage } from '../../shared/modal/modals/admin/ChallangeManage';
+import { deleteTask } from '../../../api/admin';
+import { cn } from '../../../lib/cn';
 
 interface ChallengeCardProps {
     challenge: any;

@@ -16,6 +16,7 @@ export type ProjectCardProps = {
         id: string;
         username: string;
     };
+    canEdit?: boolean;
     onEdit?: (projectId: number) => void;
     loadProjs: any;
 };

@@ -27,7 +27,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             navigate('/');
         } catch (error) {
             if (!hasShown.current) {
-                showToast('error', 'Реєстрація не вдалася', 'Перевірте введені дані або спробуйте пізніше.');
+                showToast('error', 'Not success register', 'Check data try again later.');
                 hasShown.current = true;
             }
             console.error('Register failed', error);
@@ -50,12 +50,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             });
             navigate('/');
             if (!hasShown.current) {
-                showToast('success', 'Успішний вхід', 'Ви успішно увійшли до системи, вітаємо.');
+                showToast('success', 'Success entered', 'You have successfully logged in, welcome.');
                 hasShown.current = true;
             }
         } catch (error) {
             if (!hasShown.current) {
-                showToast('error', 'Помилка входу', 'Перевірте e-mail та пароль.');
+                showToast('error', 'Login failed', 'Please check your email and password.');
                 hasShown.current = true;
             }
             console.error('Login failed', error);
@@ -72,7 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             navigate('/login');
         } catch (error) {
             if (!hasShown.current) {
-                showToast('error', 'Помилка виходу', 'Спробуйте ще раз.');
+                showToast('error', 'Logout failed', 'Please try again.');
                 hasShown.current = true;
             }
             console.error('Logout failed', error);

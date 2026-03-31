@@ -15,7 +15,8 @@ import { ProjectsHub } from '../pages/Projects';
 import ProjectPage from '../pages/ProjectPage';
 import { ITForum } from '../pages/ITForum';
 import { ChannelPage } from '../pages/ChannelPage';
-import { AdminPanel } from '../pages/Administrator';
+// import { AdminPanel } from '../pages/Administrator';
+import AdminPanel from '../pages/admin/AdminPanel'
 import { AdminRoute } from './ProtectedRoute';
 
 export default function AppRoutes() {
