@@ -1,11 +1,10 @@
 import React, { useState } from 'react'
 import {
-    FileText, File, MessageCircle, Tag, Github, Globe, ImagePlus, XIcon, Trash2
+    FileText, File, MessageCircle, Tag, Github, Globe, ImagePlus, XIcon, Trash2, Info
 } from 'lucide-react';
 import { Button } from '../../../../ui/Button';
 import { Input } from '../../../../ui/Input';
 import { Textarea } from '../../../../ui/Textarea';
-import { Select } from '../../../../ui/Select';
 import { LoadingSpinner } from '../../../../LoadingSpinner';
 import { useToast } from '../../../../../providers/MessageProvider';
 import { useModal } from '../../../../../hooks/useModal';
@@ -79,6 +78,11 @@ export function PostManage({ onSuccess, onDelete, post, content, channel }: Post
         <form onSubmit={handleSubmit}>
             {/* Content */}
             <div className="space-y-6 px-2 overflow-y-hidden">
+                {post && (
+                    <div className="space-y-2 line-clamp-1 overflow-hidden">
+                        <h1 className="flex items-center text-lg gap-2 line-clamp-1"><Info className="w-4 h-4" />Edit Post of -<span className="flex items-center nz-text-muted text-md font-semibold"><img src={post.author?.profile.avatar_url} alt={post.author?.username} className="w-8 h-8 rounded-full mr-2" /> @{post.author?.username}</span></h1>
+                    </div>
+                )}
                 <div className="space-y-2">
                     <label className="flex items-center text-sm font-medium"><FileText className='w-4 h-4 mr-2'/>Create title for your post</label>
                     <div className='space-y-1'>

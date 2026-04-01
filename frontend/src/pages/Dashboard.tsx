@@ -77,7 +77,7 @@ export function Dashboard() {
                 <div className="lg:col-span-2">
                     <h1 className='flex flex-row items-center nz-text-primary gap-2 ml-1 mb-4 text-xl font-bold'>
                         <Crown className="h-5 w-5" />
-                        Топ гравців
+                        Top players
                     </h1>
                     <Card size='wf'>
                         <CardContent className="space-y-6 mt-6">
@@ -85,8 +85,8 @@ export function Dashboard() {
                                 {[1, 2, 3].map((i) => (
                                     <div key={i} className="text-center p-4 border rounded-lg nz-background-primary nz-text-primary">
                                         {/* <Avatar className="mx-auto mb-3" fallback={`#${i}`} /> */}
-                                        <div className="font-medium">Гравець {i}</div>
-                                        <div className="text-sm nz-foreground">8{5 - i}0 балів</div>
+                                        <div className="font-medium">Player {i}</div>
+                                        <div className="text-sm nz-foreground">8{5 - i}0 points</div>
                                     </div>
                                 ))}
                             </div>
@@ -94,18 +94,18 @@ export function Dashboard() {
                             <div className="w-full p-4 border rounded-lg flex items-center justify-between nz-background-accent nz-text-accent">
                                 <div className="flex items-center gap-4">
                                     <div className="text-center">
-                                        <div className="text-sm nz-foreground">Місце</div>
+                                        <div className="text-sm nz-foreground">Rank</div>
                                         <div className="text-2xl font-bold">#18</div>
                                     </div>
                                     {/* <Avatar fallback="You" /> */}
                                     <div>
-                                        <div className="font-medium">Ви</div>
-                                        <div className="text-sm nz-foreground">Продовжуй</div>
+                                        <div className="font-medium">You</div>
+                                        <div className="text-sm nz-foreground">Keep it up</div>
                                     </div>
                                 </div>
                                 <div className="text-right">
                                     <div className="text-xl font-bold">4,320</div>
-                                    <div className="text-sm nz-foreground">балів</div>
+                                    <div className="text-sm nz-foreground">points</div>
                                 </div>
                             </div>
                         </CardContent>
@@ -116,11 +116,11 @@ export function Dashboard() {
                         <div className="flex items-center justify-between mb-4">
                             <h2 className="text-xl font-bold flex items-center gap-2 nz-text-primary ml-1 text-xl font-bold">
                                 <Code2 className="h-5 w-5" />
-                                Активні задачі
+                                Active challenges
                             </h2>
                             <Link to="/challenges" className='flex flex-row items-center gap-2'>
                                 <Button variant="btn_glass" size="sm">
-                                    Усі <ArrowRight className="ml-2 h-4 w-4" />
+                                    All <ArrowRight className="ml-2 h-4 w-4" />
                                 </Button>
                             </Link>
                         </div>
@@ -129,7 +129,7 @@ export function Dashboard() {
                             {[1, 2].map((i) => (
                                 <Card size='wf'
                                     key={i}
-                                    title={`Задача-приклад ${i}`}>
+                                    title={`Challenge Example ${i}`}>
                                         <CardContent className="pt-6 text-center">
                                             <h3 className="text-left font-semibold mb-4">{i}</h3>
                                             <p className='text-lg font-semibold'>Given the head of a singly linked list, reverse the list, and return the reversed list.</p>
@@ -144,7 +144,7 @@ export function Dashboard() {
                 <div className="space-y-3.5 lg:col-span-1">
                     {/* Навички */}
                     <h1 className='flex flex-row items-center nz-text-primary ml-1 text-xl font-bold'>
-                        Навички
+                        Skills
                     </h1>
                     <Card size='wf' variant='card_primary'>
                         <CardContent className="space-y-10 pt-7">
@@ -157,18 +157,18 @@ export function Dashboard() {
                     {/* Тижневий прогрес — круглий індикатор захардкоджений */}
                     <Card size='wf' variant='card_primary'>
                         <CardContent className="pt-6 text-center">
-                            <h3 className="font-semibold mb-4">Тижнева ціль</h3>
+                            <h3 className="font-semibold mb-4">Weekly Goal</h3>
                             <div className='flex flex-row'>
                                 <div className="mx-auto w-28 h-28 rounded-full border-8 nz-border"></div>
                                 <div>
                                     <div className='flex items-center justify-center'>
                                         <div className="text-3xl font-bold nz-text-accent">3</div>
                                         <div className="text-md nz-foreground">
-                                            з 5
+                                            of 5
                                         </div>
                                     </div>
                                     <p className="mt-8 text-sm nz-foreground">
-                                        Залишилось <span className='font-bold nz-text-secondary'>2</span> задачі
+                                        Remaining <span className='font-bold nz-text-secondary'>2</span> challenges
                                     </p>
                                 </div>
                             </div>

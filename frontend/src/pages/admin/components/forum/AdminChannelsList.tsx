@@ -125,7 +125,7 @@ export default function AdminChannelsList() {
 
                                 {/* Verified badge */}
                                 {channel.owner.is_staff && (
-                                    <div className="absolute top-2 right-1 md:top-3 md:right-2">
+                                    <div className="absolute top-2 md:top-3 right-12">
                                         <Tooltip text="Verified Channel">
                                             <span className="p-2 flex items-center justify-center nz-background-accent rounded-full" onClick={(e) => e.stopPropagation()}>
                                                 <BadgeCheck className="w-4 h-4" />
@@ -145,8 +145,8 @@ export default function AdminChannelsList() {
                                     <span>{channel.subscribers.toLocaleString() || 0} subscribers</span>
                                 </div>
                                 
-                                <div className="absolute top-2 right-10">
-                                    {profile?.id === channel.owner?.id && (
+                                <div className="absolute top-2 right-2">
+                                    {(profile?.id === channel.owner?.id || profile?.is_staff) && (
                                         <ActionsCellChannel onEdit={() => {OpenEditChannel(channel)}} onDelete={() => {clickDeleteChannel(channel.id)}} onShare={() => {}} />
                                     )}
                                 </div>
