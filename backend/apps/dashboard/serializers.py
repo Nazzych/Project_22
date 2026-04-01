@@ -1,10 +1,10 @@
 # # serializers.py (admin).
 # from apps.users.serializers import UserSerializer
 # from rest_framework import serializers
-# from .models import 
+# from apps.forum.models import Channel
 
 # #Клас серелізатора проекту.
 # class AdminSerializer (serializers.ModelSerializer):
 #     class Meta:
-#         model = 
-#         fields = ["", "", "", ""]
+#         model = Channel
+#         fields = ["id", "name", "description", "owner"]

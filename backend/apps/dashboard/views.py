@@ -12,6 +12,8 @@ from rest_framework import viewsets, status as Statuse
 from storage3.exceptions import StorageApiError
 from users.permissions import isAuthenticated, IsAdministrator
 from apps.task.models import Challange
+from apps.forum.serializers import ChannelSerializer
+from apps.forum.models import Channel
 from apps.task.serializers import ChellangeSerializer
 from .permissions import IsAdminOrReadOnly
 import traceback, json, os, re
@@ -106,8 +108,74 @@ def delete_challenge (request, chellange_id):
 
 
 #.
+@api_view (["GET"])
+@require_http_methods (["GET"])
+@permission_classes ([IsAdminOrReadOnly])
+def get_unupproved_channels (reguest):
+    try:
+        channels = Channel.objects.filter (is_approved = False)
+        serializer = ChannelSerializer (channels, many = True)
+        return Response (serializer.data)
+    except Channel.DoesNotExist:
+        return Response ({
+            "type": "error",
+            "message": "Channels not found"
+        }, status = Statuse.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        print ("Error geting channels:", str (e))
+        return Response ({
+            "type": "error",
+            "message": f"Server error: {str (e)}"
+        }, status = Statuse.HTTP_500_INTERNAL_SERVER_ERROR)
 
+@api_view (["PUT"])
+@require_http_methods (["PUT"])
+@permission_classes ([IsAdminOrReadOnly])
+def approve_channel (request, channel_id):
+    try:
+        channel = Channel.objects.get (id = int (channel_id))
+        channel.is_approved = True
+        channel.save()
 
+        return Response ({
+            "type": "success",
+            "message": "Challenge approved successfully"
+        }, status = Statuse.HTTP_200_OK)
+    except Channel.DoesNotExist:
+        return Response ({
+            "type": "error",
+            "message": "Challenge not found"
+        }, status = Statuse.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        print ("Error approving channel:", str (e))
+        return Response ({
+            "type": "error",
+            "message": f"Server error: {str (e)}"
+        }, status = Statuse.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view (["PUT"])
+@require_http_methods (["PUT"])
+@permission_classes ([IsAdminOrReadOnly])
+def reject_channel (request, channel_id):
+    try:
+        channel = Channel.objects.get (id = int (channel_id))
+        channel.delete()
+
+        return Response ({
+            "type": "success",
+            "message": "Challenge rejected successfully"
+        }, status = Statuse.HTTP_200_OK)
+    except Channel.DoesNotExist:
+        return Response ({
+            "type": "error",
+            "message": "Challenge not found"
+        }, status = Statuse.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        print ("Error rejecting channel:", str (e))
+        return Response ({
+            "type": "error",
+            "message": f"Server error: {str (e)}"
+        }, status = Statuse.HTTP_500_INTERNAL_SERVER_ERROR)
 
 #?Клас DRF-CRUD завданнями як адміністратор.
 # class ChellangeViewSet (viewsets.ModelViewSet):

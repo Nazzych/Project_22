@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import {
-    FileText, File, MessageCircle, Tag, Github, Globe, ImagePlus, XIcon, Trash2
+    FileText, File, MessageCircle, Tag, Github, Globe, ImagePlus, XIcon, Trash2,
+    Info
 } from 'lucide-react';
 import { Button } from '../../../../ui/Button';
 import { Input } from '../../../../ui/Input';
@@ -79,6 +80,11 @@ export function ChannelManage({ onSuccess, onDelete, channel }: ChannellFormProp
     return (
         <form onSubmit={handleSubmit}>
             <div className="space-y-6 px-2">
+                {channel && (
+                    <div className="space-y-2 line-clamp-1 overflow-hidden">
+                        <h1 className="flex items-center text-lg gap-2 line-clamp-1"><Info className="w-4 h-4" />Edit Channel of -<span className="flex items-center nz-text-muted text-md font-semibold"><img src={channel.owner?.profile.avatar_url} alt={channel.owner?.username} className="w-8 h-8 rounded-full mr-2" /> @{channel.owner?.username}</span></h1>
+                    </div>
+                )}
                 <div>
                     <label className="block text-sm font-medium mb-1">Channel name</label>
                     <Input

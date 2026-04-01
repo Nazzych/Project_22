@@ -25,3 +25,25 @@ export async function deleteTask(id: string) {
     });
     return response.data;
 }
+
+// Отримати всі завдання
+export async function getUnapprovedTasks() {
+    const response = await axios.get(`${API_BASE}/admin/task/unapproved/`, {
+        withCredentials: true,
+    });
+    return response.data;
+}
+
+export async function acceptTask(channelId: number) {
+    const response = await axios.put(`${API_BASE}/admin/task/accept/${channelId}/`, {}, {
+        withCredentials: true,
+    });
+    return response.data;
+}
+
+export async function rejectTask(channelId: number) {
+    const response = await axios.put(`${API_BASE}/admin/task/reject/${channelId}/`, {}, {
+        withCredentials: true,
+    });
+    return response.data;
+}
