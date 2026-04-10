@@ -11,6 +11,7 @@ import { Dashboard } from '../pages/Dashboard';
 import { Profile } from '../pages/Profile';
 import { ChallengeList } from '../pages/ChallengeList';
 import { CoursesList } from '../pages/CoursesList';
+import { CoursePage } from '../pages/CoursePage';
 import { ProjectsHub } from '../pages/Projects';
 import ProjectPage from '../pages/ProjectPage';
 import { ITForum } from '../pages/ITForum';
@@ -18,6 +19,7 @@ import { ChannelPage } from '../pages/ChannelPage';
 // import { AdminPanel } from '../pages/Administrator';
 import AdminPanel from '../pages/admin/AdminPanel'
 import { AdminRoute } from './ProtectedRoute';
+import ChallengePage from '../pages/ChallengePage';
 
 export default function AppRoutes() {
     return (
@@ -31,7 +33,9 @@ export default function AppRoutes() {
                     <Route path="/" element={<Dashboard />} />
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/challenges" element={<ChallengeList />} />
+                    <Route path="/challenge/:challengeId/:slug" element={<ChallengePage />} />
                     <Route path="/courses" element={<CoursesList />} />
+                    <Route path="/courses/:courseId/" element={<CoursePage />} />
                     <Route path="/projects" element={<ProjectsHub />} />
                     <Route path="/projects/:ownerId/:projectIdSlug" element={<ProjectPage />} />
                     <Route path="/forum" element={<ITForum />} />

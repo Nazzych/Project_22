@@ -9,4 +9,7 @@ export type Tasks = {
     code: string;
     difficul: string;
     language: string;
+    points: number;
+    created_at: string;
+    updated_at: string;
 };

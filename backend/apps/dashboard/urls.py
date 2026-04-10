@@ -11,9 +11,18 @@ from . import views
 #Налаштування силок.
 urlpatterns = [
     #?path ("", include (router.urls))
-    path ("task/add", views.add_challenge, name = "add_challenge"),
-    path ("task/del/<int:chellange_id>/", views.delete_challenge, name = "delete_challenge"),
-    path ("task/unapproved/", views.get_unupproved_channels, name = "get_unapproved_channels"),
-    path ("task/accept/<int:channel_id>/", views.approve_channel, name = "approve_channel"),
-    path ("task/reject/<int:channel_id>/", views.reject_channel, name = "reject_channel"),
+    path ("users/", views.get_users, name = "users"),
+    path ("user/update/<int:user_id>/", views.update_user, name = "users"),
+    path ("task/add", views.add_challenge, name = "add-challenge"),
+    path ("task/update/<int:challenge_id>/", views.update_challange, name = "update-challange"),
+    path ("task/del/<int:challenge_id>/", views.delete_challenge, name = "delete-challenge"),
+    path ("task/unapproved/", views.get_unupproved_channels, name = "get-unapproved-channels"),
+    path ("task/accept/<int:channel_id>/", views.approve_channel, name = "approve-channel"),
+    path ("task/reject/<int:channel_id>/", views.reject_channel, name = "reject-channel"),
+    path ("courses/", views.get_courses, name = "courses"),
+    path ("course/<int:course_id>/", views.get_course, name = "course"),
+    path ("course/add/", views.add_course, name = "course-add"),
+    path ("course/edit/<int:course_id>/", views.edit_course, name = "course-edit"),
+    path ("course/del/<int:course_id>/", views.delete_course, name = "course-delete"),
+    path ("lesson/add/<int:course_id>/", views.add_lesson, name = "add-lesson"),
 ]

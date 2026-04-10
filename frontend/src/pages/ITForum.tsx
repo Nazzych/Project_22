@@ -19,7 +19,7 @@ import { ConfirmModal } from '../components/shared/modal/ConfirmModal'
 import axios from 'axios';
 import {
     XCircle,
-    MessageSquare,
+    MessageSquareCode,
     Search,
     Plus,
     TrendingUp,
@@ -111,7 +111,6 @@ export function ITForum() {
     const handleDeletePost = async (post_id: number) => {
         try {
             if (post_id) {
-                await getCsrfToken();
                 await deletePost (post_id);
                 loadPoasts();
                 showToast('success', 'Post deleted', 'Your post has been successfully deleted.');
@@ -219,7 +218,7 @@ export function ITForum() {
     const handleDeleteChannel = async (channel_id: number) => {
         try {
             if (channel_id) {
-                await getCsrfToken();
+                await getCsrfToken()
                 await deleteChannel (channel_id);
                 loadChannels();
                 showToast('success', 'Channel deleted', 'Your channel has been successfully deleted.');
@@ -281,7 +280,7 @@ export function ITForum() {
                         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                             <div>
                                 <h1 className="text-3xl font-bold nz-foreground flex items-center gap-3">
-                                    <MessageSquare className="h-8 w-8" />
+                                    <MessageSquareCode className="h-8 w-8" />
                                     IT Forum
                                 </h1>
                                 <p className="text-muted-foreground mt-1">
@@ -304,7 +303,7 @@ export function ITForum() {
                                                 {posts.length} {/* 10 000 */}
                                             </p>
                                         </div>
-                                        <MessageSquare className="h-8 w-8 text-cyan-400" />
+                                        <MessageCircleMore className="h-8 w-8 text-cyan-400" />
                                     </div>
                                 </CardContent>
                             </Card>

@@ -203,7 +203,7 @@ export function EditProfileForm({ onSuccess, initialData }: EditProfileFormProps
                 return (
                     <div className="space-y-4 m-3">
                         <p className="mb-1">A short bio to introduce yourself.</p>
-                        <Textarea
+                        <Textarea rows={5}
                             icon={<FileText className="w-4 h-4" />}
                             name="bio"
                             value={form.bio || ''}

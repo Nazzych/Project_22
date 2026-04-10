@@ -36,7 +36,7 @@ export const ChallengeCard = ({
 
     const handleView = () => {
         const slug = slugify(challenge.title);
-        navigate(`/challenges/${challenge.id}-${slug}`);
+        navigate(`/challenge/${challenge.id}/${slug}`);
     };
 
     const DeleteChallenge = async (id: string) => {

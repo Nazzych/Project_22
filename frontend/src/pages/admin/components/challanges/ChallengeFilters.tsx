@@ -67,6 +67,7 @@ export default function ChallengeFilters({
                     size="icon"
                     onClick={clearFilters}
                     title="Clear filters"
+                    className='w-full lg:w-fit lg:px-3'
                 >
                     <X className="h-4 w-4" />
                 </Button>

@@ -31,4 +31,4 @@ class CommentSerializer (serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = ["id", "author", "content", "likes_count", "dislikes_count", "parent", "created_at", "updated_at", "is_edited"]
+        fields = ["id", "author", "content", "likes_count", "dislikes_count", "replies_count", "parent", "created_at", "updated_at", "is_edited"]

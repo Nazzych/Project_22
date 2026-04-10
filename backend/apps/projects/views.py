@@ -241,7 +241,7 @@ def update_project_file (request, project_id):
     if not project:
         return JsonResponse ({"error": "Access denied"}, status = 403)
 
-    file_entry = ProjectFile.objects.filter (project = project, path__endswith = path).first()
+    file_entry = ProjectFile.objects.filter (project = project).first() #TODO: , path__endswith = path
     if not file_entry:
         return JsonResponse ({"error": "File not found"}, status = 404)
 

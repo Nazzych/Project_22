@@ -1,6 +1,6 @@
 import React from 'react';
 import { XCircle } from 'lucide-react';
-import { LoadingSpinner } from '../../../../components/LoadingSpinner';
+import { Skeleton } from '../../../../components/LoadingSpinner';
 import { ChallengeCard } from '../../../../components/shared/cards/ChellangeCard';
 import { Tasks } from '../../../../types/tasks';
 
@@ -13,8 +13,14 @@ interface ChallengeGridProps {
 export default function ChallengeGrid({ tasks, loading, isStaff = true }: ChallengeGridProps) {
     if (loading) {
         return (
-            <div className="flex justify-center py-20">
-                <LoadingSpinner text="Завантаження завдань..." />
+            <div className="p-6">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    {[...Array(4)].map((_, i) => (
+                        <div key={i}>
+                            <Skeleton className="h-52 w-full rounded-[18px]" />
+                        </div>
+                    ))}
+                </div>
             </div>
         );
     }

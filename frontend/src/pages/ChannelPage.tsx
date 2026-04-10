@@ -72,8 +72,8 @@ export function ChannelPage () {
         }));
     }
 
-
     const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+
     const clickDeletePost = async (post_id: number) => {
         openModal({
             id: 'confirm-delete-post',
@@ -158,14 +158,13 @@ export function ChannelPage () {
         });
     }
 
-
     const handleDeletePost = async (post_id: number) => {
         try {
             if (post_id) {
                 await getCsrfToken();
                 await deletePost (post_id);
-                loadPoasts();
                 showToast('success', 'Post deleted', 'Your post has been successfully deleted.');
+                loadPoasts();
             }
         } catch (err) {
             console.error('Error deleting post:', err);
@@ -305,7 +304,7 @@ export function ChannelPage () {
                 )}
 
                 {/* Градієнтна накладка */}
-                <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/70 to-black/95" />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/50 to-black/75" />
 
                 <div className="relative p-6 pt-14 h-full flex flex-col">
                     <div className="flex flex-wrap items-start gap-5 flex-1">
@@ -331,7 +330,7 @@ export function ChannelPage () {
                             </div>
 
                             <p className="flex items-center text-zinc-300 text-sm mt-1 gap-2">
-                                <span className="hover:underline cursor-pointer">@{channel.owner?.username}</span> <span className={cn("flex items-center gap-2 " + (isExpanded ? "opacity-0" : "opacity-100"))}>• <Button size="sm" variant='btn_glass' className="flex items-center gap-2"><Users className="w-4 h-5" />Join us</Button></span>
+                                <span className="hover:underline cursor-pointer">@{channel.owner?.username}</span> <span className={cn("flex items-center gap-2 " + (isExpanded ? "opacity-0" : "opacity-100"))}>• <Button size="sm" variant='btn_glass' className="flex items-center gap-2" disabled={isExpanded}><Users className="w-4 h-5" />Join us</Button></span>
                             </p>
 
                             {/* Розгорнутий опис */}
@@ -344,19 +343,19 @@ export function ChannelPage () {
                                         transition={{ duration: 0.45 }}
                                         className="mt-6 overflow-hidden"
                                     >
-                                        <span className="text-xs text-zinc-500 block">Description</span>
-                                        <p className="text-zinc-200 leading-relaxed font-medium">
+                                        <span className="text-xs nz-text-m block">Description</span>
+                                        <pre className="text-zinc-200 leading-relaxed font-medium">
                                             {channel.description || "No description available."}
-                                        </p>
-                                        <div className="mt-6 flex flex-wrap gap-x-8 gap-y-3 text-sm text-zinc-400">
+                                        </pre>
+                                        <div className="mt-6 flex flex-wrap gap-x-8 gap-y-3 text-sm nz-text-muted">
                                             <div>
-                                                <span className="text-xs text-zinc-500 block">Created</span>
+                                                <span className="text-xs nz-text-m block">Created</span>
                                                 <span className="font-medium text-white">
                                                     {formatDateNumeric(channel.created_at)}
                                                 </span>
                                             </div>
                                             <div>
-                                                <span className="text-xs text-zinc-500 block">Subscribers</span>
+                                                <span className="text-xs nz-text-m block">Subscribers</span>
                                                 <span className="font-medium text-white">
                                                     {channel.subscribers?.toLocaleString() || 0}
                                                 </span>

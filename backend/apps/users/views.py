@@ -296,6 +296,50 @@ class CurrentUserView (APIView):
         serializer = UserSerializer (request.user)
         return Response (serializer.data)
 
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def google_login_callback(request):
+    code = request.GET.get("code")
+    if not code:
+        return Response({"error": "No code provided"}, status=400)
+
+    token_res = requests.post(
+        "https://oauth2.googleapis.com/token",
+        data={
+            "client_id": settings.GOOGLE_CLIENT_ID,
+            "client_secret": settings.GOOGLE_CLIENT_SECRET,
+            "code": code,
+            "grant_type": "authorization_code",
+            "redirect_uri": "http://localhost:8000/api/google/callback",
+        },
+        timeout=10
+    )
+    token_data = token_res.json()
+    access_token = token_data.get("access_token")
+    if not access_token:
+        return Response({"error": "Google access token not received", "details": token_data}, status=400)
+
+    header = {"Authorization": f"Bearer {access_token}"}
+    user_data = requests.get("https://www.googleapis.com/oauth2/v2/userinfo", headers=header).json()
+
+    email = user_data.get("email")
+    first_name = user_data.get("given_name", "")
+    last_name = user_data.get("family_name", "")
+    username = email.split("@")[0]
+
+    user, created = User.objects.get_or_create(
+        email=email,
+        defaults={
+            "username": username,
+            "first_name": first_name,
+            "last_name": last_name,
+        }
+    )
+
+    auth_login(request, user)
+    return redirect("http://localhost:3000/")
+
+
 # @permission_classes([IsAuthenticated])
 @api_view (["PUT"])
 @login_required_api

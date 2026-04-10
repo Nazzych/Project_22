@@ -4,9 +4,10 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Select';
 import { Button } from '../components/ui/Button';
+import { CourseCard } from '../components/shared/cards/CourseCard';
 import { useToast } from '../hooks/useToast';
-import { Tasks } from '../types/tasks';
-import { tasksList } from '../api/tasks';
+import { Course } from '../types/curses';
+import { getCourses } from '../api/curses';
 import { Skeleton } from '../components/LoadingSpinner';
 
 export function CoursesList() {
@@ -17,30 +18,30 @@ export function CoursesList() {
     const [language, setLanguage] = useState('');
     const [showCompleted, setShowCompleted] = useState(true);
     const [loading, setLoading] = useState(true);
-    const [tasks, setTasks] = useState<Tasks[]>([]);
-    const [filteredTasks, setFilteredTasks] = useState<Tasks[]>([]);
+    const [courses, setCourses] = useState<Course[]>([]);
+    const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
 
     // Завантаження завдань
-    const loadTasks = async () => {
+    const loadCourses = async () => {
         setLoading(true);
         try {
-            const data = await tasksList();
-            setTasks(data);
-            setFilteredTasks(data);
+            const data = await getCourses();
+            setCourses(data);
+            setFilteredCourses(data);
         } catch (err) {
-            showToast('error', 'Get tasks failed', `${err}`);
+            showToast('error', 'Get courses failed', `${err}`);
         } finally {
             setLoading(false);
         }
     };
 
-    // useEffect(() => {
-    //     loadTasks();
-    // }, []);
+    useEffect(() => {
+        loadCourses();
+    }, []);
 
     // Фільтрація (пошук + складність + мова)
     useEffect(() => {
-        let result = [...tasks];
+        let result = [...courses];
 
         // Пошук по назві та тегах
         if (search.trim()) {
@@ -53,16 +54,16 @@ export function CoursesList() {
 
         // Фільтр по складності
         if (difficulty) {
-            result = result.filter(task => task.difficul?.toLowerCase() === difficulty.toLowerCase());
+            result = result.filter(task => task.level?.toLowerCase() === difficulty.toLowerCase());
         }
 
         // Фільтр по мові
         if (language) {
-            result = result.filter(task => task.language?.toLowerCase() === language.toLowerCase());
+            result = result.filter(task => task.category?.toLowerCase() === language.toLowerCase());
         }
 
-        setFilteredTasks(result);
-    }, [search, difficulty, language, tasks]);
+        setFilteredCourses(result);
+    }, [search, difficulty, language, courses]);
 
     // Очищення всіх фільтрів
     const clearFilters = () => {
@@ -92,7 +93,7 @@ export function CoursesList() {
                             </h1>
 {/* TODO: {count} courses completed */}
                             <p className="text-muted-foreground mt-1">
-                                {filteredTasks.length} courses found
+                                {filteredCourses.length} courses found
                             </p>
                         </div>
                         <Button
@@ -167,7 +168,7 @@ export function CoursesList() {
                                     <Skeleton className="h-4 w-1/2" />
                                 </div>
                             ))
-                        ) : filteredTasks.length === 0 ? (
+                        ) : filteredCourses.length === 0 ? (
                             <div className="col-span-full flex flex-col items-center justify-center py-12 text-center nz-foreground">
                                 <XCircle className="w-12 h-12 mb-4 text-muted-foreground" />
                                 <p className="text-lg font-medium">No challenges found</p>
@@ -176,10 +177,12 @@ export function CoursesList() {
                                 </p>
                             </div>
                         ) : (
-                            filteredTasks.map((card) => (
-                                <div key={card.id} className="col-span-1">
-                                    <p className="text-lg font-bold">{card.title}</p>
-                                </div>
+                            filteredCourses.map((course) => (
+                                <CourseCard
+                                    key={course.id}
+                                    course={course}
+                                    is_staff={false}
+                                />
                             ))
                         )}
                     </div>
