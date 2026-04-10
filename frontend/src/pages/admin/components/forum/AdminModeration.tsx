@@ -93,7 +93,7 @@ export default function AdminModeration() {
                         <div className="flex justify-between">
                             <div className="flex items-center gap-4">
                                 {channel.logo ? (
-                                    <img src={channel.logo} alt={channel.name} className="w-16 h-16 rounded-2xl" />
+                                    <img src={channel.logo} alt={channel.name} className="w-16 h-16 object-cover rounded-2xl" />
                                 ) : (
                                     <div className="w-16 h-16 bg-gradient-to-br from-amber-500 to-red-500 rounded-2xl flex items-center justify-center text-white font-bold">
                                         {channel.name[0]}

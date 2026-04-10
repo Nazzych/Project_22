@@ -12,4 +12,5 @@ from . import views
 urlpatterns = [
     #?path ("", include (router.urls))
     path ("chellanges/", views.challenges, name = "challenges"),
+    path ("chellange/<int:challenge_id>/", views.challenge_detail, name = "challenge_detail"),
 ]

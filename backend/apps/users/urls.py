@@ -15,6 +15,7 @@ urlpatterns = [
     path ("register/", views.register, name = "user-register"),
     path ("logout/", views.logout, name = "user-logout"),
     path ("auth/github/callback/", views.github_login_callback, name = "github-login-callback"),
+    path ("auth/google/callback/", views.google_login_callback, name = "google-login-callback"),
     path ("me/", views.CurrentUserView.as_view(), name = "current-user"),
     path ("update/", views.update_profile, name = "update-profile"),
     path ("github/update/", views.github_save_profile, name = "update-github-profile"),

@@ -1,3 +1,5 @@
+import { Profile } from "./profile";
+
 export type Posts = {
     id: number;
     author: {
@@ -33,6 +35,31 @@ export type Posts = {
     created_at: string;
 };
 
+export interface PostCardProps {
+    logo: string;
+    name: string;
+    post: Posts;
+    expandedPosts: Record<number, boolean>;
+    toggleExpand: (id: number) => void;
+    OpenEditPost: (post: Posts) => void;
+    clickDeletePost: (id: number) => void;
+    profile: Profile | null;
+}
+
+export interface PostFormProps {
+    onSuccess: () => void;
+    onDelete?: () => void;
+    post?: Posts;
+    channel?: number;
+    content?: string;
+}
+
+export type EditablePost = {
+    title: string;
+    content: string;
+    channel: number;
+};
+
 export type Channels = {
     id: number;
     owner: any;
@@ -48,20 +75,6 @@ export type Channels = {
     created_at: string;
 };
 
-
-export interface PostFormProps {
-    onSuccess: () => void;
-    onDelete?: () => void;
-    post?: Posts;
-    channel?: number;
-    content?: string;
-}
-
-export type EditablePost = {
-    title: string;
-    content: string;
-    channel: number;
-};
 
 export interface ActionsCellPropsForum {
     onEdit: () => void;
@@ -90,3 +103,29 @@ export type EditableChannell = {
     is_private: boolean;
 };
 
+export interface ActionsCellPropsComment {
+    onEdit: () => void;
+    onDelete: () => void;
+    onReport: () => void;
+}
+
+
+
+export type Comment = {
+    id: number;
+    author: {
+        id: number;
+        username: string;
+        first_name: string;
+        last_name: string;
+        is_staff: boolean;
+        profile: {
+            avatar_url: string;
+        }
+    };
+    content: string;
+    created_at: string;
+    updated_at: string;
+    is_edited: boolean;
+    replies: Comment[];
+};

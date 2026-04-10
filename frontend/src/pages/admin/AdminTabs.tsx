@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-type TabId = 'dashboard' | 'forum' | 'challenges' | 'users';
+type TabId = 'dashboard' | 'forum' | 'challenges' | 'courses' | 'projects' | 'users';
 
 interface Tab {
     id: TabId;
@@ -10,7 +10,7 @@ interface Tab {
 }
 
 interface AdminTabsProps {
-    tabs: readonly Tab[];           // ← додаємо readonly
+    tabs: readonly Tab[];
     activeTab: TabId;
     onTabChange: (tabId: TabId) => void;
 }
@@ -18,7 +18,7 @@ interface AdminTabsProps {
 export default function AdminTabs({ tabs, activeTab, onTabChange }: AdminTabsProps) {
     return (
         <div className="relative border-b border-border mb-8">
-            <div className="flex gap-10">
+            <div className="flex gap-10 overflow-x-auto">
                 {tabs.map((tab) => {
                     const Icon = tab.icon;
                     const isActive = activeTab === tab.id;

@@ -20,3 +20,10 @@ def challenges (request):
     chellanges = Challange.objects.all()
     serializer = ChellangeSerializer (chellanges, many = True)
     return Response (serializer.data)
+
+@api_view (["GET"])
+@permission_classes ([isAuthenticated])
+def challenge_detail (request, challenge_id):
+    chellange = get_object_or_404 (Challange, id = challenge_id)
+    serializer = ChellangeSerializer (chellange)
+    return Response (serializer.data)

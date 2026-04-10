@@ -7,6 +7,7 @@ urlpatterns = [
     path ("user/", include ("apps.users.urls")),
     path ("project/", include ("apps.projects.urls")),
     path ("task/", include ("apps.task.urls")),
+    path ("course/", include ("apps.courses.urls")),
     path ("forum/", include ("apps.forum.urls")),
     path ("admin/", include ("apps.dashboard.urls")),
 ]

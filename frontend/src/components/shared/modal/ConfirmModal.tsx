@@ -12,7 +12,7 @@ export function ConfirmModal({
 }: ConfirmModalProps) {
     return (
         <div className="space-y-4">
-            <p className="text-sm">{message}</p>
+            <div className="text-sm">{message}</div>
             <div className="flex justify-end gap-2">
                 <Button variant="btn_primary" onClick={onCancel}>
                     {cancelText}

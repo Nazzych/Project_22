@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquareCode, Users, ShieldCheck } from 'lucide-react';
+import { MessageSquareCode, Hash, ShieldCheck } from 'lucide-react';
 
 import AdminPostsList from '../components/forum/AdminPostsList';
 import AdminChannelsList from '../components/forum/AdminChannelsList';
@@ -15,7 +15,7 @@ const FORUM_TABS = [
     { 
         id: 'channels', 
         label: 'Channels', 
-        icon: Users 
+        icon: Hash 
     },
     { 
         id: 'moderation', 
