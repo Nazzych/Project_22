@@ -60,9 +60,17 @@ export function Sidebar({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (v:
                     <div className="flex items-center justify-center h-8 w-8 rounded-lg nz-bg-primary nz-text-primary">
                         <Code2 className="h-6 w-6" />
                     </div>
-                    <span className="text-xl font-bold">
-                        CODE<span className="nz-text-primary">HUB</span>
-                    </span>
+                    <div className="relative inline-flex flex-col items-start">
+                        <span className="absolute -top-0.5 -right-2.5 text-[10px] font-mono font-medium tracking-widest 
+                                        px-2.5 py-px bg-gradient-to-r from-amber-500 to-orange-500 
+                                        text-white rounded-full shadow-md shadow-amber-500/30">
+                            ALFA
+                        </span>
+
+                        <span className="text-[26px] font-bold tracking-[-1px]">
+                            CODE<span className="nz-text-primary">HUB</span>
+                        </span>
+                    </div>
                 </div>
                 {isMobile && (
                     <button onClick={() => setIsOpen(false)} className="md:hidden">
