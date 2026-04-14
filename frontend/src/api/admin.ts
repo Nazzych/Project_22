@@ -98,3 +98,17 @@ export async function adminUpdateUser (user_id: number, form: any) {
     });
     return response.data;
 }
+
+export async function adminDeleteUser (user_id: number) {
+    const response = await axios.delete(`${API_BASE}/admin/user/del/${user_id}/`, {
+        withCredentials: true,
+    });
+    return response.data;
+}
+
+export async function adminBanUser (user_id: number, reason: string) {
+    const response = await axios.post(`${API_BASE}/admin/user/ban/${user_id}/`, { reason }, {
+        withCredentials: true,
+    });
+    return response.data;
+}

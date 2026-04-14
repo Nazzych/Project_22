@@ -95,17 +95,17 @@ def register (request):
     try:
         data = json.loads (request.body)
     except json.JSONDecodeError:
-        return JsonResponse ({"error": "Невірний формат JSON."}, status = 400)
+        return JsonResponse ({"error": "Uncorrect format JSON."}, status = 400)
 
     username = data.get ("name", "").strip()
     email = data.get ("email", "").strip().lower()
     password = data.get ("password", "")
 
     if not username or not email or not password:
-        return JsonResponse ({"error": "Усі поля обов’язкові."}, status = 400)
+        return JsonResponse ({"error": "All fields are required."}, status = 400)
 
     if User.objects.filter (email = email).exists():
-        return JsonResponse ({"error": "Користувач з такою електронною поштою вже існує."}, status = 400)
+        return JsonResponse ({"error": "User already exist with this E-mail. Change E-mail."}, status = 400)
 
     try:
         validate_password (password)

@@ -2,6 +2,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from apps.users.models import Profile
+from .models import BannedUser
 
 #Клас серелізатора профілю.
 class AdminProfileUpdateSerializer (serializers.ModelSerializer):
@@ -30,12 +31,22 @@ class AdminUserUpdateSerializer (serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
+            "id",
             "first_name",
             "last_name",
+            "username",
             "email",
             "is_staff",
             "profile"
         ]
+        extra_kwargs = {
+            "first_name": {"required": False},
+            "last_name": {"required": False},
+            "username": {"required": False},
+            "email": {"required": False},
+            "is_staff": {"required": False},
+            "profile": {"required": False}
+        }
 
     def update (self, instance, validated_data):
         profile_data = validated_data.pop ("profile", None)
@@ -50,3 +61,35 @@ class AdminUserUpdateSerializer (serializers.ModelSerializer):
             if profile_serializer.is_valid():
                 profile_serializer.save()
         return instance
+
+#Клас серелізатора для бану користувача.
+class AdminBanUserSerializer (serializers.ModelSerializer):
+    """Серіалізатор для бану користувача"""
+    user = AdminUserUpdateSerializer (read_only = True) #? або UserSerializer якщо треба деталі.
+    banned_by = serializers.StringRelatedField()
+
+    class Meta:
+        model = BannedUser
+        fields = ["id", "user", "banned_by", "reason", "is_permanent", "banned_at"]
+        read_only_fields = ["id", "banned_at"]
+
+#Клас серелізатора для відображення списку користувачів в адмінці.
+class AdminUserListSerializer (serializers.ModelSerializer):
+    """Серіалізатор для відображення списку користувачів в адмінці"""
+    profile = AdminProfileUpdateSerializer (read_only = True)
+    ban_info = AdminBanUserSerializer (read_only = True)
+
+    class Meta:
+        model = User
+        fields = [
+            "id",
+            "first_name",
+            "last_name",
+            "username",
+            "email",
+            "is_staff",
+            "is_superuser",
+            "date_joined",
+            "ban_info",
+            "profile"
+        ]

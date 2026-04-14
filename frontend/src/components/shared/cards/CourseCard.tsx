@@ -39,7 +39,7 @@ export const CourseCard = ({
     const OpenEditCourse = (course: Course) => {
         openModal({
             id: 'admin-course-edit',
-            width: "xl",
+            width: "lg",
             title: (
                 <span className="flex items-center gap-2">
                     <div className="w-fit nz-background-accent rounded-lg py-1 px-4 flex flex-row justify-center items-center gap-2">
@@ -71,8 +71,8 @@ export const CourseCard = ({
                         onConfirm={async () => {
                             await getCsrfToken();
                             await deleteCourse(course.id);
-                            showToast('success', 'Course deleted', 'Course successfuly deleted.');
                             if (loadCourses) loadCourses();
+                            showToast('success', 'Course deleted', 'Course successfuly deleted.');
                             closeModal();
                         }}
                         onCancel={closeModal}

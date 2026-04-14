@@ -19,9 +19,9 @@ from apps.forum.models import Channel
 from apps.courses.models import Course, Lesson
 from apps.courses.serializers import CourseSerializer, LessonSerializer
 from apps.users.models import Profile
-from apps.users.serializers import UserSerializer
 from .permissions import IsAdminOrReadOnly
-from .serializers import AdminUserUpdateSerializer
+from .serializers import AdminUserListSerializer, AdminUserUpdateSerializer, AdminBanUserSerializer
+from .models import BannedUser
 import traceback, json, os, re
 
 
@@ -29,9 +29,9 @@ import traceback, json, os, re
 @require_http_methods (["POST"])
 @permission_classes ([IsAdminOrReadOnly])
 def add_challenge (request):
-    print ("=== DEBUG: POST request to add_challenge ===")
-    print ("POST data:", request.POST)
-    print ("FILES:", request.FILES)
+    #? print ("=== DEBUG: POST request to add_challenge ===")
+    #? print ("POST data:", request.POST)
+    #? print ("FILES:", request.FILES)
 
     data = request.data
     title = data.get ("title", "").strip()
@@ -87,18 +87,7 @@ def add_challenge (request):
 @api_view (["PUT"])
 @permission_classes ([IsAdminOrReadOnly])
 def update_challange (request, challenge_id):
-    if not challenge_id:
-        return Response ({
-            "type": "error",
-            "message": "Not provided <challenge_id>."
-        }, status = Statuse.HTTP_400_BAD_REQUEST)
-
     challenge = get_object_or_404 (Challange, id = challenge_id)
-    if not challenge:
-        return Response ({
-            "type": "error",
-            "message": f"Not finded the challenge by ID - {challenge_id}."
-        }, status = Statuse.HTTP_404_NOT_FOUND)
 
     data = request.data
     title = data.get ("title", "").strip()
@@ -161,12 +150,6 @@ def update_challange (request, challenge_id):
 @require_http_methods (["DELETE"])
 @permission_classes ([IsAdminOrReadOnly])
 def delete_challenge (request, challenge_id):
-    if not challenge_id:
-        return JsonResponse ({
-            "type": "error",
-            "message": "Challenge ID not provided!"
-        }, status = Statuse.HTTP_400_BAD_REQUEST)
-
     try:
         Challange.objects.get (id = int (challenge_id)).delete()
         return Response ({
@@ -266,19 +249,7 @@ def get_courses (request):
 @api_view (["GET"])
 @permission_classes ([IsAdminOrReadOnly])
 def get_course (request, course_id):
-    if not course_id:
-        return Response ({
-            "type": "error",
-            "message": "Not provided <course_id>."
-        }, status = Statuse.HTTP_400_BAD_REQUEST)
-
     course = get_object_or_404 (Course, id = course_id)
-    if not course:
-        return Response ({
-            "type": "error",
-            "message": f"Not finded the course by ID - {course_id}."
-        }, status = Statuse.HTTP_404_NOT_FOUND)
-
     serializer = CourseSerializer (course)
     return Response (serializer.data)
 
@@ -336,18 +307,7 @@ def add_course (request):
 @api_view (["PUT"])
 @permission_classes ([IsAdminOrReadOnly])
 def edit_course (request, course_id):
-    if not course_id:
-        return Response ({
-            "type": "error",
-            "message": "Not provided <course_id>."
-        }, status = Statuse.HTTP_400_BAD_REQUEST)
-
     course = get_object_or_404 (Course, id = course_id)
-    if not course:
-        return Response ({
-            "type": "error",
-            "message": f"Not finded the course by ID - {course_id}."
-        }, status = Statuse.HTTP_404_NOT_FOUND)
 
     data = request.data
     title = data.get ("title", "").strip()
@@ -405,12 +365,6 @@ def edit_course (request, course_id):
 @require_http_methods (["DELETE"])
 @permission_classes ([IsAdminOrReadOnly])
 def delete_course (request, course_id):
-    if not course_id:
-        return JsonResponse ({
-            "type": "error",
-            "message": "Course ID not provided!"
-        }, status = Statuse.HTTP_400_BAD_REQUEST)
-
     try:
         Course.objects.get (id = int (course_id)).delete()
         return Response ({
@@ -434,7 +388,6 @@ def delete_course (request, course_id):
 @permission_classes ([IsAdminOrReadOnly])
 def add_lesson (request, course_id):
     course = get_object_or_404 (Course, id = course_id)
-
     lessons_data = request.data
 
     if not isinstance (lessons_data, list):
@@ -487,7 +440,6 @@ def add_lesson (request, course_id):
             "type": "warning",
             "message": str (ve)
         }, status = Statuse.HTTP_400_BAD_REQUEST)
-
     except Exception as e:
         print ("Error creating lessons:", str (e))
         return Response ({
@@ -498,31 +450,107 @@ def add_lesson (request, course_id):
 @api_view (["GET"])
 @permission_classes ([IsAdminOrReadOnly])
 def get_users (request):
-    users = User.objects.all()
-    serializer = UserSerializer (users, many = True)
-    return Response (serializer.data)
+    users = User.objects.select_related ("profile").all()
+    serializer_users = AdminUserListSerializer (users, many = True)
+    return Response (serializer_users.data)
 
-@api_view (["PATCH", "PUT"])
+@api_view (["PATCH"])
 @permission_classes ([IsAdminOrReadOnly])
 def update_user (request, user_id):
-    if not user_id:
+    user = get_object_or_404 (User, id = user_id)
+    if user.is_superuser:
         return Response ({
             "type": "error",
-            "message": "Not provided <user_id>."
-        }, status = Statuse.HTTP_400_BAD_REQUEST)
+            "message": "You can't manage of the owner this site!"
+        }, status = Statuse.HTTP_403_FORBIDDEN)
 
-    user = get_object_or_404 (User, id = user_id)
     serializer = AdminUserUpdateSerializer (user, data = request.data, partial = True)
 
     if serializer.is_valid():
-        updated_user = serializer.save()
-        print("=== DEBUG AFTER SAVE ===")
-        print("User fields:", updated_user.first_name, updated_user.last_name)
-        if hasattr(updated_user, 'profile'):
-            print("Profile bio:", updated_user.profile.bio)
-            print("Profile total_points:", updated_user.profile.total_points)
-        return Response({"type": "success"})
+        serializer.save()
+        #? updated_user = serializer.save()
+        #? print ("=== DEBUG AFTER SAVE ===")
+        #? print ("User fields:", updated_user.first_name, updated_user.last_name)
+        #? if hasattr (updated_user, 'profile'):
+        #?     print ("Profile bio:", updated_user.profile.bio)
+        #?     print ("Profile total_points:", updated_user.profile.total_points)
+        return Response ({"type": "success", "message": "User updated successfully"}, status = Statuse.HTTP_200_OK)
     return Response ({
         "type": "error",
         "message": serializer.errors
     }, status = Statuse.HTTP_400_BAD_REQUEST)
+
+#.
+@api_view (["DELETE"])
+@permission_classes ([IsAdminOrReadOnly])
+def delete_user (request, user_id):
+    if user_id == request.user.id:
+        return Response ({
+            "type": "error", 
+            "message": "You cannot del yourself"
+        }, status = Statuse.HTTP_400_BAD_REQUEST)
+
+    try:
+        user = get_object_or_404 (User, id = user_id).delete()
+        if user.is_superuser:
+            return Response ({
+                "type": "error",
+                "message": "You can't manage of the owner this site!"
+            }, status = Statuse.HTTP_403_FORBIDDEN)
+
+        return Response ({"type": "success", "message": "User deleted successfully"}, status = Statuse.HTTP_204_NO_CONTENT)
+    except Exception as e:
+        print ("Error deleting user:", str (e))
+        return Response ({
+            "type": "error",
+            "message": "Server error while deleting user"
+        }, status = Statuse.HTTP_500_INTERNAL_SERVER_ERROR)
+
+#.
+@api_view (["POST"])
+@permission_classes ([IsAdminOrReadOnly])
+def ban_user (request, user_id):
+    user = get_object_or_404 (User, id = user_id)
+    if user.is_superuser:
+        return Response ({
+            "type": "error",
+            "message": "You can't manage of the owner this site!"
+        }, status = Statuse.HTTP_403_FORBIDDEN)
+
+    if user.id == request.user.id:
+        return Response ({
+            "type": "error", 
+            "message": "You cannot ban yourself"
+        }, status = Statuse.HTTP_400_BAD_REQUEST)
+
+    try:
+        #? Перевіряємо, чи вже забанений.
+        ban = BannedUser.objects.filter (user = user).first()
+
+        if ban:
+            #? Розбанити.
+            ban.delete()
+            return Response ({
+                "type": "success",
+                "message": f"User @{user.username} has been unbanned successfully"
+            }, status = Statuse.HTTP_200_OK)
+        else:
+            #? Забанити.
+            data = request.data
+            BannedUser.objects.create (
+                user = user,
+                banned_by = request.user,
+                reason = data.get ("reason", "").strip(),
+                is_permanent = True
+            )
+            return Response ({
+                "type": "success",
+                "message": f"User @{user.username} has been banned successfully"
+            }, status = Statuse.HTTP_200_OK)
+
+    except Exception as e:
+        print ("Error banning/unbanning user:", str (e))
+        return Response ({
+            "type": "error",
+            "message": "Server error while processing ban"
+        }, status = Statuse.HTTP_500_INTERNAL_SERVER_ERROR)

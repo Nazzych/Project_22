@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Lock } from 'lucide-react';
 import { Edit } from 'lucide-react';
 import { useModal } from '../../../hooks/useModal';
 import { useToast } from '../../../providers/MessageProvider';
@@ -20,7 +21,7 @@ export default function AdminForum() {
         try {
             await getCsrfToken()
             const data = await usersList()
-            setUsers (data)
+            setUsers (data);
         } catch (err) {
             console.error ("Error geting current curse with lessons: ", err)
             showToast('error', 'Error', 'Not can load the users');
@@ -33,33 +34,38 @@ export default function AdminForum() {
         getUsers();
     }, []);
 
-    const { openModal, closeModal } = useModal();
-    const handleClick = (user: Profile) => {
+    const { openModal } = useModal();
+    const handleEditClick = (user: any) => {
         if (!profile) return;
-        openModal({
-            id: 'admin-edit-profile',
-            width: "xl",
-            title: (
-                <div className='w-40 flex flex-row justify-center items-center gap-2 nz-background-secondary px-4 py-1 rounded-lg'>
-                    <Edit className="w-5 h-5 text-primary" /> Edit Profile
-                </div>
-            ),
-            content: (
-                <AdminEditUserModal
-                    user={user}
-                    onSuccess={() => {}}
-                />
-            ),
-        });
+        if (!user.is_superuser) {
+            openModal({
+                id: 'admin-edit-profile',
+                width: "xl",
+                x: false,
+                title: (
+                    <div className='w-fit flex flex-row justify-center items-center gap-2 nz-background-secondary px-4 py-1 font-mono rounded-lg'>
+                        <Edit className="w-5 h-5 text-primary" /> {user.ban_info && <span className='flex items-center text-red-400 font-bold'>[<Lock className='w-5 h-5' />]</span>} Edit {profile.id === user.id ? <span className='underline'>Your</span> : <span>"{user.email}"</span>} Profile
+                    </div>
+                ),
+                content: (
+                    <AdminEditUserModal
+                        user={user}
+                        onSuccess={() => getUsers()}
+                    />
+                ),
+            });
+        } else {
+            showToast ("warning", "You Can't manage of the owner!")
+        }
     };
 
     if (loading) {
         return (
-            <div className="p-6">
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
                     {[...Array(4)].map((_, i) => (
                         <div key={i}>
-                            <Skeleton className="w-24 h-24 w-full rounded-[18px]" />
+                            <Skeleton className="w-64 h-40 rounded-[18px]" />
                         </div>
                     ))}
                 </div>
@@ -68,7 +74,7 @@ export default function AdminForum() {
     }
 
     return (
-        <div className='p-6'>
+        <div>
             {users.length === 0 ? (
                 <div className="text-center py-20">
                     <h2 className="text-2xl font-semibold mb-2">Users Management</h2>
@@ -77,9 +83,9 @@ export default function AdminForum() {
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     {users.map((user: Profile) => (
-                        <AdminUserCard 
-                            user={user} 
-                            onEdit={(user) => {handleClick (user)}} 
+                        <AdminUserCard
+                            user={user}
+                            onEdit={(user) => {handleEditClick (user)}} 
                         />
                     ))}
                 </div>

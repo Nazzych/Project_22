@@ -181,6 +181,7 @@ export function CoursesList() {
                                 <CourseCard
                                     key={course.id}
                                     course={course}
+                                    loadCourses={() => loadCourses()}
                                     is_staff={false}
                                 />
                             ))
