@@ -12,7 +12,9 @@ from . import views
 urlpatterns = [
     #?path ("", include (router.urls))
     path ("users/", views.get_users, name = "users"),
-    path ("user/update/<int:user_id>/", views.update_user, name = "users"),
+    path ("user/update/<int:user_id>/", views.update_user, name = "user-update"),
+    path ("user/del/<int:user_id>/", views.delete_user, name = "user-delete"),
+    path ("user/ban/<int:user_id>/", views.ban_user, name = "user-ban"),
     path ("task/add", views.add_challenge, name = "add-challenge"),
     path ("task/update/<int:challenge_id>/", views.update_challange, name = "update-challange"),
     path ("task/del/<int:challenge_id>/", views.delete_challenge, name = "delete-challenge"),

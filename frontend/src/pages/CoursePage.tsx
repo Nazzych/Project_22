@@ -2,24 +2,25 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ChevronLeft, Plus, Clock, Trophy, Users, PlayCircle, Lock, CheckCircle, BookOpen, ChevronUp, ChevronDown, Share2, Play, MessageCirclePlusIcon, PlusCircle } from 'lucide-react';
+import { useProfile } from '../contexts/ProfileContext'
+import { useToast } from '../providers/MessageProvider';
 import { useModal } from '../hooks/useModal';
 import { motion, AnimatePresence } from 'framer-motion';
+import { formatDateNumeric } from '../lib/formatDate';
+import { cn } from '../lib/cn';
 import axios from 'axios';
 
-import { Button } from '../components/ui/Button';
 import { Card, CardContent, CardHeader } from '../components/ui/Card';
-import { useToast } from '../providers/MessageProvider';
-import { useProfile } from '../contexts/ProfileContext'
+import { Button } from '../components/ui/Button';
+import { LessonManage } from '../components/shared/modal/modals/admin/LesonManage';
+import { CourseManage } from '../components/shared/modal/modals/admin/CourseManage';
+import { ConfirmModal } from '../components/shared/modal/ConfirmModal';
+import { LessonViewerModal } from '../components/shared/modal/modals/curses/LessonModal';
+import { ActionsCellInChannel } from '../components/ActionCell';
 import { getCsrfToken } from '../api/auth';
 import { deleteCourse } from '../api/admin';
 import { getCourse } from '../api/curses';
 import { Course, Lesson } from '../types/curses';
-import { LessonManage } from '../components/shared/modal/modals/admin/LesonManage';
-import { CourseManage } from '../components/shared/modal/modals/admin/CourseManage';
-import { ActionsCellInChannel } from '../components/ActionCell';
-import { formatDateNumeric } from '../lib/formatDate';
-import { cn } from '../lib/cn';
-import { ConfirmModal } from '../components/shared/modal/ConfirmModal';
 
 export function CoursePage() {
     const { courseId } = useParams<{ courseId: string }>();
@@ -52,6 +53,9 @@ export function CoursePage() {
     useEffect(() => {
         loadCourseData();
     }, [courseId]);
+
+    const firstUnlocked = lessons.findIndex((lesson: any) => lesson.is_unlocked);
+    const initialId = firstUnlocked !== -1 ? lessons[firstUnlocked].id : lessons[0]?.id;
 
     const OpenEditCourse = (course: Course) => {
         openModal({
@@ -147,15 +151,23 @@ export function CoursePage() {
         const userPoints = profile?.profile?.total_points ?? 0;
 
         if (coursePoints > userPoints) {
-            showToast(
-            "info",
-            "You not have points for it course",
-            `Need points - ${coursePoints - userPoints}`
-            );
-            return;
+            showToast ("info", "You not have points for it course", `Need points - ${coursePoints - userPoints}`);
         }
-
         showToast("info", "Good luck in study");
+        openModal({
+            id: 'course-begin-lesson',
+            content: (
+                <LessonViewerModal
+                    courseId={Number(course?.id)}
+                    lessons={lessons}
+                    initialLessonId={initialId}
+                    onClose={closeModal}
+                    onLessonComplete={() => {
+                        loadCourseData();
+                    }}
+                />
+            ),
+        })
     };
 
     const difficultyLower = (course?.level || 'medium').toLowerCase();
@@ -333,13 +345,6 @@ export function CoursePage() {
                                                 </div>
                                                 <div>
                                                     <h3 className="font-medium line-clamp-1">{lesson.title}</h3>
-                                                    {lesson.is_unlocked ? (
-                                                        <p className="text-xs text-emerald-400">Unlocked</p>
-                                                    ) : (
-                                                        <p className="text-xs nz-text-muted flex items-center gap-1">
-                                                            <Lock className="w-3 h-3" /> Locked
-                                                        </p>
-                                                    )}
                                                 </div>
                                             </div>
                                         </CardHeader>

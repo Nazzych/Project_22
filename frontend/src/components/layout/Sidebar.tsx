@@ -64,7 +64,7 @@ export function Sidebar({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (v:
                         <span className="absolute -top-0.5 -right-2.5 text-[10px] font-mono font-medium tracking-widest 
                                         px-2.5 py-px bg-gradient-to-r from-amber-500 to-orange-500 
                                         text-white rounded-full shadow-md shadow-amber-500/30">
-                            ALFA
+                            ALFA 1
                         </span>
 
                         <span className="text-[26px] font-bold tracking-[-1px]">

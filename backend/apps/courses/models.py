@@ -41,7 +41,6 @@ class Lesson (models.Model):
     title = models.CharField (max_length = 255)
     content = models.TextField()
     order = models.PositiveIntegerField()
-    is_unlocked = models.BooleanField  (default = False)
     url = models.URLField (null = True, blank = True)
 
     def __str__ (self):
@@ -51,6 +50,7 @@ class Lesson (models.Model):
 class UserLessonProgress (models.Model):
     user = models.ForeignKey (User, on_delete = models.CASCADE, related_name = "lesson_progress")
     lesson = models.ForeignKey (Lesson, on_delete = models.CASCADE, related_name = "progress")
+    is_unlocked = models.BooleanField (default = False)
     is_completed = models.BooleanField (default = False)
     completed_at = models.DateTimeField (null = True, blank = True)
 

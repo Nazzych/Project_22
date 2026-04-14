@@ -3,6 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { ProgressBar } from '../components/ui/ProgressBar'
 import {
+    Crown,
+    ShieldCheck,
     Calendar,
     MapPin,
     Github,
@@ -151,6 +153,17 @@ export function Profile() {
                                     LVL {profile?.profile.total_points || "0"}
                                 </div>
                             </div>
+                            {profile?.is_superuser && (
+                                <div className="absolute -top-1 -right-1 nz-background-secondary p-1 rounded-2xl border-2 z-50">
+                                    <Crown className="w-6 h-6" />
+                                </div>
+                            )}
+
+                            {profile?.is_staff && !profile?.is_superuser && (
+                                <div className="absolute -top-1 -right-1 nz-background-secondary p-1 rounded-2xl border-2 z-50">
+                                    <ShieldCheck className="w-6 h-6" />
+                                </div>
+                            )}
                         </div>
                         <div className="flex-1 space-y-2 mt-2 md:mb-4">
                             <div className="flex flex-col">

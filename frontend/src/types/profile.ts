@@ -8,6 +8,7 @@ export interface Profile {
     last_name: string;
     date_joined: string;
     is_staff: boolean | false;
+    is_superuser: boolean | false;
     profile: {
         address: string;
         youtube: string;

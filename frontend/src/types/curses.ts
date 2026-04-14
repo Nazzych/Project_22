@@ -32,4 +32,5 @@ export interface Lesson {
     order: number;
     url: string;
     is_unlocked?: boolean;
+    is_completed?: boolean;
 }

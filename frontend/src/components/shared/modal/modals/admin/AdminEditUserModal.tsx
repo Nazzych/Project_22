@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
     UserIcon, MapPin, Mail, Youtube, Github, Twitter, Linkedin,
-    ShieldCheck, AtSign, Trash2, FileText, Lock
+    ShieldCheck, AtSign, Trash2, FileText, Lock, XCircle
 } from 'lucide-react';
 import { Button } from '../../../../ui/Button';
 import { Input } from '../../../../ui/Input';
@@ -9,7 +9,10 @@ import { Textarea } from '../../../../ui/Textarea';
 import { LoadingSpinner } from '../../../../LoadingSpinner';
 import { useToast } from '../../../../../providers/MessageProvider';
 import { useModal } from '../../../../../hooks/useModal';
-import { adminUpdateUser } from '../../../../../api/admin';
+import { getCsrfToken } from '../../../../../api/auth';
+import { adminUpdateUser, adminDeleteUser, adminBanUser } from '../../../../../api/admin';
+import { Profile } from '../../../../../types/profile';
+import { FormModalWithInput } from '../../FormModalWithInput';
 
 interface AdminEditUserModalProps {
     user: any;
@@ -21,7 +24,7 @@ type Section = typeof sections[number];
 
 export function AdminEditUserModal({ user, onSuccess }: AdminEditUserModalProps) {
     const { showToast } = useToast();
-    const { closeModal } = useModal();
+    const { openModal, closeModal } = useModal();
     const [loading, setLoading] = useState(false);
 
     const [form, setForm] = useState({
@@ -74,27 +77,86 @@ export function AdminEditUserModal({ user, onSuccess }: AdminEditUserModalProps)
         setLoading(true);
 
         try {
-            const payload = {
-                first_name: form.first_name,
-                last_name: form.last_name,
-                username: form.username,
-                email: form.email,
-                is_staff: form.is_staff,
-                profile: form.profile
-            };
-
-            await adminUpdateUser(user.id, payload);
-
-            showToast('success', 'Успішно', 'Профіль користувача оновлено');
-            onSuccess();
+            if (!user.is_superuser) {
+                const payload = {
+                    first_name: form.first_name,
+                    last_name: form.last_name,
+                    username: form.username,
+                    email: form.email,
+                    is_staff: form.is_staff,
+                    profile: form.profile
+                };
+                await adminUpdateUser(user.id, payload);
+                showToast('info', 'Success', `User profile with ID - ${user.id} updated successfully!`);
+                onSuccess();
+            } else {
+                showToast ("error", "I SAID YOU CAN'T MANAGE ME!", "THINK AGAIN - YOU REALLY WANT DO THIS?")
+            }
             closeModal();
         } catch (err: any) {
             console.error(err);
-            showToast('error', 'Помилка', 'Не вдалося оновити профіль');
+            showToast('error', 'Error', `Can't update profile of user with ID - ${user.id}`);
         } finally {
             setLoading(false);
         }
     };
+
+    const deleteUser = async (user_id: number) => {
+        setLoading(true);
+        try {
+            await getCsrfToken();
+            await adminDeleteUser(user_id);
+            showToast('info', 'Success', `User with ID - ${user_id} deleted successfuly!`);
+            onSuccess();
+            closeModal();
+        } catch (err: any) {
+            console.error(err);
+            showToast('error', 'Error', `Can't delete user with ID - ${user_id}!`);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    const banUser = async (user_id: number, reason: string) => {
+        setLoading(true);
+        try {
+            await getCsrfToken();
+            const res = await adminBanUser(user_id, reason);
+            showToast('info', 'Success', `${res.message}`);
+            onSuccess();
+            closeModal();
+        } catch (err: any) {
+            console.error(err);
+            showToast('error', 'Error', `Can't ban user with ID - ${user_id}!`);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    const handleBanClick = (user_id: number) => {
+        openModal({
+            id: 'admin-ban-profile',
+            width: "xl",
+            x: false,
+            title: (
+                <div className='w-fit flex flex-row justify-center items-center gap-2 nz-background-secondary px-4 py-1 rounded-lg'>
+                    <Lock className="w-5 h-5 text-primary" /> Ban user - "{user_id}"
+                </div>
+            ),
+            content: (
+                <FormModalWithInput
+                    onSubmit={(reason) => {banUser (user_id, String(reason))}}
+                    onCancel={() => closeModal()}
+                    fieldType="textarea"
+                    labelText="Enter the reason ofthe ban."
+                    submitText='Ban him!'
+                    cancelText='Not ban him'
+                    isSubmitting={false}
+                />
+            ),
+        });
+    };
+
 
     const sectionIcons: Record<Section, React.ReactNode> = {
         General: <UserIcon className="w-5 h-5" />,
@@ -175,25 +237,13 @@ export function AdminEditUserModal({ user, onSuccess }: AdminEditUserModalProps)
                             <label className="block text-sm font-medium mb-1.5">Current Streak</label>
                             <Input type="number" name="profile.current_streak" value={form.profile.current_streak} onChange={handleChange} />
                         </div>
-
-                        {/* Кнопки видалення та блокування */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-4">
-                            <Button variant="btn_destructive" className="w-full">
-                                <Trash2 className="w-4 h-4 mr-2" />
-                                Delete account
-                            </Button>
-                            <Button variant="btn_warning" className="w-full">
-                                <Lock className="w-4 h-4 mr-2" />
-                                Block account
-                            </Button>
-                        </div>
                     </div>
                 );
         }
     };
 
     return (
-        <form onSubmit={handleSubmit} className="w-full h-[560px] flex flex-col md:flex-row overflow-hidden">
+        <form onSubmit={handleSubmit} className="w-full flex flex-col md:flex-row overflow-hidden">
             {/* Sidebar */}
             <aside className="w-full md:w-1/3 border nz-background-accent p-3 md:p-4 rounded-full md:rounded-2xl">
                 <nav className="flex md:flex-col gap-1 md:gap-1.5 overflow-x-auto md:overflow-x-visible">
@@ -217,6 +267,36 @@ export function AdminEditUserModal({ user, onSuccess }: AdminEditUserModalProps)
 
             {/* Main Content */}
             <section className="flex-1 p-6 overflow-y-auto">
+                <div className='flex items-center justify-between flex-wrap gap-4 mb-8 p-2 nz-background-accent border rounded-3xl'>
+                    <div className='flex items-center flex-wrap gap-4'>
+                        {user.profile?.avatar_url ? (
+                            <img 
+                                src={user.profile.avatar_url} 
+                                alt={user.username}
+                                className="w-16 h-16 object-cover rounded-full"
+                            />
+                        ) : (
+                            <div className="w-16 h-16 flex items-center justify-center text-2xl font-bold bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white rounded-full">
+                                {user.first_name?.[0] || user.username[0].toUpperCase()}
+                            </div>
+                        )}
+                        <div>
+                            <p className='text-xl font-mono'>{user.first_name} {user.last_name}</p>
+                            <p className='nz-text-muted text-[12px] font-mono'>{user.email}</p>
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                        <Button onDoubleClick={() => deleteUser(user.id)} size='sm' variant="btn_destructive" className="w-full relative">
+                            <Trash2 className="w-4 h-4" />
+                            <span className='absolute -bottom-0.5 font-bold right-1.5 text-[8px]'>Double</span>
+                        </Button>
+                        <Button onDoubleClick={() => handleBanClick(user.id)} size='sm' variant="btn_warning" className="w-full relative">
+                            <Lock className="w-4 h-4" />
+                            <span className='absolute -bottom-0.5 font-bold right-1.5 text-[8px]'>Double</span>
+                        </Button>
+                    </div>
+                </div>
+
                 {renderSection()}
 
                 <div className="pt-8 flex justify-end gap-3">
@@ -231,11 +311,3 @@ export function AdminEditUserModal({ user, onSuccess }: AdminEditUserModalProps)
         </form>
     );
 }
-
-// Іконки для секцій
-const sectionIcons: Record<Section, React.ReactNode> = {
-    General: <UserIcon className="w-5 h-5" />,
-    Links: <Linkedin className="w-5 h-5" />,
-    Additional: <FileText className="w-5 h-5" />,
-    Admin: <ShieldCheck className="w-5 h-5" />,
-};

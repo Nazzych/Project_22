@@ -43,7 +43,7 @@ export function ToastItem({
             exit={{ opacity: 0, x: 100 }}
             transition={{ duration: 0.3 }}
             className={cn(
-                'glass-strong relative w-80 rounded-xl border p-4 shadow-2xl backdrop-blur-xl transition-all duration-300',
+                'glass-strong relative w-[93vw] lg:w-[25vw] rounded-xl border p-4 shadow-2xl backdrop-blur-xl transition-all duration-300',
                 styles[toast.type],
                 stacked && 'scale-95 opacity-70 -translate-y-2 pointer-events-none'
             )}
