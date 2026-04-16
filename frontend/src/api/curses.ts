@@ -16,3 +16,11 @@ export async function getCourses() {
     });
     return response.data;
 }
+
+//
+export async function lessonFinish(lessId: number) {
+    const response = await axios.post(`${API_BASE}/course/complete/${lessId}/`, {
+        withCredentials: true,
+    });
+    return response.data;
+}

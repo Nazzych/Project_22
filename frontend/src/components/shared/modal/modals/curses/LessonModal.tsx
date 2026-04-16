@@ -3,7 +3,9 @@ import { X, ChevronLeft, ChevronRight, Lock, CheckCircle, BookOpen } from 'lucid
 import { Button } from '../../../../ui/Button';
 import { useToast } from '../../../../../providers/MessageProvider';
 import { Lesson } from '../../../../../types/curses';
+import { lessonFinish } from '../../../../../api/curses';
 import { cn } from '../../../../../lib/cn';
+import { getCsrfToken } from '../../../../../api/auth';
 
 interface LessonViewerModalProps {
     courseId: number;
@@ -21,7 +23,7 @@ export function LessonViewerModal({
     onLessonComplete
 }: LessonViewerModalProps) {
     const { showToast } = useToast();
-    const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
+    const [currentLessonIndex, setCurrentLessonIndex] = useState(1);
     const [localCompletedIds, setLocalCompletedIds] = useState<number[]>([]);
 
     useEffect(() => {
@@ -44,7 +46,6 @@ export function LessonViewerModal({
     const getLessonStatus = (index: number) => {
         const lesson = lessons[index];
         if (!lesson) return { unlocked: false, completed: false };
-
         const isCompleted = lesson.is_completed || localCompletedIds.includes(Number(lesson.id));
         
         // Розблоковано якщо: перший урок АБО попередній завершений
@@ -63,13 +64,17 @@ export function LessonViewerModal({
     const hasNextLesson = currentLessonIndex < lessons.length - 1;
     const nextLessonStatus = hasNextLesson ? getLessonStatus(currentLessonIndex + 1) : null;
 
-    const handleComplete = () => {
+    const handleComplete = async () => {
         const lessonId = Number(currentLesson.id);
+        await getCsrfToken();
+        await lessonFinish (lessonId);
         if (!localCompletedIds.includes(lessonId)) {
             setLocalCompletedIds(prev => [...prev, lessonId]);
         }
         onLessonComplete?.(lessonId);
-        showToast("success", "Course completed!", "Now you can go to next course.");
+        if (!hasNextLesson) {
+            showToast("success", "Course completed!", "Now you can go to next course.");
+        }
     };
 
     const goToNext = () => {
@@ -82,25 +87,25 @@ export function LessonViewerModal({
 
     return (
         <div className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4 backdrop-blur-md">
-            <div className="bg-zinc-950 border border-zinc-800 rounded-3xl w-full max-w-7xl h-[90vh] overflow-hidden flex flex-col shadow-2xl">
+            <div className="nz-background-primary border rounded-3xl w-full max-w-7xl h-[90vh] overflow-hidden flex flex-col shadow-2xl">
                 {/* Header */}
-                <div className="flex items-center justify-between border-b border-zinc-800 px-6 py-4 bg-zinc-900/50">
+                <div className="flex items-center justify-between border-b px-6 py-4 nz-background-accent">
                     <div className="flex items-center gap-4">
-                        <div className="p-2 bg-violet-500/10 rounded-lg">
+                        <div className="p-2 nz-background-primary rounded-lg">
                             <BookOpen className="w-6 h-6 text-violet-400" />
                         </div>
                         <div>
-                            <h2 className="font-bold text-zinc-100">{currentLesson.title}</h2>
-                            <p className="text-xs text-zinc-500 uppercase tracking-widest">Lesson {currentLessonIndex + 1} of {lessons.length}</p>
+                            <h2 className="font-bold line-clamp-1">{currentLesson.title}</h2>
+                            <p className="text-xs nz-text-muted uppercase tracking-widest">Lesson - {currentLessonIndex + 1} of {lessons.length}</p>
                         </div>
                     </div>
-                    <Button variant="btn_glass" size="icon" onClick={onClose} className="rounded-full">
-                        <X className="w-5 h-5" />
+                    <Button variant="btn_glass" size='sm' onClick={onClose} className="rounded-full">
+                        ESC
                     </Button>
                 </div>
                 <div className="flex flex-1 overflow-hidden">
                     {/* Sidebar */}
-                    <div className="w-72 border-r border-zinc-800 bg-zinc-950 overflow-y-auto hidden md:block">
+                    <div className="w-72 border-r nz-background-primary overflow-y-auto hidden md:block">
                         <div className="p-4 space-y-2">
                             {lessons.map((lesson, idx) => {
                                 const { isUnlocked, isCompleted } = getLessonStatus(idx);
@@ -112,7 +117,7 @@ export function LessonViewerModal({
                                         onClick={() => setCurrentLessonIndex(idx)}
                                         className={cn(
                                             "w-full flex items-center gap-3 p-3 rounded-xl transition-all",
-                                            isActive ? "bg-violet-600 shadow-lg shadow-violet-900/20" : "hover:bg-zinc-900",
+                                            isActive ? "nz-bg-primary italic shadow-lg shadow-violet-900/20" : "hover:nz-bg-hover",
                                             !isUnlocked && "opacity-30 cursor-not-allowed"
                                         )}
                                     >
@@ -127,16 +132,15 @@ export function LessonViewerModal({
                     </div>
 
                     {/* Content Area */}
-                    <div className="flex-1 flex flex-col bg-zinc-900/20 overflow-y-auto custom-scrollbar">
-                        <div className="max-w-4xl mx-auto w-full p-8 md:p-12">
-                            
+                    <div className="flex-1 flex flex-col nz-background-accent overflow-y-auto custom-scrollbar">
+                        <div className="max-w-4xl mx-auto w-full p-4 md:p-8">
                             {/* Video/Image Section */}
                             {currentLesson.url && (
-                                <div className="mb-10 rounded-2xl overflow-hidden border border-zinc-800 bg-black shadow-2xl aspect-video">
+                                <div className="mb-10 overflow-hidden border nz-background-secondary shadow-2xl aspect-video rounded-2xl">
                                     {isYouTubeUrl(currentLesson.url) ? (
                                         <iframe
                                             width="100%"
-                                            height="460"
+                                            height="100%"
                                             src={convertToYouTubeEmbed(currentLesson.url)}
                                             title={currentLesson.title}
                                             allowFullScreen
@@ -146,7 +150,7 @@ export function LessonViewerModal({
                                         <img 
                                             src={currentLesson.url} 
                                             alt={currentLesson.title}
-                                            className="w-full max-h-[460px] object-contain bg-black"
+                                            className="w-full max-h-[460px] object-contain nz-background-secondary"
                                         />
                                     )}
                                 </div>
@@ -154,13 +158,13 @@ export function LessonViewerModal({
 
                             {/* Text Content */}
                             <article className="prose prose-invert max-w-none mb-12">
-                                <p className="text-zinc-300 text-lg leading-relaxed whitespace-pre-wrap">
+                                <p className="text-lg leading-relaxed whitespace-pre-wrap">
                                     {currentLesson.content}
                                 </p>
                             </article>
 
                             {/* NAVIGATION INSIDE CONTENT - Твоя ідея тут */}
-                            <div className="py-12 border-t border-zinc-800 flex flex-col items-center gap-6">
+                            <div className="py-12 border-t flex flex-col items-center gap-6">
                                 {!currentCompleted ? (
                                     <Button 
                                         variant="btn_success" 
@@ -195,7 +199,7 @@ export function LessonViewerModal({
                 </div>
 
                 {/* Footer - Minimalist */}
-                <div className="p-4 border-t border-zinc-800 bg-zinc-950 flex justify-between px-8">
+                <div className="p-4 border-t nz-background-primary flex justify-between px-8">
                     <Button 
                         variant="btn_glass" 
                         onClick={() => setCurrentLessonIndex(prev => prev - 1)}
