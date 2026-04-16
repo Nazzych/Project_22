@@ -99,7 +99,7 @@ export const CourseCard = ({
             onClick={handleView}
             size="wf"
             variant="card_primary"
-            className="relative group transition-all duration-300 border overflow-hidden min-h-[22vh] hover:nz-background-secondary cursor-pointer"
+            className="relative group transition-all duration-300 border overflow-hidden min-h-[22vh] hover:nz-background-secondary cursor-pointer rounded-3xl"
         >
             {/* Обкладинка / Іконка */}
             <div className="h-40 bg-gradient-to-br from-zinc-800 to-zinc-950 relative overflow-hidden">

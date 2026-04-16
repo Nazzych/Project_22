@@ -329,7 +329,7 @@ export function CoursePage() {
                             </CardContent>
                         </Card>
                     ) : (
-                        <div className='p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 nz-background-primary border rounded-3xl'>
+                        <div className='max-h-[45vh] p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 nz-background-primary border overflow-y-auto rounded-3xl'>
                             {
                                 lessons
                                 .sort((a: any, b: any) => a.order - b.order)

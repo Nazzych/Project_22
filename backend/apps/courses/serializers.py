@@ -1,8 +1,10 @@
 # serializers.py (forum).
-from apps.users.serializers import UserSerializer
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from .models import Course, Lesson
+from apps.users.serializers import UserSerializer
+from .models import Course, Lesson, UserLessonProgress
 
+User = get_user_model()
 
 #Клас серелізатора уроку.
 class LessonSerializer(serializers.ModelSerializer):
@@ -10,14 +12,7 @@ class LessonSerializer(serializers.ModelSerializer):
         model = Lesson
         fields = ["id", "title", "content", "order", "url"]
 
-# serializers.py
-from rest_framework import serializers
-from django.contrib.auth import get_user_model
-from .models import Course, Lesson, UserLessonProgress
-
-User = get_user_model()
-
-
+#.
 class LessonWithProgressSerializer(serializers.ModelSerializer):
     is_unlocked = serializers.SerializerMethodField()
     is_completed = serializers.SerializerMethodField()
@@ -41,6 +36,25 @@ class LessonWithProgressSerializer(serializers.ModelSerializer):
         progress = UserLessonProgress.objects.filter(user=user, lesson=obj).first()
         return progress.is_completed if progress else False
 
+class CourseWithProgressSerializer(serializers.ModelSerializer):
+    author = UserSerializer(read_only=True)
+    lessons = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Course
+        fields = ["id", "author", "title", "description", "tegs", "level", 
+                  "category", "points", "image", "created_at", "lessons"]
+
+    def get_lessons(self, obj):
+        user = self.context.get('user')
+        lessons_qs = obj.lessons.all().order_by('order')
+        
+        serializer = LessonWithProgressSerializer(
+            lessons_qs, 
+            many=True, 
+            context={'user': user}
+        )
+        return serializer.data
 
 class CourseSerializer(serializers.ModelSerializer):
     author = UserSerializer(read_only=True)

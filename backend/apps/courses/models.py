@@ -16,13 +16,13 @@ class Category(models.TextChoices):
 
 #Клас курсу.
 class Course (models.Model):
+    author = models.ForeignKey (User, on_delete = models.CASCADE, related_name = "courses")
     title = models.CharField (max_length = 255)
     description = models.TextField()
     tegs = models.CharField (max_length = 255, null = True, blank = True)
+    points = models.PositiveIntegerField (default = 0)
     level = models.CharField (max_length = 20, choices = Difficul.choices, default = Difficul.EASY)
     category = models.CharField (max_length = 100, choices = Category.choices, default = Category.OTHER)
-    points = models.PositiveIntegerField (default = 0)
-    author = models.ForeignKey (User, on_delete = models.CASCADE, related_name = "courses")
     image = models.URLField (null = True, blank = True)
     created_at = models.DateTimeField (auto_now_add = True)
 
