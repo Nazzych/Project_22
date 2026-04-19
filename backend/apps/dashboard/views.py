@@ -5,7 +5,7 @@ from django.views.decorators.http import require_http_methods
 from django.core.exceptions import TooManyFilesSent
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
-from django.db import transaction
+from django.db import transaction, models
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
@@ -13,7 +13,7 @@ from rest_framework import viewsets, status as Statuse
 from storage3.exceptions import StorageApiError
 from users.permissions import isAuthenticated, IsAdministrator
 from apps.task.serializers import ChellangeSerializer
-from apps.task.models import Challange
+from apps.task.models import Challenge
 from apps.forum.serializers import ChannelSerializer
 from apps.forum.models import Channel
 from apps.courses.models import Course, Lesson
@@ -40,6 +40,7 @@ def add_challenge (request):
     points = data.get ("points", "")
     difficul = data.get ("difficul", "medium")
     language = data.get ("language", "python")
+    status = data.get ("status", "draft")
     e_input = data.get ("e_input", "").strip()
     e_output = data.get ("e_output", "").strip()
     code = data.get ("code", "").strip()
@@ -50,22 +51,22 @@ def add_challenge (request):
             "message": "Fields \"title\" and \"description\" requaried."
         }, status = Statuse.HTTP_400_BAD_REQUEST)
 
-    if Challange.objects.filter (title = title).exists():
+    if Challenge.objects.filter (title = title).exists():
         return Response ({
             "type": "warning",
-            "message": "Challange exist with this name. Pleace rename."
+            "message": "Challenge exist with this name. Pleace rename."
         }, status = Statuse.HTTP_400_BAD_REQUEST)
 
     try:
         with transaction.atomic():
-            challenge = Challange.objects.create (
+            challenge = Challenge.objects.create (
                 title = title,
                 description = description,
                 tegs = tegs,
-                status = False,
-                points = int (points) if points.isdigit() else 10,
+                points = int (points) if points.isdigit() else 0,
                 difficul = difficul,
                 language = language,
+                status = status,
                 e_input = e_input,
                 e_output = e_output,
                 code = code,
@@ -87,7 +88,7 @@ def add_challenge (request):
 @api_view (["PUT"])
 @permission_classes ([IsAdminOrReadOnly])
 def update_challange (request, challenge_id):
-    challenge = get_object_or_404 (Challange, id = challenge_id)
+    challenge = get_object_or_404 (Challenge, id = challenge_id)
 
     data = request.data
     title = data.get ("title", "").strip()
@@ -96,6 +97,7 @@ def update_challange (request, challenge_id):
     points = data.get ("points", "")
     difficul = data.get ("difficul", "medium")
     language = data.get ("language", "python")
+    status = data.get ("status", "draft")
     e_input = data.get ("e_input", "").strip()
     e_output = data.get ("e_output", "").strip()
     code = data.get ("code", "").strip()
@@ -106,10 +108,10 @@ def update_challange (request, challenge_id):
             "message": "Fields \"title\" and \"description\" requaried."
         }, status = Statuse.HTTP_400_BAD_REQUEST)
 
-    if Challange.objects.filter (title = title).exclude  ( id=challenge.id).exists():
+    if Challenge.objects.filter (title = title).exclude (id = challenge.id).exists():
         return Response ({
             "type": "warning",
-            "message": "Challange exist with this name. Pleace rename."
+            "message": "Challenge exist with this name. Pleace rename."
         }, status = Statuse.HTTP_400_BAD_REQUEST)
     
     try:
@@ -120,11 +122,13 @@ def update_challange (request, challenge_id):
         if tegs:
             challenge.tegs = tegs
         if points is not None:
-            challenge.points = int(points) if str(points).isdigit() else challenge.points
+            challenge.points = int (points) if str (points).isdigit() else challenge.points
         if difficul:
             challenge.difficul = difficul
         if language:
             challenge.language = language
+        if status:
+            challenge.status = status
         if e_input:
             challenge.e_input = e_input
         if e_output:
@@ -136,7 +140,7 @@ def update_challange (request, challenge_id):
         serializer = ChellangeSerializer (challenge)
         return Response ({
             "type": "success",
-            "message": "Challange updated successfuly",
+            "message": "Challenge updated successfuly",
             "challenge": serializer.data
         }, status = Statuse.HTTP_200_OK)
     except Exception as e:
@@ -151,12 +155,12 @@ def update_challange (request, challenge_id):
 @permission_classes ([IsAdminOrReadOnly])
 def delete_challenge (request, challenge_id):
     try:
-        Challange.objects.get (id = int (challenge_id)).delete()
+        Challenge.objects.get (id = int (challenge_id)).delete()
         return Response ({
             "type": "success",
             "message": "Chellange deleted successfully"
         }, status = Statuse.HTTP_200_OK)
-    except Challange.DoesNotExist:
+    except Challenge.DoesNotExist:
         return Response ({
             "type": "error",
             "message": "Challenge not found"
@@ -371,7 +375,7 @@ def delete_course (request, course_id):
             "type": "success",
             "message": "Course deleted successfully"
         }, status = Statuse.HTTP_200_OK)
-    except Challange.DoesNotExist:
+    except Challenge.DoesNotExist:
         return Response ({
             "type": "error",
             "message": "Course not found"
@@ -403,7 +407,6 @@ def add_lesson (request, course_id):
         }, status = Statuse.HTTP_400_BAD_REQUEST)
 
     created_lessons = []
-
     try:
         with transaction.atomic():
             for item in lessons_data:

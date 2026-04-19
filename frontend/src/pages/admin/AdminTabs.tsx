@@ -43,7 +43,7 @@ export default function AdminTabs({ tabs, activeTab, onTabChange }: AdminTabsPro
                             {isActive && (
                                 <motion.div
                                     layoutId="admin-tab-underline"
-                                    className="absolute bottom-0 left-0 right-0 h-[3px] bg-gradient-to-r from-red-500 to-orange-500 rounded-t-full"
+                                    className="absolute bottom-0 left-2 right-0 h-[3px] bg-gradient-to-r from-red-500 to-orange-500 rounded-t-full"
                                     transition={{
                                         type: 'spring',
                                         stiffness: 300,

@@ -27,10 +27,19 @@ export function LessonViewerModal({
     const [localCompletedIds, setLocalCompletedIds] = useState<number[]>([]);
 
     useEffect(() => {
-        if (initialLessonId) {
-            const index = lessons.findIndex(l => Number(l.id) === initialLessonId);
-            if (index !== -1) setCurrentLessonIndex(index);
+        if (lessons.length === 0) {
+            showToast ("warning", "No lessons in course [2]", "We closed the window.");
+            onClose();
+            return;
         }
+        let startIndex = 0;
+        if (initialLessonId) {
+            const foundIndex = lessons.findIndex(l => Number(l.id) === initialLessonId);
+            if (foundIndex !== -1) {
+                startIndex = foundIndex;
+            }
+        }
+        setCurrentLessonIndex(startIndex);
     }, [initialLessonId, lessons]);
 
 // YouTube helpers
@@ -62,7 +71,6 @@ export function LessonViewerModal({
     const currentLesson = lessons[currentLessonIndex];
     const { isUnlocked: currentUnlocked, isCompleted: currentCompleted } = getLessonStatus(currentLessonIndex);
     const hasNextLesson = currentLessonIndex < lessons.length - 1;
-    const nextLessonStatus = hasNextLesson ? getLessonStatus(currentLessonIndex + 1) : null;
 
     const handleComplete = async () => {
         const lessonId = Number(currentLesson.id);

@@ -8,7 +8,7 @@ import { ChallengeCard } from '../components/shared/cards/ChellangeCard';
 import { useToast } from '../hooks/useToast';
 import { Tasks } from '../types/tasks';
 import { tasksList } from '../api/tasks';
-import { LoadingSpinner } from '../components/LoadingSpinner';
+import { Skeleton } from '../components/LoadingSpinner';
 
 export function ChallengeList() {
     const { showToast } = useToast();
@@ -161,9 +161,11 @@ export function ChallengeList() {
                     {/* Список завдань */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                         {loading ? (
-                            <div className="col-span-full flex justify-center items-center py-12">
-                                <LoadingSpinner text="Завантаження завдань..." />
-                            </div>
+                            Array.from({ length: 8 }).map((_, idx) => (
+                                <div key={idx} className="w-full">
+                                    <Skeleton className="h-40 w-full mb-4 rounded-2xl" />
+                                </div>
+                            ))
                         ) : filteredTasks.length === 0 ? (
                             <div className="col-span-full flex flex-col items-center justify-center py-12 text-center nz-foreground">
                                 <XCircle className="w-12 h-12 mb-4 text-muted-foreground" />
@@ -178,7 +180,7 @@ export function ChallengeList() {
                                     key={card.id}
                                     is_staff={false}
                                     challenge={card}
-                                    loadChallenges={loadTasks}
+                                    loadChallenges={() => loadTasks()}
                                 />
                             ))
                         )}

@@ -1,6 +1,6 @@
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.models import User
-from django.db import models
+from django.db import models, transaction
 from apps.task.models import Difficul
 
 
@@ -43,8 +43,25 @@ class Lesson (models.Model):
     order = models.PositiveIntegerField()
     url = models.URLField (null = True, blank = True)
 
+    class Meta:
+        ordering = ["order"]
+        unique_together = ("course", "order")
+
     def __str__ (self):
         return f"{self.course.title} - {self.title}"
+
+    def save (self, *args, **kwargs):
+        if self.order is None or self.order == 0:
+            with transaction.atomic():
+                max_order = Lesson.objects.filter (course = self.course).aggregate (models.Max ("order"))["order__max"]
+                self.order = (max_order or 0) + 1
+        elif Lesson.objects.filter (course = self.course, order = self.order).exclude (pk = self.pk).exists():
+            with transaction.atomic():
+                Lesson.objects.filter (
+                    course = self.course, 
+                    order__gte = self.order
+                ).exclude (pk = self.pk).update (order = models.F ("order") + 1)
+        super().save (*args, **kwargs)
 
 #Клас прогресу курсу.
 class UserLessonProgress (models.Model):

@@ -1,12 +1,12 @@
 # serializers.py (task).
 #*Підключення бібліотек.
 from rest_framework import serializers
-from .models import Challange, ChallengeProgress
+from .models import Challenge, ChallengeProgress
 
 #Клас серелізатора завдання.
 class ChellangeSerializer (serializers.ModelSerializer):
     class Meta:
-        model = Challange
+        model = Challenge
         fields = ["id", "title", "points", "description", "tegs", "e_input", "e_output", "c_type", "code", "difficul", "language", "status", "created_at", "updated_at"]
 
 #Клас серелізатора завдання для користувача.

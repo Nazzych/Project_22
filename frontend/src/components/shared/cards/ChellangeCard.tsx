@@ -36,7 +36,7 @@ export const ChallengeCard = ({
 
     const handleView = () => {
         const slug = slugify(challenge.title);
-        navigate(`/challenge/${challenge.id}/${slug}`);
+        navigate(`/challenges/${challenge.id}/${slug}`);
     };
 
     const DeleteChallenge = async (id: string) => {
@@ -126,7 +126,7 @@ export const ChallengeCard = ({
             {/* Бейдж складності */}
             <span
                 className={cn(
-                    'absolute top-3 right-3 px-3 py-1 text-xs font-medium group-hover:nz-background-primary rounded-full',
+                    'absolute top-3 right-3 px-3 py-1 text-xs font-medium group-hover:nz-background-primary rounded-full cursor-default',
                     colorClass
                 )}
             >
@@ -142,7 +142,7 @@ export const ChallengeCard = ({
                                 : <Circle className="w-5 h-5 text-indigo-500" />
                         )}
                         <h3 className="text-lg font-semibold nz-text-foreground line-clamp-1">
-                            {challenge.title}
+                            {challenge.title}{String(challenge.status)}
                         </h3>
                     </div>
                 </div>
@@ -156,16 +156,16 @@ export const ChallengeCard = ({
 
                 {/* Додаткова інформація */}
                 <div className="flex justify-between flex-wrap gap-4">
-                    <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground cursor-default">
                         <div className="flex items-center gap-1">
                             <Trophy className="w-4 h-4 text-amber-500" />
-                            {challenge.points || '?'} pts
+                            {challenge.points} pts
                         </div>
                         <div className="flex items-center gap-1">
                             <Code2 className="w-4 h-4" />
                             {challenge.language?.toUpperCase() || '—'}
                         </div>
-{/* Теги */}
+                        {/* Теги */}
                         {challenge?.tegs && (
                             <div className="relative">
                                 <span 
