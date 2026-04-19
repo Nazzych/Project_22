@@ -33,7 +33,7 @@ export default function AppRoutes() {
                     <Route path="/" element={<Dashboard />} />
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/challenges" element={<ChallengeList />} />
-                    <Route path="/challenge/:challengeId/:slug" element={<ChallengePage />} />
+                    <Route path="/challenges/:challengeId/:slug" element={<ChallengePage />} />
                     <Route path="/courses" element={<CoursesList />} />
                     <Route path="/courses/:courseId/" element={<CoursePage />} />
                     <Route path="/projects" element={<ProjectsHub />} />

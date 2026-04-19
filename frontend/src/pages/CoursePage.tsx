@@ -1,7 +1,7 @@
 // pages/CourseDetailPage.tsx
 import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ChevronLeft, Plus, Clock, Trophy, Users, PlayCircle, Lock, CheckCircle, BookOpen, ChevronUp, ChevronDown, Share2, Play, MessageCirclePlusIcon, PlusCircle } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, Plus, XCircle, Trophy, PlayCircle, Lock, CheckCircle, ChevronUp, ChevronDown, Share2, Play, MessageCirclePlusIcon, PlusCircle, Unlock } from 'lucide-react';
 import { useProfile } from '../contexts/ProfileContext'
 import { useToast } from '../providers/MessageProvider';
 import { useModal } from '../hooks/useModal';
@@ -16,6 +16,7 @@ import { LessonManage } from '../components/shared/modal/modals/admin/LesonManag
 import { CourseManage } from '../components/shared/modal/modals/admin/CourseManage';
 import { ConfirmModal } from '../components/shared/modal/ConfirmModal';
 import { LessonViewerModal } from '../components/shared/modal/modals/curses/LessonModal';
+import { ProgressBar } from '../components/ui/ProgressBar';
 import { ActionsCellInChannel } from '../components/ActionCell';
 import { getCsrfToken } from '../api/auth';
 import { deleteCourse } from '../api/admin';
@@ -33,7 +34,6 @@ export function CoursePage() {
     const [lessons, setLessons] = useState<any>([]);
     const [loading, setLoading] = useState(true);
     const [isExpanded, setIsExpanded] = useState(false);
-    const [expandedLesson, setExpandedLesson] = useState<number | null>(null);
     const toggleExpande = () => setIsExpanded(!isExpanded);
 
     const loadCourseData = async () => {
@@ -41,7 +41,7 @@ export function CoursePage() {
         try {
             const courseData = await getCourse(Number(courseId))
             setCourse(courseData.course);
-            setLessons(courseData.lessons);
+            setLessons(courseData.lessons || []);
         } catch (err) {
             console.error ("Error geting current curse with lessons: ", err)
             showToast('error', 'Error', 'Not can load the courses');
@@ -49,32 +49,36 @@ export function CoursePage() {
             setLoading(false);
         }
     };
-
+    
     useEffect(() => {
         loadCourseData();
     }, [courseId]);
 
-    const firstUnlocked = lessons.findIndex((lesson: any) => lesson.is_unlocked);
-    const initialId = firstUnlocked !== -1 ? lessons[firstUnlocked].id : lessons[0]?.id;
+// Розрахунок прогресу.
+    const completedLessonsCount = lessons.filter((lesson: any) => lesson.is_completed).length;
+    const totalLessons = lessons.length;
+    const progressPercentage = totalLessons > 0 
+        ? Math.round((completedLessonsCount / totalLessons) * 100) 
+        : 0;
 
     const OpenEditCourse = (course: Course) => {
         openModal({
             id: 'forum-course',
             width: "lg",
             x: false,
-            title: (
-                <span className="flex items-center gap-2">
-                    <div className="w-fit nz-background-accent rounded-lg py-1 px-4 flex flex-row justify-center items-center gap-2">
-                        <MessageCirclePlusIcon className="w-5 h-5" />
-                        <span className="nz-foreground">Edit course</span>
-                    </div>
-                </span>
-            ),
-            content: (
-                <CourseManage
-                    course={course}
-                    onSuccess={loadCourseData}
-                    onDelete={() => {clickDeleteCourse(course.id)}}
+        title: (
+            <span className="flex items-center gap-2">
+                <div className="w-fit nz-background-accent rounded-lg py-1 px-4 flex flex-row justify-center items-center gap-2">
+                    <MessageCirclePlusIcon className="w-5 h-5" />
+                    <span className="nz-foreground">Edit course</span>
+                </div>
+            </span>
+        ),
+        content: (
+            <CourseManage
+                course={course}
+                onSuccess={loadCourseData}
+                onDelete={() => {clickDeleteCourse(course.id)}}
                 />
             ),
         });
@@ -115,18 +119,18 @@ export function CoursePage() {
                     onCancel={closeModal}
                     confirmText="Yes, delete"
                     cancelText="Cancel"
-                />
-            ),
-        });
-    }
-
-    const OpenAddLesson = () => {
-        openModal({
-            id: 'course-add-lessons',
-            width: "xl",
-            x: false,
-            title: (
-                <span className="flex items-center gap-2">
+                    />
+                ),
+            });
+        }
+        
+        const OpenAddLesson = () => {
+            openModal({
+                id: 'course-add-lessons',
+                width: "xl",
+                x: false,
+                title: (
+                    <span className="flex items-center gap-2">
                     <div className="w-fit nz-background-accent rounded-lg py-1 px-4 flex flex-row justify-center items-center gap-2">
                         <PlusCircle className="w-5 h-5" />
                         <span className="nz-foreground">Add lesson for curse</span>
@@ -135,24 +139,27 @@ export function CoursePage() {
             ),
             content: (
                 <LessonManage
-                    courseId={Number(course?.id)}
+                courseId={Number(course?.id)}
                     onSuccess={() => {loadCourseData(); closeModal()}}
-                />
+                    />
             ),
         });
     };
 
-    const toggleLesson = (lessonId: number) => {
-        setExpandedLesson(expandedLesson === lessonId ? null : lessonId);
-    };
-
+// Перший розблокований урок.
+    const firstUnlocked = lessons.findIndex((lesson: Lesson) => lesson.is_unlocked);
+    const initialId = firstUnlocked !== -1 && lessons[firstUnlocked].id;
     const beginStudy = () => {
+        if (lessons.length === 0) {
+            return showToast ("warning", "No lessons in course [1]", "You can't begin study!");
+        }
+
         const coursePoints = course?.points ?? 0;
         const userPoints = profile?.profile?.total_points ?? 0;
-
         if (coursePoints > userPoints) {
-            showToast ("info", "You not have points for it course", `Need points - ${coursePoints - userPoints}`);
+            return showToast ("info", "You not have points for it course", `Need points - ${coursePoints - userPoints}`);
         }
+
         showToast("info", "Good luck in study");
         openModal({
             id: 'course-begin-lesson',
@@ -169,6 +176,14 @@ export function CoursePage() {
             ),
         })
     };
+
+    const tags = course?.tegs
+        ? course.tegs
+            .split(',')
+            .map((tag: string) => tag.trim())
+            .filter((tag: string) => tag.length > 0)
+        : [];
+
 
     const difficultyLower = (course?.level || 'medium').toLowerCase();
 
@@ -254,7 +269,7 @@ export function CoursePage() {
                                 </h1>
                             </div>
                             <p className="flex flex-wrap items-center text-zinc-300 text-xs sm:text-sm gap-2 mt-1">
-                                <span className="hover:underline cursor-pointer">@{course.author?.username}</span> <span className={cn("flex items-center gap-2 " + (isExpanded ? "opacity-0" : "opacity-100"))}>• <Button size="sm" variant='btn_glass' className="flex items-center gap-2 mt-1" onClick={beginStudy} disabled={isExpanded}><Play className="w-4 h-5" />Begin</Button></span>
+                                <span className="hover:underline cursor-pointer">@{course.author?.username}</span> {lessons.length !== 0 && (<span className={cn("flex items-center gap-2 " + (isExpanded ? "opacity-0" : "opacity-100"))}>• <Button size="sm" variant='btn_glass' className="flex items-center gap-2 mt-1" onClick={beginStudy} disabled={isExpanded}><Play className="w-4 h-5" />{lessons[0].is_unlocked ? "Countinue" : "Begin"}</Button></span>)}
                             </p>
                             {/* Розгорнутий опис */}
                             <AnimatePresence>
@@ -267,11 +282,31 @@ export function CoursePage() {
                                         className="mt-4 overflow-hidden"
                                     >
                                         <span className="text-xs nz-text-muted block mb-2">Description</span>
-                                        <p className="max-h-[100px] nz-background-accent text-zinc-200 p-2 leading-relaxed font-medium rounded-xl overflow-y-auto text-xs sm:text-base">
+                                        <p className="max-h-[100px] nz-background-accent text-zinc-200 p-2 leading-relaxed font-medium rounded-xl overflow-y-auto text-xs sm:text-base whitespace-pre-wrap">
                                             {course.description || "No description available."}
                                         </p>
+                                        <div className='my-4 p-2 nz-background-accent rounded-lg'>
+                                            {tags ? (
+                                                <div>
+                                                    <div className="flex flex-wrap gap-2 pl-4">
+                                                        {tags.map((tag: string, index: number) => (
+                                                            <span
+                                                                key={`${tag}-${index}`}
+                                                                className="nz-background-primary text-sm font-medium px-3 py-1 rounded-full"
+                                                            >
+                                                                {tag}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <p className='flex items-center pl-4 gap-2 nz-text-muted'><XCircle className='w-4 h-4' />No tags</p>
+                                            )}
+                                        </div>
                                         <div className="mt-4 flex flex-wrap gap-x-2 gap-y-3 text-xs sm:text-sm nz-text-muted">
-                                            <Button size="sm" variant='btn_glass' className="flex items-center gap-2" onClick={beginStudy}><Play className="w-4 h-5" />Begin</Button>
+                                            {lessons.length !== 0 && (
+                                                <Button size="sm" variant='btn_glass' className="flex items-center gap-2" onClick={beginStudy}><Play className="w-4 h-5" />{lessons[0].is_unlocked ? "Countinue" : "Begin"}</Button>
+                                            )}
                                             <Button size="sm" variant='btn_glass' className="flex items-center gap-2"><Share2 className="w-4 h-5" />Share</Button>
                                         </div>
                                     </motion.div>
@@ -279,6 +314,20 @@ export function CoursePage() {
                             </AnimatePresence>
                         </div>
                     </div>
+                    {progressPercentage !== 0 && (
+                        <div className="mt-3 px-2">
+                            <ProgressBar
+                                value={completedLessonsCount}
+                                max={totalLessons}
+                                label="Curse progress"
+                                showValue={true}
+                                colorClass="bg-gradient-to-r from-emerald-500 to-teal-500"
+                            />
+                            <p className="text-xs text-center nz-text-muted mt-2">
+                                {completedLessonsCount} of {totalLessons} lessons completed
+                            </p>
+                        </div>
+                    )}
                 </div>
                 {/* Кнопки керування */}
                 <Button size='sm'
@@ -329,7 +378,7 @@ export function CoursePage() {
                             </CardContent>
                         </Card>
                     ) : (
-                        <div className='max-h-[45vh] p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 nz-background-primary border overflow-y-auto rounded-3xl'>
+                        <div className='max-h-[40vh] p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 nz-background-primary border overflow-y-auto rounded-3xl'>
                             {
                                 lessons
                                 .sort((a: any, b: any) => a.order - b.order)
@@ -339,12 +388,19 @@ export function CoursePage() {
                                         className="h-fit overflow-hidden transition-all"
                                     >
                                         <CardHeader className="flex flex-row items-center justify-between py-5">
-                                            <div className="flex items-center gap-4">
+                                            <div className="w-full flex items-center gap-4">
                                                 <div className="min-w-8 min-h-8 rounded-xl nz-background-secondary border flex items-center justify-center text-sm font-mono">
                                                     {index + 1}
                                                 </div>
-                                                <div>
+                                                <div className='w-full flex justify-between items-center gap-2'>
                                                     <h3 className="font-medium line-clamp-1">{lesson.title}</h3>
+                                                    {lesson.is_completed ? (
+                                                        <CheckCircle className='min-w-4 min-h-4 text-emerald-400' />
+                                                    ) : lesson.is_unlocked ? (
+                                                        <Unlock className='min-w-4 min-h-4 text-indigo-400' />
+                                                    ) : (
+                                                        <Lock className="min-w-4 min-h-4 text-zinc-500" />
+                                                    )}
                                                 </div>
                                             </div>
                                         </CardHeader>

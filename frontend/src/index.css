@@ -339,7 +339,7 @@ body {
     color: var(--muted-foreground);
 }
 
-.nz-bg-destructive {
+.nz-bg-destructive, .hover\:nz-bg-destructive:hover {
     background-color: var(--destructive);
 }
 .nz-text-destructive {
@@ -353,21 +353,21 @@ body {
     color: var(--primary-foreground);
 }
 /* State */
-.nz-bg-info {
+.nz-bg-info, .hover\:nz-bg-info:hover {
     background-color: var(--info);
 }
 .nz-text-info {
     color: var(--info-foreground);
 }
 
-.nz-bg-success {
+.nz-bg-success, .hover\:nz-bg-success:hover {
     background-color: var(--success);
 }
 .nz-text-success {
     color: var(--success-foreground);
 }
 
-.nz-bg-warning {
+.nz-bg-warning, .hover\:nz-bg-warning:hover {
     background-color: var(--warning);
 }
 .nz-text-warning {

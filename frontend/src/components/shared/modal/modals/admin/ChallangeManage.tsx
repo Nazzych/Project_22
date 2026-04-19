@@ -20,6 +20,12 @@ const difficultyOptions = [
     { value: 'hard', label: 'Hard' },
 ];
 
+const statusOptions = [
+    { value: 'draft', label: 'Draft' },
+    { value: 'published', label: 'Published' },
+    { value: 'archived', label: 'Archived' },
+];
+
 const pointsOptions = [
     { value: 10, label: "10 Points" },
     { value: 20, label: "20 Points" },
@@ -80,8 +86,9 @@ export function ChallangeManage({ onSuccess, onDelete, task }: TaskManageProps) 
         description: task?.description || "",
         tegs: task?.tegs || "",
         points: task?.points || "",
-        difficul: task?.difficul || "",
-        language: task?.language || "",
+        difficul: task?.difficul ?? "medium",
+        language: task?.language ?? "python",
+        status: task?.status ?? "draft",
         e_input: task?.e_input || "",
         e_output: task?.e_output || "", 
         code: task?.code || "",
@@ -119,8 +126,8 @@ export function ChallangeManage({ onSuccess, onDelete, task }: TaskManageProps) 
                 await createTask(form);
                 showToast('success', 'Task created', 'Task created successfully');
             }
-            onSuccess();
             closeModal();
+            onSuccess();
         } catch (err: any) {
             console.error(err);
             if (err.response?.status === 400) {
@@ -130,7 +137,7 @@ export function ChallangeManage({ onSuccess, onDelete, task }: TaskManageProps) 
                 } else {
                     showToast('warning', 'Validation error', msg || 'Check entered data.');
                 }
-            } else {
+            } else if (err !== "TypeError: onSuccess is not a function") {
                 showToast('error', 'Save failed', 'Can\'t save channges.');
             }
             //? showToast('error', '[DEBUG]', `${err}`);
@@ -140,7 +147,7 @@ export function ChallangeManage({ onSuccess, onDelete, task }: TaskManageProps) 
     };
 
     return (
-        <form onSubmit={handleSubmit} className="w-full pl-0 md:pl-1 space-y-4">
+        <form onSubmit={handleSubmit} className="w-full pl-1 space-y-4">
             {/* Назва */}
             <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                 <div>
@@ -177,13 +184,22 @@ export function ChallangeManage({ onSuccess, onDelete, task }: TaskManageProps) 
             <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                 <div className='space-y-4'>
                     {/* Складність + Мова + Статус */}
-                    <div className='space-y-4'>
+                    <div className='space-y-5'>
                         <div>
                             <label className="block text-md font-medium mb-1">Difficult</label>
                             <Select className='nz-bg-input rounded-xl'
                                 options={difficultyOptions}
                                 value={form.difficul}
                                 onChange={handleSelectChange('difficul')}
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-md font-medium mb-1">Status</label>
+                            <Select className='nz-bg-input rounded-xl'
+                                options={statusOptions}
+                                value={form.status}
+                                onChange={handleSelectChange('status')}
                             />
                         </div>
 
@@ -196,32 +212,6 @@ export function ChallangeManage({ onSuccess, onDelete, task }: TaskManageProps) 
                             />
                         </div>
                     </div>
-
-                    {/* Приклад Input / Output */}
-                    <div>
-                        <div>
-                            <label className="block text-md font-medium mb-1">Example Input</label>
-                            <Textarea
-                                name="e_input"
-                                value={form.e_input}
-                                onChange={handleChange}
-                                rows={3}
-                                placeholder="nums = [2,7,11,15], target = 9"
-                            />
-                            <span className='block text-[12px] text-right nz-text-muted'>*not required</span>
-                        </div>
-                        <div>
-                            <label className="block text-md font-medium mb-1">Example Output</label>
-                            <Textarea
-                                name="e_output"
-                                value={form.e_output}
-                                onChange={handleChange}
-                                rows={3}
-                                placeholder="[0,1]"
-                            />
-                            <span className='block text-[12px] text-right nz-text-muted'>*not required</span>
-                        </div>
-                    </div>
                 </div>
 
                 {/* Опис */}
@@ -231,10 +221,36 @@ export function ChallangeManage({ onSuccess, onDelete, task }: TaskManageProps) 
                         name="description"
                         value={form.description}
                         onChange={handleChange}
-                        rows={20}
+                        rows={10}
                         placeholder="Write function, which be ..."
                         className="w-full"
                     />
+                </div>
+            </div>
+
+            {/* Приклад Input / Output */}
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                <div>
+                    <label className="block text-md font-medium mb-1">Example Input</label>
+                    <Textarea
+                        name="e_input"
+                        value={form.e_input}
+                        onChange={handleChange}
+                        rows={3}
+                        placeholder="nums = [2,7,11,15], target = 9"
+                    />
+                    <span className='block text-[12px] text-right nz-text-muted'>*not required</span>
+                </div>
+                <div>
+                    <label className="block text-md font-medium mb-1">Example Output</label>
+                    <Textarea
+                        name="e_output"
+                        value={form.e_output}
+                        onChange={handleChange}
+                        rows={3}
+                        placeholder="[0,1]"
+                    />
+                    <span className='block text-[12px] text-right nz-text-muted'>*not required</span>
                 </div>
             </div>
 

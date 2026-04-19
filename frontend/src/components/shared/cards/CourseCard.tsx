@@ -87,9 +87,9 @@ export const CourseCard = ({
     const difficultyLower = (course?.level || 'medium').toLowerCase();
 
     const difficultyColor = {
-        easy: 'text-green-500 bg-green-500/10',
-        medium: 'text-yellow-500 bg-yellow-500/10',
-        hard: 'text-red-500 bg-red-500/10',
+        easy: 'nz-foreground bg-green-500/50',
+        medium: 'nz-foreground bg-yellow-500/50',
+        hard: 'nz-foreground bg-red-500/50',
     } as const;
 
     const colorClass = difficultyColor[difficultyLower as keyof typeof difficultyColor] || 'text-gray-500 bg-gray-500/10';
