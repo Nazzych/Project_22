@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { 
-    BookOpen, Tag, Trophy, Clock, MoreVertical, Users, Edit2, GraduationCap
+    BookOpen, Tag, Trophy, Clock, MoreVertical, Edit2, Circle, CircleCheck
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardContent } from '../../ui/Card';
@@ -99,12 +99,22 @@ export const CourseCard = ({
             onClick={handleView}
             size="wf"
             variant="card_primary"
-            className="relative group transition-all duration-300 border overflow-hidden min-h-[22vh] hover:nz-background-secondary cursor-pointer rounded-3xl"
+            className="min-h-[22vh] group transition-all duration-300 border overflow-hidden hover:nz-background-secondary cursor-pointer rounded-3xl"
         >
+            <div>
+                {/* Бейдж рівня */}
+                <div className="flex flex-wrap items-center justify-between gap-2 p-2">
+                    <Circle className='w-5 h-5' />
+                    <span className={cn(
+                        "px-3 py-1 text-xs font-medium rounded-full border", colorClass)}>
+                        {course.level?.toUpperCase() || 'BEGINNER'}
+                    </span>
+                </div>
+            </div>
             {/* Обкладинка / Іконка */}
             <div className="h-40 bg-gradient-to-br from-zinc-800 to-zinc-950 relative overflow-hidden">
                 {course.image ? (
-                    <img 
+                    <img
                         src={course.image} 
                         alt={course.title}
                         className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
@@ -114,22 +124,14 @@ export const CourseCard = ({
                         <BookOpen className="w-16 h-16" />
                     </div>
                 )}
-
-                {/* Бейдж рівня */}
-                <div className="absolute top-3 left-3">
-                    <span className={cn(
-                        "px-3 py-1 text-xs font-medium rounded-full border", colorClass)}>
-                        {course.level?.toUpperCase() || 'BEGINNER'}
-                    </span>
-                </div>
             </div>
 
-            <CardContent className="p-5 space-y-2">
+            <CardContent className="p-4 space-y-2">
                 <h3 className="font-semibold text-lg line-clamp-2 transition-colors">
                     {course.title}
                 </h3>
 
-                <p className="text-sm text-muted-foreground line-clamp-3 min-h-[58px]">
+                <p className="min-h-[2rem] text-sm text-muted-foreground line-clamp-2">
                     {course.description || 'No description...'}
                 </p>
 
@@ -151,9 +153,9 @@ export const CourseCard = ({
                         <Tooltip text={tags.join(", ")}>
                             <span onClick={(e) => {e.stopPropagation()}}
                                 ref={tagRef}
-                                className="text-xs px-2.5 py-1 nz-background-accent rounded-full border group-hover:nz-background-primary cursor-default"
+                                className="flex items-center gap-2 text-xs px-2.5 py-1 nz-background-accent rounded-full border group-hover:nz-background-primary cursor-default"
                             >
-                                Tags
+                                <Tag className='w-4 h-4' />Tags
                             </span>
                         </Tooltip>
                     )}

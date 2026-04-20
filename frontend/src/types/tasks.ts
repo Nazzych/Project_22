@@ -2,15 +2,11 @@ export type Tasks = {
     id: number;
     title: string;
     description: string;
-    tegs: string;
+    tags: string;
     status: string;
-    e_input: string;
-    e_output: string;
     c_type: string;
-    code: string;
     questions: [question_text: string, answers: []];
-    difficul: string;
-    language: string;
+    difficulty: string;
     points: number;
     created_at: string;
     updated_at: string;

@@ -11,6 +11,7 @@ import { useToast } from '../../../../../providers/MessageProvider';
 import { useModal } from '../../../../../hooks/useModal';
 import { getCsrfToken } from '../../../../../api/auth';
 import { createProject, updateProject } from '../../../../../api/projects';
+import { projectUpdate } from '../../../../../api/admin';
 import { EditableProject, ProjectFormProps } from '../../../../../types/projects';
 import { motion } from 'framer-motion';
 import axios from 'axios';
@@ -18,7 +19,7 @@ import axios from 'axios';
 const tabs = ['General', 'README', 'Files'] as const;
 type Tab = typeof tabs[number];
 
-export function ProjectManage({ onSuccess, onDelete, project }: ProjectFormProps) {
+export function ProjectManage({ onSuccess, onDelete, isAdminMode, project }: ProjectFormProps) {
     const { showToast } = useToast();
     const { closeModal } = useModal();
     const [activeTab, setActiveTab] = useState<Tab>('General');
@@ -97,15 +98,22 @@ export function ProjectManage({ onSuccess, onDelete, project }: ProjectFormProps
             await getCsrfToken();
             // Редагування проєкту
             if (project) {
-                await updateProject(project.id, form);
-                showToast('success', 'Project updated', 'Your project has been successfully updated.');
+                if (isAdminMode) {
+                    await projectUpdate(project!.id, form);
+                    showToast('info', 'Project updated', 'Project has been successfully updated.');
+                } else {
+                    await updateProject(project!.id, form);
+                    showToast('success', 'Project updated', 'Your project has been successfully updated.');
+                }
             // Створення нового проєкту
             } else {
                 await createProject(formData);
                 showToast('success', 'Project created', 'Your project has been successfully added.');
             }
 
-            onSuccess();
+            if (onSuccess) {
+                onSuccess();
+            }
             closeModal();
         } catch (err) {
             console.error('Error saving project:', err);
@@ -320,7 +328,7 @@ export function ProjectManage({ onSuccess, onDelete, project }: ProjectFormProps
                     {project && (
                         <Button type="button" variant="btn_destructive" disabled={loading} className='relative flex' onDoubleClick={onDelete}>
                             <Trash2 className='w-4 h-4 mr-1' /> Delete
-                            <span className='absolute -bottom-1 text-[8px]'>—•Double click•—</span>
+                            <span className='absolute -bottom-1 text-[8px]'>Double click</span>
                         </Button>
                     )}
                     <Button type="button" variant="btn_secondary" disabled={loading} onClick={closeModal}>

@@ -85,6 +85,27 @@ export async function createLessons(courseId: number, form: any) {
     return response.data;
 }
 
+export async function projectsList() {
+    const response = await axios.get(`${API_BASE}/admin/projects/`, {
+        withCredentials: true,
+    });
+    return response.data;
+}
+
+export async function projectUpdate(ProjId: number, form: any) {
+    const response = await axios.patch(`${API_BASE}/admin/proj/${ProjId}/update/`, form, {
+        withCredentials: true,
+    });
+    return response.data;
+}
+
+export async function projectDelete(ProjId: number) {
+    const response = await axios.delete(`${API_BASE}/admin/proj/${ProjId}/del/`, {
+        withCredentials: true,
+    });
+    return response.data;
+}
+
 export async function usersList() {
     const response = await axios.get(`${API_BASE}/admin/users/`, {
         withCredentials: true,

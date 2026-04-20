@@ -32,19 +32,13 @@ export const useChallenges = () => {
             const q = search.toLowerCase().trim();
             result = result.filter(task =>
                 task.title?.toLowerCase().includes(q) ||
-                task.tegs?.toLowerCase().includes(q)
+                task.tags?.toLowerCase().includes(q)
             );
         }
 
         if (difficulty) {
             result = result.filter(task => 
-                task.difficul?.toLowerCase() === difficulty.toLowerCase()
-            );
-        }
-
-        if (language) {
-            result = result.filter(task => 
-                task.language?.toLowerCase() === language.toLowerCase()
+                task.difficulty?.toLowerCase() === difficulty.toLowerCase()
             );
         }
 

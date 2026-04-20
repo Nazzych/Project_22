@@ -26,6 +26,11 @@ const statusOptions = [
     { value: 'archived', label: 'Archived' },
 ];
 
+const typeOptions = [
+    { value: 'quiz', label: 'Quiz' },
+    { value: 'code', label: 'Code' },
+];
+
 const pointsOptions = [
     { value: 10, label: "10 Points" },
     { value: 20, label: "20 Points" },
@@ -89,6 +94,7 @@ export function ChallangeManage({ onSuccess, onDelete, task }: TaskManageProps) 
         difficul: task?.difficul ?? "medium",
         language: task?.language ?? "python",
         status: task?.status ?? "draft",
+        c_type: task?.c_type ?? "quiz",
         e_input: task?.e_input || "",
         e_output: task?.e_output || "", 
         code: task?.code || "",
@@ -209,6 +215,15 @@ export function ChallangeManage({ onSuccess, onDelete, task }: TaskManageProps) 
                                 options={languageOptions}
                                 value={form.language}
                                 onChange={handleSelectChange('language')}
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-md font-medium mb-1">Type of task</label>
+                            <Select className='nz-bg-input rounded-xl'
+                                options={typeOptions}
+                                value={form.c_type}
+                                onChange={handleSelectChange('c_type')}
                             />
                         </div>
                     </div>

@@ -27,4 +27,7 @@ urlpatterns = [
     path ("course/edit/<int:course_id>/", views.edit_course, name = "course-edit"),
     path ("course/del/<int:course_id>/", views.delete_course, name = "course-delete"),
     path ("lesson/add/<int:course_id>/", views.add_lesson, name = "add-lesson"),
+    path ("projects/", views.get_projects, name = "projects"),
+    path ("proj/<int:project_id>/update/", views.update_project, name = "update-project"),
+    path ("proj/<int:project_id>/del/", views.delete_project, name = "del-project"),
 ]
