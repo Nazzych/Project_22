@@ -7,7 +7,7 @@ from .models import Challenge, ChallengeProgress
 class ChellangeSerializer (serializers.ModelSerializer):
     class Meta:
         model = Challenge
-        fields = ["id", "title", "points", "description", "tegs", "e_input", "e_output", "c_type", "code", "difficul", "language", "status", "created_at", "updated_at"]
+        fields = ["id", "title", "points", "description", "tags", "c_type", "difficulty", "status", "created_at", "updated_at"]
 
 #Клас серелізатора завдання для користувача.
 class ChellangeProgressSerializer (serializers.ModelSerializer):

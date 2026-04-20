@@ -91,6 +91,15 @@ export const ProjectCard = ({
             ),
         });
     };
+    const handleEditClick = (e: React.MouseEvent) => {
+        e.stopPropagation();           // важливо!
+        if (onEdit) {
+            onEdit(id);                // для адміна
+        } else {
+            handleClick(proj);         // для звичайного користувача
+        }
+    };
+
     return (
         <Card onClick={(e) => {e.stopPropagation(); handleView();}}
             variant="card_primary"
@@ -105,7 +114,7 @@ export const ProjectCard = ({
                 </div>
             ) : (
                 <div className="flex justify-center items-center h-32 w-full">
-                    <span className='p-2 flex items-center nz-background-secondary rounded-xl text-md gap-1'><Folders className='w-16 h-16' />{status}</span>
+                    <span className='p-2 flex items-center nz-background-secondary rounded-xl text-md gap-1 capitalize'><Folders className='w-16 h-16' />{status}</span>
                 </div>
             )}
             <CardHeader className='py-2'>
@@ -114,11 +123,7 @@ export const ProjectCard = ({
                     {canEdit && (
                         <div className='space-x-2'>
                             <button className='hover:nz-background-secondary p-1 rounded-full'
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    onEdit?.(id);
-                                    handleClick (proj)
-                                }}><Settings className="w-4 h-4" />
+                                onClick={(e) => {handleEditClick(e)}}><Settings className="w-4 h-4" />
                             </button>
                         </div>
                     )}

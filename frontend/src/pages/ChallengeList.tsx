@@ -48,19 +48,19 @@ export function ChallengeList() {
             const searchLower = search.toLowerCase().trim();
             result = result.filter(task =>
                 task.title.toLowerCase().includes(searchLower) ||
-                task.tegs?.toLowerCase().includes(searchLower)
+                task.tags?.toLowerCase().includes(searchLower)
             );
         }
 
         // Фільтр по складності
         if (difficulty) {
-            result = result.filter(task => task.difficul?.toLowerCase() === difficulty.toLowerCase());
+            result = result.filter(task => task.difficulty?.toLowerCase() === difficulty.toLowerCase());
         }
 
-        // Фільтр по мові
-        if (language) {
-            result = result.filter(task => task.language?.toLowerCase() === language.toLowerCase());
-        }
+        // // Фільтр по мові
+        // if (language) {
+        //     result = result.filter(task => task.language?.toLowerCase() === language.toLowerCase());
+        // }
 
         setFilteredTasks(result);
     }, [search, difficulty, language, tasks]);

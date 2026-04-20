@@ -2,6 +2,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from apps.users.models import Profile
+from apps.projects.models import Project
 from .models import BannedUser
 
 #Клас серелізатора профілю.
@@ -93,3 +94,57 @@ class AdminUserListSerializer (serializers.ModelSerializer):
             "ban_info",
             "profile"
         ]
+
+#Клас серелізатора для відображення списку проектів.
+class AdminProjectListSerializer (serializers.ModelSerializer):
+    owner = AdminUserUpdateSerializer (read_only = True)
+    class Meta:
+        model = Project
+        fields = [
+            "id",
+            "owner",
+            "title",
+            "description",
+            "readme",
+            "github_url",
+            "technologies",
+            "image",
+            "stars",
+            "status",
+            "is_public",
+            "created_at"
+        ]
+
+#Клас серелізатора для редагування проекту.
+class AdminProjectUpdateSerializer (serializers.ModelSerializer):
+    owner = serializers.PrimaryKeyRelatedField (
+        queryset = User.objects.all(), 
+        required = False
+    )
+
+    class Meta:
+        model = Project
+        fields = [
+            "owner",
+            "title",
+            "description",
+            "readme",
+            "github_url",
+            "technologies",
+            "image",
+            "stars",
+            "status",
+            "is_public"
+        ]
+        extra_kwargs = {
+            "title": {"required": False},
+            "description": {"required": False},
+            "readme": {"required": False},
+            "github_url": {"required": False, "allow_blank": True},
+            "live_url": {"required": False, "allow_blank": True},
+            "technologies": {"required": False, "allow_blank": True},
+            "image": {"required": False, "allow_blank": True},
+            "stars": {"required": False},
+            "status": {"required": False, "allow_blank": True},
+            "is_public": {"required": False},
+        }

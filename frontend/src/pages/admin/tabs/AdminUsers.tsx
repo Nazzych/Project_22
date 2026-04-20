@@ -14,6 +14,7 @@ import { Skeleton } from '../../../components/LoadingSpinner';
 export default function AdminForum() {
     const { profile } = useProfile()
     const { showToast } = useToast();
+    const { openModal } = useModal();
     const [users, setUsers] = useState<Profile[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -23,7 +24,7 @@ export default function AdminForum() {
             const data = await usersList()
             setUsers (data);
         } catch (err) {
-            console.error ("Error geting current curse with lessons: ", err)
+            console.error ("Error geting current curse with lessons.\n", err)
             showToast('error', 'Error', 'Not can load the users');
         } finally {
             setLoading(false);
@@ -34,7 +35,6 @@ export default function AdminForum() {
         getUsers();
     }, []);
 
-    const { openModal } = useModal();
     const handleEditClick = (user: any) => {
         if (!profile) return;
         if (!user.is_superuser) {

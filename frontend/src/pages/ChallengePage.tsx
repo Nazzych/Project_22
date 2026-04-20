@@ -22,26 +22,26 @@ export default function ChallengePage() {
     const [challenge, setChallenge] = useState<Tasks | null>(null);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const loadChallenge = async () => {
-            if (!challengeId) return;
-            try {
-                const data = await getChallenge(Number(challengeId));
-                setChallenge(data);
-            } catch (err) {
-                showToast('error', 'Error', 'Can\'t load the data!');
-                navigate('/challenges');
-            } finally {
-                setLoading(false);
-            }
-        };
+    const loadChallenge = async () => {
+        if (!challengeId) return;
+        try {
+            const data = await getChallenge(Number(challengeId));
+            setChallenge(data);
+        } catch (err) {
+            showToast('error', 'Error', 'Can\'t load the data!');
+            navigate('/challenges');
+        } finally {
+            setLoading(false);
+        }
+    };
 
+    useEffect(() => {
         loadChallenge();
-    }, [challengeId, navigate, showToast]);
+    }, []);
 
 
     // Визначення кольору складності
-    const difficultyLower = (challenge?.difficul || 'medium').toLowerCase();
+    const difficultyLower = (challenge?.difficulty || 'medium').toLowerCase();
 
     const difficultyColor = {
         easy: 'text-green-500 bg-green-500/10',
@@ -93,8 +93,8 @@ export default function ChallengePage() {
                 return <QuizChallengeView challenge={challenge} />;
             default:
                 return (
-                    <div className="flex items-center gap-4 text-center py-20 text-yellow-400">
-                        <TriangleAlert className="w-4 h-4" />
+                    <div className="flex items-center gap-4 text-xl text-center py-20 text-yellow-400">
+                        <TriangleAlert className="w-5 h-5" />
                         Unknown task type: {challenge.c_type}
                     </div>
                 );
@@ -128,7 +128,7 @@ export default function ChallengePage() {
                         <span className="font-medium">{challenge.points} pts</span>
                     </div>
                     <div className={cn("px-3 py-1 text-xs font-medium rounded-full", colorClass)}>
-                        {challenge.difficul.toUpperCase()}
+                        {challenge.difficulty.toUpperCase()}
                     </div>
                     <div className="flex items-center gap-2">
                         <span className="flex items-center gap-1 font-medium">

@@ -136,7 +136,7 @@ export function Login() {
                             <hr className="flex-grow border-black" />
                         </div>
                         <div className='flex justify-center mt-6'>
-                            <div className="w-48 nz-background-muted flex justify-center items-center gap-2 text-sm text-foreground/70 rounded-full py-2">
+                            <div className="w-fit nz-background-muted flex justify-center items-center gap-2 text-sm text-foreground/70 rounded-full p-1">
                                 <Button
                                     variant="btn_primary"
                                     size='sm'
@@ -145,7 +145,7 @@ export function Login() {
                                         window.location.assign(`https://github.com/login/oauth/authorize?client_id=Ov23litWAwe4QveF02LR&redirect_uri=http://localhost:8000/user/auth/github/callback/&scope=read:user user:email`)
                                     }
                                     >
-                                    <GithubIcon className="mr-2 h-4 w-4" /> Login
+                                    <GithubIcon className="mr-2 h-4 w-4" /> GitHub
                                 </Button>
                                 <Button
                                     variant="btn_primary"
@@ -155,7 +155,7 @@ export function Login() {
                                         window.location.assign(`https://accounts.google.com/o/oauth2/v2/auth?client_id=YOUR_GOOGLE_CLIENT_ID&redirect_uri=http://localhost:8000/user/auth/google/callback/&response_type=code&scope=profile email`)
                                     }
                                     >
-                                    <ChromeIcon className="mr-2 h-4 w-4" /> Login
+                                    <ChromeIcon className="mr-2 h-4 w-4" /> Google
                                 </Button>
                             </div>
                         </div>

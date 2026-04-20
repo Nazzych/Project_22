@@ -18,9 +18,9 @@ from apps.forum.serializers import ChannelSerializer
 from apps.forum.models import Channel
 from apps.courses.models import Course, Lesson
 from apps.courses.serializers import CourseSerializer, LessonSerializer
-from apps.users.models import Profile
+from apps.projects.models import Project
 from .permissions import IsAdminOrReadOnly
-from .serializers import AdminUserListSerializer, AdminUserUpdateSerializer, AdminBanUserSerializer
+from .serializers import AdminUserListSerializer, AdminUserUpdateSerializer, AdminProjectListSerializer, AdminProjectUpdateSerializer
 from .models import BannedUser
 import traceback, json, os, re
 
@@ -41,6 +41,7 @@ def add_challenge (request):
     difficul = data.get ("difficul", "medium")
     language = data.get ("language", "python")
     status = data.get ("status", "draft")
+    c_type = data.get ("c_type", "").strip()
     e_input = data.get ("e_input", "").strip()
     e_output = data.get ("e_output", "").strip()
     code = data.get ("code", "").strip()
@@ -62,14 +63,11 @@ def add_challenge (request):
             challenge = Challenge.objects.create (
                 title = title,
                 description = description,
-                tegs = tegs,
+                tags = tegs,
+                c_type = c_type,
                 points = int (points) if points.isdigit() else 0,
-                difficul = difficul,
-                language = language,
+                difficulty = difficul,
                 status = status,
-                e_input = e_input,
-                e_output = e_output,
-                code = code,
             )
 
         serializer = ChellangeSerializer (challenge)
@@ -556,4 +554,48 @@ def ban_user (request, user_id):
         return Response ({
             "type": "error",
             "message": "Server error while processing ban"
+        }, status = Statuse.HTTP_500_INTERNAL_SERVER_ERROR)
+
+#.
+@api_view (["GET"])
+@permission_classes ([IsAdminOrReadOnly])
+def get_projects (request):
+    projects = Project.objects.all()
+    serializer = AdminProjectListSerializer (projects, many = True)
+    return Response ({"type": "success", "projects": serializer.data})
+
+#.
+@api_view (["PUT", "PATCH"])
+@permission_classes ([IsAdminOrReadOnly])
+def update_project (request, project_id):
+    project = get_object_or_404 (Project, id = project_id)
+    serializer = AdminProjectUpdateSerializer (project, data = request.data, partial = True)
+    if serializer.is_valid():
+        serializer.save()
+        return Response ({
+            "type": "success",
+            "message": "Project updated successfully by admin",
+            "project": serializer.data
+        }, status = Statuse.HTTP_200_OK)
+
+    return Response ({
+        "type": "error",
+        "message": "Validation failed",
+        "errors": serializer.errors
+    }, status = Statuse.HTTP_400_BAD_REQUEST)
+
+#.
+@api_view (["DELETE"])
+@permission_classes ([IsAdminOrReadOnly])
+def delete_project (request, project_id):
+    try:
+        get_object_or_404 (Project, id = project_id).delete()
+        return Response ({
+            "type": "success",
+            "message": "Project deleted successfully by admin",
+        }, status = Statuse.HTTP_200_OK)
+    except:
+        return Response ({
+            "type": "error",
+            "message": "Server error while deleting project!",
         }, status = Statuse.HTTP_500_INTERNAL_SERVER_ERROR)

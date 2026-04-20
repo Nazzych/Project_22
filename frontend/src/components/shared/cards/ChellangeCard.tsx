@@ -130,7 +130,7 @@ export const ChallengeCard = ({
                     colorClass
                 )}
             >
-                {challenge.difficul?.toUpperCase() || 'MEDIUM'}
+                {challenge.difficul ? challenge.difficul.slice(0, 3).toUpperCase() : 'MEDIUM'}
             </span>
 
             <CardHeader className="py-2 mb-1 border-b-2">
@@ -141,8 +141,8 @@ export const ChallengeCard = ({
                                 ? <CheckCircle className="w-5 h-5 text-indigo-500" /> 
                                 : <Circle className="w-5 h-5 text-indigo-500" />
                         )}
-                        <h3 className="text-lg font-semibold nz-text-foreground line-clamp-1">
-                            {challenge.title}{String(challenge.status)}
+                        <h3 className="w-[80%] text-lg font-semibold nz-text-foreground line-clamp-1">
+                            {challenge.title}
                         </h3>
                     </div>
                 </div>

@@ -71,7 +71,7 @@ class Challenge (models.Model):
     title = models.CharField (max_length = 200)
     description = models.TextField()
     tags = models.CharField (max_length = 255, blank = True, help_text = "Через кому: easy, python")
-    points = models.PositiveIntegerField( default = 0)
+    points = models.PositiveIntegerField (default = 0)
     difficulty = models.CharField (max_length = 20, choices = Difficul.choices, default = Difficul.EASY)
     c_type = models.CharField (max_length = 20, choices = ChallengeType.choices)
     status = models.CharField (max_length = 20, choices = ChallengeStatus.choices, default = ChallengeStatus.DRAFT)

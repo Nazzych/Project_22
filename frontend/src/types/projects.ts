@@ -24,6 +24,7 @@ export type ProjectCardProps = {
 export interface ProjectFormProps {
     onSuccess: () => void;
     onDelete?: () => void;
+    isAdminMode?: boolean;
     project?: Project;
 }
 
