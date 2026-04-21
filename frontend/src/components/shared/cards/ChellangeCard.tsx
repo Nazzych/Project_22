@@ -81,7 +81,7 @@ export const ChallengeCard = ({
             content: (
                 <ChallangeManage
                     task={task}
-                    onSuccess={loadChallenges && loadChallenges()}
+                    onSuccess={() => loadChallenges && loadChallenges()}
                     onDelete={() => DeleteChallenge(challenge.id)}
                 />
             ),

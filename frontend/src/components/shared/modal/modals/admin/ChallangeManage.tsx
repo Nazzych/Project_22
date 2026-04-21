@@ -1,18 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import {
-    FileText, Tag, Code2, Trophy, Globe, XIcon, Save, Trash2
+import { 
+    File, FileText, Tag, Trophy, Save, Trash2, ArrowRight, AlertTriangle
 } from 'lucide-react';
+import { motion } from 'framer-motion';
+
 import { Button } from '../../../../ui/Button';
 import { Input } from '../../../../ui/Input';
 import { Textarea } from '../../../../ui/Textarea';
 import { Select } from '../../../../ui/Select';
 import { LoadingSpinner } from '../../../../LoadingSpinner';
-import { CodeEditor } from '../../../../CodeEditor';
+import { QuizChallengeManage } from '../tasks/QuizChallengeManage';
+import { CodeChallengeManage } from '../tasks/CodeChallengeManage';
+
 import { useToast } from '../../../../../providers/MessageProvider';
 import { useModal } from '../../../../../hooks/useModal';
 import { getCsrfToken } from '../../../../../api/auth';
 import { createTask, updateTask } from '../../../../../api/admin';
-import { motion } from 'framer-motion';
 
 const difficultyOptions = [
     { value: 'easy', label: 'Easy' },
@@ -27,8 +30,8 @@ const statusOptions = [
 ];
 
 const typeOptions = [
-    { value: 'quiz', label: 'Quiz' },
-    { value: 'code', label: 'Code' },
+    { value: 'code', label: 'Code Challenge' },
+    { value: 'quiz', label: 'Quiz Challenge' },
 ];
 
 const pointsOptions = [
@@ -42,62 +45,45 @@ const pointsOptions = [
 ];
 
 const languageOptions = [
+    { value: 'python', label: 'Python' },
     { value: 'javascript', label: 'JavaScript' },
     { value: 'typescript', label: 'TypeScript' },
-    { value: 'python', label: 'Python' },
     { value: 'java', label: 'Java' },
     { value: 'cpp', label: 'C++' },
     { value: 'c', label: 'C' },
     { value: 'go', label: 'Go' },
-    { value: 'dart', label: 'Dart' },
-    { value: 'rust', label: 'Rust' },
-    { value: 'kotlin', label: 'Kotlin' },
-    { value: 'swift', label: 'Swift' },
-    { value: 'jsx', label: 'JSX' },
-    { value: 'tsx', label: 'TSX' },
-    { value: 'html', label: 'HTML' },
-    { value: 'htm', label: 'HTM' },
-    { value: 'css', label: 'CSS' },
-    { value: 'txt', label: 'Text' },
-    { value: 'pdf', label: 'PDF' },
-    { value: 'md', label: 'Markdown' },
-    { value: 'json', label: 'JSON' },
-    { value: 'xml', label: 'XML' },
-    { value: 'csv', label: 'CSV' },
-    { value: 'yaml', label: 'YAML' },
-    { value: 'yml', label: 'YML' },
-    { value: 'pem', label: 'PEM' },
-    { value: 'env', label: 'Env' },
-    { value: 'sqlite3', label: 'SQLite3' },
-    { value: 'db', label: 'Database' },
-    { value: 'sh', label: 'Shell Script' },
-    { value: 'bat', label: 'Batch' },
-    { value: 'ini', label: 'INI' },
 ];
 
-interface TaskManageProps {
-    onSuccess: any;
-    onDelete?: () => void;
+interface ChallangeManageProps {
     task?: any;
+    onSuccess: () => void;
+    onDelete?: () => void;
 }
 
-export function ChallangeManage({ onSuccess, onDelete, task }: TaskManageProps) {
+export function ChallangeManage({ task, onSuccess, onDelete }: ChallangeManageProps) {
     const { showToast } = useToast();
     const { closeModal } = useModal();
     const [loading, setLoading] = useState(false);
+
+    const [activeTab, setActiveTab] = useState<'general' | 'code' | 'quiz'>('general');
 
     const [form, setForm] = useState({
         title: task?.title || "",
         description: task?.description || "",
         tegs: task?.tegs || "",
-        points: task?.points || "",
+        points: task?.points || 50,
         difficul: task?.difficul ?? "medium",
         language: task?.language ?? "python",
         status: task?.status ?? "draft",
-        c_type: task?.c_type ?? "quiz",
+        c_type: task?.c_type ?? "code",
+
+        // Code specific
         e_input: task?.e_input || "",
-        e_output: task?.e_output || "", 
+        e_output: task?.e_output || "",
         code: task?.code || "",
+
+        // Quiz specific
+        quiz_questions: task?.quiz_questions || [],
     });
 
     const isEditMode = !!task;
@@ -120,170 +106,203 @@ export function ChallangeManage({ onSuccess, onDelete, task }: TaskManageProps) 
             return;
         }
 
-        //? showToast('info', '[DEBUG]', `${form.title}\n${form.description}\n${form.tegs}\n${form.points}\n${form.e_input}\n${form.e_output}\n${form.code}\n${form.difficul}\n${form.language}\n`);
-
         try {
             await getCsrfToken();
 
-            if (task) {
-                await updateTask(task.id, form);
-                showToast('success', 'Task updated', 'Task updated successfully');
+            const payload = { ...form };
+
+            if (isEditMode) {
+                await updateTask(task.id, payload);
+                showToast('success', 'Task updated', 'Successfully updated!');
             } else {
-                await createTask(form);
-                showToast('success', 'Task created', 'Task created successfully');
+                await createTask(payload);
+                showToast('success', 'Task created', 'Successfully created!');
             }
-            closeModal();
+
             onSuccess();
+            closeModal();
         } catch (err: any) {
             console.error(err);
-            if (err.response?.status === 400) {
-                const msg = err.response?.data?.message || '';
-                if (msg.includes('already exists')) {
-                    showToast('warning', 'Duplicate title', 'Name of challenge exist. Change it.');
-                } else {
-                    showToast('warning', 'Validation error', msg || 'Check entered data.');
-                }
-            } else if (err !== "TypeError: onSuccess is not a function") {
-                showToast('error', 'Save failed', 'Can\'t save channges.');
-            }
-            //? showToast('error', '[DEBUG]', `${err}`);
+            showToast('error', 'Save failed', err?.response?.data?.message || 'Something went wrong');
         } finally {
             setLoading(false);
         }
     };
 
+    const updateQuiz = (update: any) => {
+        setForm(prev => {
+            const nextQuestions = typeof update === 'function' 
+                ? update(prev.quiz_questions) 
+                : update;
+            return { ...prev, quiz_questions: nextQuestions };
+        });
+    };
+    // Визначаємо, які вкладки показувати
+    const showCodeTab = form.c_type === 'code';
+    const showQuizTab = form.c_type === 'quiz';
+
     return (
-        <form onSubmit={handleSubmit} className="w-full pl-1 space-y-4">
-            {/* Назва */}
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                <div>
-                    <label className="block text-md font-medium mb-1">Task title</label>
-                    <Input
-                        name="title"
-                        value={form.title}
-                        onChange={handleChange}
-                        placeholder="Two Sum"
-                        className="w-full"
-                    />
-                </div>
-                <div>
-                    <label className="block text-md font-medium mb-1">Points for task</label>
-                    <Select className='nz-bg-input rounded-xl'
-                        options={pointsOptions}
-                        value={form.points}
-                        onChange={handleSelectChange('points')}
-                    />
-                </div>
+        <form onSubmit={handleSubmit} className="w-full">
+            {/* Tabs */}
+            <div className="flex border-b border-border bg-muted/50">
+                <button
+                    type="button"
+                    onClick={() => setActiveTab('general')}
+                    className={`flex flex-col items-center px-6 text-sm font-medium transition-all flex-1`}
+                >
+                    General
+                    {activeTab === 'general' && (
+                        <motion.div
+                            layoutId="chellange-tab-underline"
+                            className="w-[50%] h-1 bg-gradient-to-r from-red-500 to-orange-500 rounded-t-full"
+                        />
+                    )}
+                </button>
+
+                {showCodeTab && (
+                    <button
+                        type="button"
+                        onClick={() => setActiveTab('code')}
+                        className={`flex flex-col items-center px-6 text-sm font-medium transition-all flex-1`}
+                    >
+                        Code Challenge
+                    {activeTab === 'code' && (
+                        <motion.div
+                            layoutId="chellange-tab-underline"
+                            className="w-[50%] h-1 bg-gradient-to-r from-red-500 to-orange-500 rounded-t-full"
+                        />
+                    )}
+                    </button>
+                )}
+
+                {showQuizTab && (
+                    <button
+                        type="button"
+                        onClick={() => setActiveTab('quiz')}
+                        className={`flex flex-col items-center px-6 text-sm font-medium transition-all flex-1`}
+                    >
+                        Quiz Challenge
+                    {activeTab === 'quiz' && (
+                        <motion.div
+                            layoutId="chellange-tab-underline"
+                            className="w-[50%] h-1 bg-gradient-to-r from-red-500 to-orange-500 rounded-t-full"
+                        />
+                    )}
+                    </button>
+                )}
             </div>
 
-            {/* Теги */}
-            <div>
-                <label className="block text-md font-medium mb-1">Tegs <span className='text-[12px] nz-text-muted'>(comma separated)</span></label>
-                <Input
-                    name="tegs"
-                    value={form.tegs}
-                    onChange={handleChange}
-                    placeholder="array, hashmap, easy"
-                />
-            </div>
-
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                <div className='space-y-4'>
-                    {/* Складність + Мова + Статус */}
-                    <div className='space-y-5'>
-                        <div>
-                            <label className="block text-md font-medium mb-1">Difficult</label>
-                            <Select className='nz-bg-input rounded-xl'
-                                options={difficultyOptions}
-                                value={form.difficul}
-                                onChange={handleSelectChange('difficul')}
-                            />
+            <div className="p-6 space-y-6">
+                {/* ==================== GENERAL TAB ==================== */}
+                {activeTab === 'general' && (
+                    <div className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium mb-1.5">Title</label>
+                                <Input icon={<File className='w-4 h-4' />}
+                                    name="title"
+                                    value={form.title}
+                                    onChange={handleChange}
+                                    placeholder="Two Sum"
+                                />
+                            </div>
+                            <div>
+                                <label className="flex items-center gap-2 text-sm font-medium mb-1.5"><Trophy className='w-4 h-4 text-amber-400' />Points</label>
+                                <Select className='nz-bg-input rounded-xl'
+                                    options={pointsOptions}
+                                    value={String(form.points)}
+                                    onChange={handleSelectChange('points')}
+                                />
+                            </div>
                         </div>
 
                         <div>
-                            <label className="block text-md font-medium mb-1">Status</label>
-                            <Select className='nz-bg-input rounded-xl'
-                                options={statusOptions}
-                                value={form.status}
-                                onChange={handleSelectChange('status')}
+                            <label className="block text-sm font-medium mb-1.5">Description</label>
+                            <Textarea icon={<FileText className='w-4 h-4' />}
+                                name="description"
+                                value={form.description}
+                                onChange={handleChange}
+                                rows={5}
+                                placeholder="Write a detailed description..."
                             />
                         </div>
 
-                        <div>
-                            <label className="block text-md font-medium mb-1">Language</label>
-                            <Select className='nz-bg-input rounded-xl'
-                                options={languageOptions}
-                                value={form.language}
-                                onChange={handleSelectChange('language')}
-                            />
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium mb-1.5">Difficulty</label>
+                                <Select className='nz-bg-input rounded-xl'
+                                    options={difficultyOptions}
+                                    value={form.difficul}
+                                    onChange={handleSelectChange('difficul')}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium mb-1.5">Language</label>
+                                <Select className='nz-bg-input rounded-xl'
+                                    options={languageOptions}
+                                    value={form.language}
+                                    onChange={handleSelectChange('language')}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium mb-1.5">Status</label>
+                                <Select className='nz-bg-input rounded-xl'
+                                    options={statusOptions}
+                                    value={form.status}
+                                    onChange={handleSelectChange('status')}
+                                />
+                            </div>
                         </div>
 
-                        <div>
-                            <label className="block text-md font-medium mb-1">Type of task</label>
-                            <Select className='nz-bg-input rounded-xl'
-                                options={typeOptions}
-                                value={form.c_type}
-                                onChange={handleSelectChange('c_type')}
-                            />
+                        <div className='flex flex-col md:flex-row gap-4'>
+                            <div className='flex-1'>
+                                <label className="block text-sm font-medium mb-1.5">Tags <span className='text-[12px] nz-text-muted'>(comma separated)</span></label>
+                                <Input icon={<Tag className='w-4 h-4' />}
+                                    name="tegs"
+                                    value={form.tegs}
+                                    onChange={handleChange}
+                                    placeholder="array, hashmap, easy"
+                                />
+                            </div>
+
+                            {/* Вибір типу завдання */}
+                            <div className='md:w-[30%]'>
+                                <label className="flex items-center gap-2 text-sm font-medium mb-1.5"><AlertTriangle className='w-4 h-4 text-red-500' />Type of Challenge</label>
+                                <Select className='nz-bg-input rounded-xl'
+                                    options={typeOptions}
+                                    value={form.c_type}
+                                    onChange={handleSelectChange('c_type')}
+                                />
+                            </div>
                         </div>
                     </div>
-                </div>
+                )}
 
-                {/* Опис */}
-                <div>
-                    <label className="block text-md font-medium mb-1">Description</label>
-                    <Textarea
-                        name="description"
-                        value={form.description}
-                        onChange={handleChange}
-                        rows={10}
-                        placeholder="Write function, which be ..."
-                        className="w-full"
-                    />
-                </div>
+                {/* ==================== CODE TAB ==================== */}
+                {activeTab === 'code' && (
+                    <div>
+                        <CodeChallengeManage 
+                            form={form} 
+                            setForm={setForm} 
+                        />
+                    </div>
+                )}
+
+                {/* ==================== QUIZ TAB ==================== */}
+                {activeTab === 'quiz' && (
+                    <div>
+                        <QuizChallengeManage
+                            questions={form.quiz_questions}
+                            setQuestions={updateQuiz}
+                        />
+                    </div>
+                )}
             </div>
 
-            {/* Приклад Input / Output */}
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                <div>
-                    <label className="block text-md font-medium mb-1">Example Input</label>
-                    <Textarea
-                        name="e_input"
-                        value={form.e_input}
-                        onChange={handleChange}
-                        rows={3}
-                        placeholder="nums = [2,7,11,15], target = 9"
-                    />
-                    <span className='block text-[12px] text-right nz-text-muted'>*not required</span>
-                </div>
-                <div>
-                    <label className="block text-md font-medium mb-1">Example Output</label>
-                    <Textarea
-                        name="e_output"
-                        value={form.e_output}
-                        onChange={handleChange}
-                        rows={3}
-                        placeholder="[0,1]"
-                    />
-                    <span className='block text-[12px] text-right nz-text-muted'>*not required</span>
-                </div>
-            </div>
-
-            {/* Код */}
-            <div>
-                <label className="block text-md font-medium mb-1">Begining code <span className='text-[12px] nz-text-muted'>(not required)</span></label>
-                <div className="rounded-xl overflow-hidden h-[250px] border-2 nz-border">
-                    <CodeEditor
-                        value={form.code}
-                        onChange={(newCode) => setForm(prev => ({ ...prev, code: newCode }))}
-                    />
-                </div>
-            </div>
-
-            {/* Кнопки */}
-            <div className="flex justify-between pt-6 border-t border-border">
+            {/* Bottom Buttons */}
+            <div className="flex justify-between pt-6 border-t border-border px-6 pb-6">
                 {isEditMode && onDelete && (
-                    <Button className='relative'
+                    <Button
                         type="button"
                         variant="btn_destructive"
                         onDoubleClick={onDelete}
@@ -291,7 +310,6 @@ export function ChallangeManage({ onSuccess, onDelete, task }: TaskManageProps) 
                     >
                         <Trash2 className="w-4 h-4 mr-2" />
                         Delete Task
-                        <span className='absolute -bottom-1 font-bold right-2 text-[8px]'>Double click</span>
                     </Button>
                 )}
 
@@ -300,6 +318,7 @@ export function ChallangeManage({ onSuccess, onDelete, task }: TaskManageProps) 
                         Cancel
                     </Button>
                     <Button type="submit" variant={isEditMode ? "btn_warning" : "btn_success"} disabled={loading}>
+                        <Save className='w-4 h-4 mr-2' />
                         {loading ? <LoadingSpinner text="Saving..." /> : isEditMode ? 'Save Changes' : 'Create Task'}
                     </Button>
                 </div>

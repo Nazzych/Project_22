@@ -130,9 +130,9 @@ export default function ChallengePage() {
                     <div className={cn("px-3 py-1 text-xs font-medium rounded-full", colorClass)}>
                         {challenge.difficulty.toUpperCase()}
                     </div>
-                    <div className="flex items-center gap-2">
-                        <span className="flex items-center gap-1 font-medium">
-                            ({getStatusIcon(challenge.status)}
+                    <div className="flex items-center gap-1">
+                        (<span className="flex items-center gap-1 font-medium">
+                            {getStatusIcon(challenge.status)}
                             {challenge.status.charAt(0).toUpperCase() + challenge.status.slice(1)}
                         </span>
                         <span>|</span>
@@ -140,8 +140,8 @@ export default function ChallengePage() {
                             <p className="flex items-center gap-1 text-sm nz-text-muted">
                                 {getTypeIcon(challenge.c_type)}
                                 {challenge.c_type.toUpperCase()}
-                            </p>)
-                        </span>
+                            </p>
+                        </span>)
                     </div>
                 </div>
             </div>

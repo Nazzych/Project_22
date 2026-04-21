@@ -40,6 +40,7 @@ export const CourseCard = ({
         openModal({
             id: 'admin-course-edit',
             width: "lg",
+            x: false,
             title: (
                 <span className="flex items-center gap-2">
                     <div className="w-fit nz-background-accent rounded-lg py-1 px-4 flex flex-row justify-center items-center gap-2">
@@ -87,9 +88,9 @@ export const CourseCard = ({
     const difficultyLower = (course?.level || 'medium').toLowerCase();
 
     const difficultyColor = {
-        easy: 'nz-foreground bg-green-500/50',
-        medium: 'nz-foreground bg-yellow-500/50',
-        hard: 'nz-foreground bg-red-500/50',
+        easy: 'nz-foreground bg-green-500/25',
+        medium: 'nz-foreground bg-yellow-500/25',
+        hard: 'nz-foreground bg-red-500/25',
     } as const;
 
     const colorClass = difficultyColor[difficultyLower as keyof typeof difficultyColor] || 'text-gray-500 bg-gray-500/10';
@@ -103,12 +104,25 @@ export const CourseCard = ({
         >
             <div>
                 {/* Бейдж рівня */}
-                <div className="flex flex-wrap items-center justify-between gap-2 p-2">
+                <div className="flex items-center justify-between gap-2 p-2">
                     <Circle className='w-5 h-5' />
-                    <span className={cn(
-                        "px-3 py-1 text-xs font-medium rounded-full border", colorClass)}>
-                        {course.level?.toUpperCase() || 'BEGINNER'}
-                    </span>
+                    {/* Кнопки для адміна */}
+                    <div className='flex items-center gap-2'>
+                        {is_staff && (
+                            <div className="transition-opacity">
+                                <button 
+                                    onClick={(e) => { e.stopPropagation(); OpenEditCourse(course); }}
+                                    className="p-1.5 nz-background-accent hover:nz-background-primary border rounded-lg"
+                                >
+                                    <Edit2 className="w-4 h-4" />
+                                </button>
+                            </div>
+                        )}
+                        <span className={cn(
+                            "px-3 py-1 text-xs font-medium rounded-full border", colorClass)}>
+                            {course.level?.toUpperCase() || 'BEGINNER'}
+                        </span>
+                    </div>
                 </div>
             </div>
             {/* Обкладинка / Іконка */}
@@ -161,18 +175,6 @@ export const CourseCard = ({
                     )}
                 </div>
             </CardContent>
-
-            {/* Кнопки для адміна */}
-            {is_staff && (
-                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button 
-                        onClick={(e) => { e.stopPropagation(); OpenEditCourse(course); }}
-                        className="p-2 nz-background-primary hover:nz-background-accent rounded-full"
-                    >
-                        <Edit2 className="w-4 h-4" />
-                    </button>
-                </div>
-            )}
         </Card>
     );
 };

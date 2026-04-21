@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, PlusSquare, Edit2 } from 'lucide-react';
 import { Button } from '../../../components/ui/Button';
 import { useModal } from '../../../hooks/useModal';
 import { ChallangeManage } from '../../../components/shared/modal/modals/admin/ChallangeManage';
@@ -15,7 +15,12 @@ export default function AdminChallenges() {
         openModal({
             id: 'admin-challange',
             width: "xl",
-            title: "Challange manage",
+            x: false,
+            title: (
+                <div className="w-fit nz-background-secondary rounded-lg py-1 px-4 flex flex-row justify-center items-center gap-2">
+                    <PlusSquare className="h-5 w-5" />Add Challange
+                </div>
+            ),
             content: (
                 <ChallangeManage 
                     onSuccess={challenges.loadTasks}
