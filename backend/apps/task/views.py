@@ -10,7 +10,7 @@ from rest_framework import viewsets, status as Statuse
 from storage3.exceptions import StorageApiError
 from users.permissions import isAuthenticated, IsAdministrator
 from .models import Challenge
-from .serializers import ChellangeSerializer
+from .serializers import ChallengeSerializer
 import traceback, json, os, re
 
 
@@ -18,14 +18,14 @@ import traceback, json, os, re
 @permission_classes ([isAuthenticated])
 def challenges (request):
     chellanges = Challenge.objects.all()
-    serializer = ChellangeSerializer (chellanges, many = True)
+    serializer = ChallengeSerializer (chellanges, many = True)
     return Response (serializer.data)
 
 @api_view (["GET"])
 @permission_classes ([isAuthenticated])
 def challenge_detail (request, challenge_id):
-    chellange = get_object_or_404 (Challenge, id = challenge_id)
-    serializer = ChellangeSerializer (chellange)
+    challenge = get_object_or_404 (Challenge, id = challenge_id)
+    serializer = ChallengeSerializer (challenge)
     return Response (serializer.data)
 
 
