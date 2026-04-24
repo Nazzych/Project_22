@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { 
     File, FileText, Tag, Trophy, Save, Trash2, ArrowRight, AlertTriangle
 } from 'lucide-react';
@@ -60,6 +60,24 @@ interface ChallangeManageProps {
     onDelete?: () => void;
 }
 
+interface BackendQuizAnswer {
+    id: number;
+    answer_text: string;
+    is_correct: boolean;
+}
+interface BackendQuizQuestion {
+    id: number;
+    question_text: string;
+    order: number;
+    answers: BackendQuizAnswer[];
+}
+interface QuizQuestion {
+    id: string;
+    question_text: string;
+    options: string[];
+    correct_answer: number;
+    backend_question_id?: number; // Для збереження зв'язку з бекендом
+}
 export function ChallangeManage({ task, onSuccess, onDelete }: ChallangeManageProps) {
     const { showToast } = useToast();
     const { closeModal } = useModal();
@@ -83,7 +101,7 @@ export function ChallangeManage({ task, onSuccess, onDelete }: ChallangeManagePr
         code: task?.code || "",
 
         // Quiz specific
-        quiz_questions: task?.quiz_questions || [],
+        quiz_questions: task?.quiz_challenge?.questions || [],
     });
 
     const isEditMode = !!task;
@@ -95,7 +113,18 @@ export function ChallangeManage({ task, onSuccess, onDelete }: ChallangeManagePr
     const handleSelectChange = (field: string) => (value: string) => {
         setForm(prev => ({ ...prev, [field]: value }));
     };
-
+    const convertLocalToBackend = useCallback((localQuestions: QuizQuestion[]): BackendQuizQuestion[] => {
+        return localQuestions.map((q, order) => ({
+            id: q.backend_question_id || 0,
+            question_text: q.question_text,
+            order: order + 1,
+            answers: q.options.map((text, idx) => ({
+                id: 0,
+                answer_text: text,
+                is_correct: idx === q.correct_answer
+            }))
+        }));
+    }, []);
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
@@ -109,7 +138,7 @@ export function ChallangeManage({ task, onSuccess, onDelete }: ChallangeManagePr
         try {
             await getCsrfToken();
 
-            const payload = { ...form };
+            const payload = { ...form, quiz_questions: form.c_type === 'quiz' ? convertLocalToBackend(form.quiz_questions) : [] };
 
             if (isEditMode) {
                 await updateTask(task.id, payload);
