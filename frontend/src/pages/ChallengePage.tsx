@@ -122,7 +122,7 @@ export default function ChallengePage() {
                     </Button>
                 </div>
 
-                <div className="pr-2 flex items-center gap-4">
+                <div className="w-full lg:w-fit pr-2 flex justify-center items-center gap-4">
                     <div className="flex items-center gap-1.5 text-amber-400">
                         <Trophy className="w-5 h-5" />
                         <span className="font-medium">{challenge.points} pts</span>

@@ -45,11 +45,7 @@ export function Sidebar({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (v:
 
     const handleLogout = () => {
         logout();
-        localStorage.setItem('theme', 'light');
         navigate('/login');
-        setTimeout(() => {
-            window.location.reload();
-        }, 500);
     };
 
     const SidebarContent = (

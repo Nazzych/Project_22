@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import {
-    XCircle, Code2, Pen, Tag, Trophy, Circle, CheckCircle, MoreVertical
+    XCircle, Code2, Pen, Grid2X2Check, CodeSquare, Trophy, Circle, CheckCircle, MoreVertical
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardContent } from '../../ui/Card';
@@ -62,8 +62,8 @@ export const ChallengeCard = ({
                 ),
             });
         } catch (error) {
-            showToast('error', 'Помилка', 'Не вдалося видалити завдання.');
-            console.error('Помилка видалення:', error);
+            showToast('error', 'Error', 'Can\'t delete challange.');
+            console.error('Deleting error:', error);
         }
     };
 
@@ -73,7 +73,7 @@ export const ChallengeCard = ({
             width: 'xl',
             x: false,
             title: (
-                <div className="flex items-center gap-2">
+                <div className="w-fit nz-background-secondary rounded-lg py-1 px-4 flex flex-row justify-center items-center gap-2">
                     <Pen className="w-5 h-5 text-primary" />
                     <span className="line-clamp-1">Editing "{challenge.title}"</span>
                 </div>
@@ -90,8 +90,8 @@ export const ChallengeCard = ({
 
     const [tooltipPos, setTooltipPos] = useState<{ top: number; left: number } | null>(null);
     const tagRef = useRef<HTMLSpanElement>(null);
-    const tags: string[] = challenge?.tegs
-        ? challenge.tegs.split(',').map((tag: string) => tag.trim()).filter(Boolean)
+    const tags: string[] = challenge?.tags
+        ? challenge.tags.split(',').map((tag: string) => tag.trim()).filter(Boolean)
     : [];
     const handleTagHover = () => {
         if (tagRef.current) {
@@ -104,7 +104,7 @@ export const ChallengeCard = ({
     };
     
     // Визначення кольору складності
-    const difficultyLower = (challenge.difficul || 'medium').toLowerCase();
+    const difficultyLower = (challenge.difficulty || 'medium').toLowerCase();
 
     const difficultyColor = {
         easy: 'text-green-500 bg-green-500/10',
@@ -123,37 +123,51 @@ export const ChallengeCard = ({
             variant="card_primary"
             className="relative group transition duration-300 border overflow-hidden min-h-[20vh] hover:nz-background-secondary"
         >
-            {/* Бейдж складності */}
-            <span
-                className={cn(
-                    'absolute top-3 right-3 px-3 py-1 text-xs font-medium group-hover:nz-background-primary rounded-full cursor-default',
-                    colorClass
-                )}
-            >
-                {challenge.difficul ? challenge.difficul.slice(0, 3).toUpperCase() : 'MEDIUM'}
-            </span>
-
             <CardHeader className="py-2 mb-1 border-b-2">
-                <div className="flex flex-row justify-between items-center">
-                    <div className="flex items-center gap-2">
-                        {!is_staff && (
-                            challenge.status 
-                                ? <CheckCircle className="w-5 h-5 text-indigo-500" /> 
-                                : <Circle className="w-5 h-5 text-indigo-500" />
-                        )}
-                        <h3 className="w-[80%] text-lg font-semibold nz-text-foreground line-clamp-1">
+                <div className="flex justify-between items-center gap-2">
+                    {/* {!is_staff && (
+                        challenge.status
+                        ? <CheckCircle className="w-5 h-5 text-indigo-500" /> 
+                        : <Circle className="w-5 h-5 text-indigo-500" />
+                    )} */}
+                    {challenge.user_progress?.status === "completed" ? (
+                        <CheckCircle className="w-5 h-5 text-emerald-500" /> 
+                    ) : challenge.user_progress?.status === "failed" ? (
+                        <XCircle className="w-5 h-5 text-red-500" />
+                    ) : (
+                        <Circle className="w-5 h-5 text-indigo-500" />
+                    )}
+                    <div className='w-full flex justify-between items-center gap-2'>
+                        <h3 className="text-lg font-semibold nz-text-foreground line-clamp-1">
                             {challenge.title}
                         </h3>
+                        {/* Бейдж складності */}
+                        <span
+                            className={cn(
+                                'px-2.5 py-1 text-xs font-medium group-hover:nz-background-primary rounded-full cursor-default',
+                                colorClass
+                            )}
+                        >
+                            {challenge.difficulty ? challenge.difficulty.slice(0, 1).toUpperCase() : 'MED'}
+                        </span>
                     </div>
                 </div>
             </CardHeader>
 
             <CardContent className="space-y-3">
                 {/* Опис */}
-                <p className="text-sm font-mono text-muted-foreground line-clamp-3 min-h-[60px] cursor-default">
-                    {challenge.description || 'Немає опису...'}
-                </p>
-
+                <div className='flex gap-2'>
+                    {challenge.c_type === "quiz" ? (
+                        <Grid2X2Check className="min-w-5 h-5 text-cyan-500" /> 
+                    ) : challenge.c_type === "code" ? (
+                        <CodeSquare className="min-w-5 h-5 text-cyan-500" /> 
+                    ) : (
+                        <XCircle className="min-w-5 h-5 text-red-500" /> 
+                    )}
+                    <p className="text-sm font-mono text-muted-foreground line-clamp-3 min-h-[60px] cursor-default">
+                        {challenge.description || 'No description...'}
+                    </p>
+                </div>
                 {/* Додаткова інформація */}
                 <div className="flex justify-between flex-wrap gap-4">
                     <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground cursor-default">
@@ -163,10 +177,10 @@ export const ChallengeCard = ({
                         </div>
                         <div className="flex items-center gap-1">
                             <Code2 className="w-4 h-4" />
-                            {challenge.language?.toUpperCase() || '—'}
+                            {challenge.code_challenge?.language?.toUpperCase() || '—'}
                         </div>
                         {/* Теги */}
-                        {challenge?.tegs && (
+                        {challenge?.tags && (
                             <div className="relative">
                                 <span 
                                     ref={tagRef}

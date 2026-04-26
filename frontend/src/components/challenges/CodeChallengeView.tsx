@@ -37,8 +37,8 @@ export default function CodeChallengeView ({ challenge }: ChallengeViewProps) {
         }
     };
 
-    const tags = challenge?.tegs
-        ? challenge.tegs
+    const tags = challenge?.tags
+        ? challenge.tags
             .split(',')
             .map((tag: string) => tag.trim())
             .filter((tag: string) => tag.length > 0)
@@ -58,7 +58,7 @@ export default function CodeChallengeView ({ challenge }: ChallengeViewProps) {
                         <div className="flex items-center gap-4 text-sm nz-text-muted">
                             <span className="flex items-center gap-1">
                                 <Code2 className='w-4 h-4' />
-                                {challenge.language?.toUpperCase() || "---"}
+                                {challenge.code_challenge.language?.toUpperCase() || "---"}
                             </span>
                             <span className='text-xl'>•</span>
                             <span className="flex items-center gap-1">
@@ -82,7 +82,7 @@ export default function CodeChallengeView ({ challenge }: ChallengeViewProps) {
                             <h1 className='flex items-center gap-2 text-xl font-bold mb-2'><FileText className='w-4 h-4' />Description</h1>
                             <p className="leading-relaxed">{challenge.description}</p>
                             <div className='my-4 p-2 nz-background-accent rounded-lg'>
-                                {tags ? (
+                                {tags.length !== 0 ? (
                                     <div>
                                         <div className="flex flex-wrap gap-2 pl-4">
                                             {tags.map((tag: string, index: number) => (
@@ -99,17 +99,17 @@ export default function CodeChallengeView ({ challenge }: ChallengeViewProps) {
                                     <p className='flex items-center pl-4 gap-2 nz-text-muted'><XCircle className='w-4 h-4' />No tags</p>
                                 )}
                             </div>
-                            {challenge.e_input && (
+                            {challenge.code_challenge.e_input && (
                                 <div>
                                     <h3 className="text-lg font-semibold mb-3">Example:</h3>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="nz-background-accent p-4 rounded-xl">
                                             <p className="text-xs nz-text-muted mb-1">Input:</p>
-                                            <span className="text-sm text-white font-mono">{challenge.e_input}</span>
+                                            <span className="text-sm text-white font-mono">{challenge.code_challenge.e_input}</span>
                                         </div>
                                         <div className="nz-background-accent p-4 rounded-xl">
                                             <p className="text-xs nz-text-muted mb-1">Output:</p>
-                                            <span className="text-sm text-emerald-400 font-mono">{challenge.e_output}</span>
+                                            <span className="text-sm text-emerald-400 font-mono">{challenge.code_challenge.e_output}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -136,7 +136,7 @@ export default function CodeChallengeView ({ challenge }: ChallengeViewProps) {
 
                         <CardContent className="p-0">
                             <CodeEditor
-                                value={challenge.code}
+                                value={challenge.code_challenge.starter_code}
                                 onChange={setUserCode}
                             />
                         </CardContent>

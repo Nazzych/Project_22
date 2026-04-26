@@ -13,5 +13,5 @@ urlpatterns = [
     #?path ("", include (router.urls))
     path ("chellanges/", views.challenges, name = "challenges"),
     path ("chellange/<int:challenge_id>/", views.challenge_detail, name = "challenge_detail"),
-    
+    path ("chellange/<int:challenge_id>/submit_quiz/", views.submit_quiz, name = "submit_quiz"),
 ]

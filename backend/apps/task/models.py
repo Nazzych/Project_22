@@ -59,7 +59,7 @@ class ChallengeStatus (models.TextChoices):
 class ChallengeProgress (models.TextChoices):
     NOT = "not_started", "Not Started"
     PROGGRESS = "in_progress", "In Progress"
-    COMPLETE = "completed", "Completed"
+    COMPLETED = "completed", "Completed"
     FAIL = "failed", "Failed"
     SUBMIT = "submitted", "Submitted (awaiting review)"
 

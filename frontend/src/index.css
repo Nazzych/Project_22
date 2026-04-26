@@ -232,8 +232,8 @@ html {
 }
 
 body {
-    background-color: var(--background-primary);
     color: var(--foreground);
+    background-color: var(--background-primary);
 }
 
 /* ?<
@@ -502,48 +502,6 @@ body {
     border-top: 3px solid transparent;
     border-radius: 50%;
     animation: spin 1s linear infinite;
-}
-
-@layer base {
-  /* 1. СІРА ТЕМА (Copilot Style) */
-  .theme-gray {
-    --background: 210 20% 98%;
-    --foreground: 220 20% 10%;
-    --card: 0 0% 100%;
-    --card-foreground: 220 20% 10%;
-    --primary: 220 20% 20%;      /* Глибокий сірий */
-    --primary-foreground: 210 20% 98%;
-    --muted: 210 20% 90%;
-    --muted-foreground: 215 16% 47%;
-    --border: 214 32% 91%;
-    --input: 210 20% 96%;
-  }
-
-  /* 2. БІЛО-БЕЖЕВА ТЕМА */
-  .theme-beige {
-    --background: 40 30% 96%;    /* М'який беж */
-    --foreground: 24 10% 10%;
-    --card: 0 0% 100%;
-    --primary: 24 30% 30%;       /* Коричневий акцент */
-    --primary-foreground: 40 30% 98%;
-    --muted: 40 20% 90%;
-    --border: 30 20% 85%;
-    --input: 40 20% 94%;
-  }
-
-  /* 3. ЧОРНА З ОРАНЖЕВИМ (Твій стиль) */
-  .theme-dark-orange {
-    --background: 240 10% 4%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 7%;
-    --primary: 24 100% 50%;      /* Яскравий оранж */
-    --primary-foreground: 0 0% 100%;
-    --muted: 240 10% 15%;
-    --muted-foreground: 240 5% 65%;
-    --border: 240 5% 15%;
-    --input: 240 5% 10%;
-    --destructive: 0 84% 60%;
-  }
 }
 
 /* === Optional animation === */
