@@ -6,7 +6,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
     ({ className, icon, resizable = false, ...props }, ref) => (
         <div className="relative w-full">
             {icon && (
-                <div className="absolute left-3 top-3">
+                <div className="absolute left-2 top-2 p-1 rounded nz-background-secondary">
                     {icon}
                 </div>
             )}

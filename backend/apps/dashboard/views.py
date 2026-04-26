@@ -28,43 +28,37 @@ import traceback, json, os, re
 @api_view(["POST"])
 @permission_classes([IsAdminOrReadOnly])
 def add_challenge(request):
-    data = request.data
+    data = request.data 
     
-    # Основні поля
     title = data.get("title", "").strip()
     description = data.get("description", "").strip()
     tegs = data.get("tegs", "").strip()
     points = data.get("points", "50")
     difficul = data.get("difficul", "medium")
     language = data.get("language", "python")
-    status = data.get("status", "draft")
+    status_ = data.get("status", "draft")  # ✅ status - зарезервоване слово
     c_type = data.get("c_type", "code")
     
-    # Code challenge поля
     e_input = data.get("e_input", "").strip()
     e_output = data.get("e_output", "").strip()
     code = data.get("code", "").strip()
     
-    # Quiz challenge поля
     quiz_questions = data.get("quiz_questions", [])
     
-    # Валідація основних полів
     if not title or not description:
         return JsonResponse({
             "type": "warning",
             "message": "Fields 'title' and 'description' are required."
-        }, status=Statuse.HTTP_400_BAD_REQUEST)
-    
-    # Перевірка унікальності назви
+        }, status=Statuse.HTTP_400_BAD_REQUEST)  # ✅ status
+
     if Challenge.objects.filter(title=title).exists():
         return Response({
             "type": "warning",
             "message": "Challenge with this name already exists. Please rename."
-        }, status=Statuse.HTTP_400_BAD_REQUEST)
-    
+        }, status=Statuse.HTTP_400_BAD_REQUEST)  # ✅ status
+
     try:
         with transaction.atomic():
-            # 1. Створюємо основний Challenge
             challenge = Challenge.objects.create(
                 title=title,
                 description=description,
@@ -72,10 +66,9 @@ def add_challenge(request):
                 points=int(points),
                 difficulty=difficul,
                 c_type=c_type,
-                status=status
+                status=status_
             )
             
-            # 2. Створюємо специфічні моделі залежно від типу
             if c_type == ChallengeType.CODE:
                 CodeChallenge.objects.create(
                     challenge=challenge,
@@ -86,126 +79,140 @@ def add_challenge(request):
                 )
             
             elif c_type == ChallengeType.QUIZ:
-                quiz_challenge = QuizChallenge.objects.create(
-                    challenge=challenge
-                )
+                quiz_challenge = QuizChallenge.objects.create(challenge=challenge)
                 
-                # Обробка питань quiz
+                # ✅ ПРАВИЛЬНА обробка quiz_questions з фронтенду
                 if isinstance(quiz_questions, list):
+                    print(f"DEBUG: Processing {len(quiz_questions)} quiz questions")  # DEBUG
                     for idx, q_data in enumerate(quiz_questions, 1):
+                        print(f"DEBUG: Question {idx}: {q_data}")  # DEBUG
+                        
                         if (isinstance(q_data, dict) and 
                             q_data.get("question_text") and 
-                            isinstance(q_data.get("options"), list) and 
-                            len(q_data.get("options", [])) >= 2):
+                            isinstance(q_data.get("answers"), list) and  # ✅ answers!
+                            len(q_data.get("answers", [])) >= 2):
                             
                             question_text = q_data["question_text"].strip()
-                            options = [opt.strip() for opt in q_data.get("options", [])]
-                            correct_index = q_data.get("correct_answer", 0)
+                            answers_data = q_data.get("answers", [])
                             
-                            # Валідація правильної відповіді
-                            if (0 <= correct_index < len(options) and 
-                                options[correct_index]):
-                                
-                                # Створюємо питання
-                                question = QuizQuestion.objects.create(
-                                    quiz=quiz_challenge,
-                                    question_text=question_text,
-                                    order=idx
-                                )
-                                
-                                # Створюємо відповіді
-                                for opt_idx, answer_text in enumerate(options):
+                            # ✅ Створюємо питання
+                            question = QuizQuestion.objects.create(
+                                quiz=quiz_challenge,
+                                question_text=question_text,
+                                order=idx
+                            )
+                            
+                            # ✅ Створюємо відповіді
+                            for answer_data in answers_data:
+                                if (isinstance(answer_data, dict) and 
+                                    answer_data.get("answer_text")):
+                                    
                                     QuizAnswer.objects.create(
                                         question=question,
-                                        answer_text=answer_text,
-                                        is_correct=(opt_idx == correct_index)
+                                        answer_text=answer_data["answer_text"].strip(),
+                                        is_correct=answer_data.get("is_correct", False)
                                     )
+                            print(f"DEBUG: Created question {idx} with {len(answers_data)} answers")  # DEBUG
             
-            # Serializers поверне тільки Challenge поля (без пов'язаних)
             serializer = ChallengeSerializer(challenge)
             return Response({
                 "type": "success",
                 "message": "Challenge created successfully",
                 "challenge": serializer.data
-            }, status=Statuse.HTTP_201_CREATED)
-    
+            }, status=Statuse.HTTP_201_CREATED)  # ✅ status
+
     except ValueError as e:
+        print(f"ValueError: {e}")
         return Response({
             "type": "error",
-            "message": "Invalid points or data format"
+            "message": "Invalid points value"
         }, status=Statuse.HTTP_400_BAD_REQUEST)
     
     except Exception as e:
-        print(f"Error creating challenge: {str(e)}")
+        print(f"CRITICAL ERROR: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return Response({
             "type": "error",
             "message": f"Server error: {str(e)}"
         }, status=Statuse.HTTP_500_INTERNAL_SERVER_ERROR)
-@api_view (["PUT"])
-@permission_classes ([IsAdminOrReadOnly])
-def update_challange (request, challenge_id):
-    challenge = get_object_or_404 (Challenge, id = challenge_id)
+
+@api_view(["PUT", "PATCH"])
+@permission_classes([IsAdminOrReadOnly])
+def update_challange(request, challenge_id):  # ✅ Правильна назва
+    try:
+        challenge = Challenge.objects.get(id=challenge_id)
+    except Challenge.DoesNotExist:
+        return Response({
+            "type": "error",
+            "message": "Challenge not found"
+        }, status=Statuse.HTTP_404_NOT_FOUND)
 
     data = request.data
-    title = data.get ("title", "").strip()
-    description = data.get ("description", "").strip()
-    tegs = data.get ("tegs", "").strip()
-    points = data.get ("points", "")
-    difficul = data.get ("difficul", "medium")
-    language = data.get ("language", "python")
-    status = data.get ("status", "draft")
-    e_input = data.get ("e_input", "").strip()
-    e_output = data.get ("e_output", "").strip()
-    code = data.get ("code", "").strip()
 
-    if not title or not description:
-        return JsonResponse ({
-            "type": "warning",
-            "message": "Fields \"title\" and \"description\" requaried."
-        }, status = Statuse.HTTP_400_BAD_REQUEST)
+    # ✅ Оновлення основних полів Challenge
+    challenge.title = data.get("title", challenge.title).strip()
+    challenge.description = data.get("description", challenge.description).strip()
+    challenge.tags = data.get("tegs", challenge.tags).strip()  # ✅ tags, не tegs
+    challenge.points = int(data.get("points", challenge.points))
+    challenge.difficulty = data.get("difficul", challenge.difficulty)  # ✅ difficulty
+    challenge.c_type = data.get("c_type", challenge.c_type)
+    challenge.status = data.get("status", challenge.status)
+    challenge.save()
 
-    if Challenge.objects.filter (title = title).exclude (id = challenge.id).exists():
-        return Response ({
-            "type": "warning",
-            "message": "Challenge exist with this name. Pleace rename."
-        }, status = Statuse.HTTP_400_BAD_REQUEST)
-    
-    try:
-        if title:
-            challenge.title = title
-        if description:
-            challenge.description = description
-        if tegs:
-            challenge.tegs = tegs
-        if points is not None:
-            challenge.points = int (points) if str (points).isdigit() else challenge.points
-        if difficul:
-            challenge.difficul = difficul
-        if language:
-            challenge.language = language
-        if status:
-            challenge.status = status
-        if e_input:
-            challenge.e_input = e_input
-        if e_output:
-            challenge.e_output = e_output
-        if code:
-            challenge.code = code
-        challenge.save()
+    # ✅ CODE CHALLENGE
+    if challenge.c_type == ChallengeType.CODE:
+        code_challenge, created = CodeChallenge.objects.get_or_create(
+            challenge=challenge,
+            defaults={
+                'language': data.get("language", "python"),
+                'starter_code': data.get("code", ""),
+                'e_input': data.get("e_input", ""),
+                'e_output': data.get("e_output", "")
+            }
+        )
+        if not created:
+            code_challenge.language = data.get("language", code_challenge.language)
+            code_challenge.starter_code = data.get("code", code_challenge.starter_code or "")
+            code_challenge.e_input = data.get("e_input", code_challenge.e_input or "")
+            code_challenge.e_output = data.get("e_output", code_challenge.e_output or "")
+            code_challenge.save()
 
-        serializer = ChallengeSerializer (challenge)
-        return Response ({
-            "type": "success",
-            "message": "Challenge updated successfuly",
-            "challenge": serializer.data
-        }, status = Statuse.HTTP_200_OK)
-    except Exception as e:
-        print ("Error updating chellange:", str (e))
-        return Response ({
-            "type": "error",
-            "message": f"Server error: {str (e)}"
-        }, status = Statuse.HTTP_500_INTERNAL_SERVER_ERROR)
+    # ✅ QUIZ CHALLENGE
+    elif challenge.c_type == ChallengeType.QUIZ:
+        quiz_challenge, created = QuizChallenge.objects.get_or_create(challenge=challenge)
+        
+        # Видаляємо старі питання
+        QuizQuestion.objects.filter(quiz=quiz_challenge).delete()
+        
+        # Нові питання
+        quiz_questions = data.get("quiz_questions", [])
+        if isinstance(quiz_questions, list):
+            for idx, q_data in enumerate(quiz_questions, 1):
+                if (isinstance(q_data, dict) and 
+                    q_data.get("question_text") and 
+                    isinstance(q_data.get("answers"), list)):
+                    
+                    question = QuizQuestion.objects.create(
+                        quiz=quiz_challenge,
+                        question_text=q_data["question_text"].strip(),
+                        order=idx
+                    )
+                    
+                    for answer_data in q_data.get("answers", []):
+                        if isinstance(answer_data, dict) and answer_data.get("answer_text"):
+                            QuizAnswer.objects.create(
+                                question=question,
+                                answer_text=answer_data["answer_text"].strip(),
+                                is_correct=answer_data.get("is_correct", False)
+                            )
 
+    serializer = ChallengeSerializer(challenge)  # ✅ Правильний serializer
+    return Response({
+        "type": "success",
+        "message": "Challenge updated successfully",
+        "challenge": serializer.data
+    }, status=Statuse.HTTP_200_OK)
 @api_view (["DELETE"])
 @require_http_methods (["DELETE"])
 @permission_classes ([IsAdminOrReadOnly])

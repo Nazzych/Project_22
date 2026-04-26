@@ -95,7 +95,7 @@ export default function AdminForum() {
 
             {/* === ПРАВА ЧАСТИНА — МЕНЮ ВКЛАДОК === */}
             <div className="lg:col-span-3">
-                <div className="hidden lg:block sticky -top-4 pl-4 py-2 border-l space-y-1">
+                <div className="hidden lg:block sticky -top-4 pl-4 py-2 border-l space-y-1"> {/*  top-24 */}
                     {FORUM_TABS.map((tab) => {
                         const Icon = tab.icon;
                         const isActive = activeTab === tab.id;

@@ -1,6 +1,7 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
-    File, FileText, Tag, Trophy, Save, Trash2, ArrowRight, AlertTriangle
+    File, FileText, Tag, Trophy, Save, Trash2, ArrowRight, AlertOctagon,
+    FileCode
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -9,6 +10,7 @@ import { Input } from '../../../../ui/Input';
 import { Textarea } from '../../../../ui/Textarea';
 import { Select } from '../../../../ui/Select';
 import { LoadingSpinner } from '../../../../LoadingSpinner';
+
 import { QuizChallengeManage } from '../tasks/QuizChallengeManage';
 import { CodeChallengeManage } from '../tasks/CodeChallengeManage';
 
@@ -35,13 +37,13 @@ const typeOptions = [
 ];
 
 const pointsOptions = [
-    { value: 10, label: "10 Points" },
-    { value: 20, label: "20 Points" },
-    { value: 50, label: "50 Points" },
-    { value: 80, label: "80 Points" },
-    { value: 100, label: "100 Points" },
-    { value: 150, label: "150 Points" },
-    { value: 200, label: "200 Points" },
+    { value: "10", label: "10 Points" },
+    { value: "20", label: "20 Points" },
+    { value: "50", label: "50 Points" },
+    { value: "80", label: "80 Points" },
+    { value: "100", label: "100 Points" },
+    { value: "150", label: "150 Points" },
+    { value: "200", label: "200 Points" },
 ];
 
 const languageOptions = [
@@ -60,71 +62,96 @@ interface ChallangeManageProps {
     onDelete?: () => void;
 }
 
-interface BackendQuizAnswer {
-    id: number;
-    answer_text: string;
-    is_correct: boolean;
+interface ChallangeManageProps {
+    task?: any;
+    onSuccess: () => void;
+    onDelete?: () => void;
 }
-interface BackendQuizQuestion {
-    id: number;
-    question_text: string;
-    order: number;
-    answers: BackendQuizAnswer[];
-}
-interface QuizQuestion {
-    id: string;
-    question_text: string;
-    options: string[];
-    correct_answer: number;
-    backend_question_id?: number; // Для збереження зв'язку з бекендом
-}
+
 export function ChallangeManage({ task, onSuccess, onDelete }: ChallangeManageProps) {
     const { showToast } = useToast();
     const { closeModal } = useModal();
     const [loading, setLoading] = useState(false);
-
     const [activeTab, setActiveTab] = useState<'general' | 'code' | 'quiz'>('general');
 
-    const [form, setForm] = useState({
+    // Конвертація бекенд → локальний формат
+    const convertBackendToLocal = useCallback((backendQuestions: any[] = []): any[] => {
+        if (!Array.isArray(backendQuestions) || backendQuestions.length === 0) return [];
+
+        return backendQuestions.map((q: any) => ({
+            id: crypto.randomUUID(),
+            backend_question_id: q.id,
+            question_text: q.question_text || '',
+            options: (q.answers || []).map((a: any) => a.answer_text || ''),
+            correct_answer: (q.answers || []).findIndex((a: any) => a.is_correct) || 0,
+        }));
+    }, []);
+
+    const [form, setForm] = useState(() => ({
         title: task?.title || "",
         description: task?.description || "",
         tegs: task?.tegs || "",
         points: task?.points || 50,
         difficul: task?.difficul ?? "medium",
-        language: task?.language ?? "python",
+        language: task?.language ? task?.quiz_challenge?.language : "python",
         status: task?.status ?? "draft",
         c_type: task?.c_type ?? "code",
 
-        // Code specific
-        e_input: task?.e_input || "",
-        e_output: task?.e_output || "",
-        code: task?.code || "",
+        e_input: task?.code_challenge?.e_input || "",
+        e_output: task?.code_challenge?.e_output || "",
+        code: task?.code_challenge?.starter_code || "",
 
-        // Quiz specific
-        quiz_questions: task?.quiz_challenge?.questions || [],
-    });
+        // Quiz — конвертуємо одразу при ініціалізації
+        quiz_questions: task?.quiz_challenge?.questions 
+            ? convertBackendToLocal(task.quiz_challenge.questions) 
+            : [],
+    }));
 
     const isEditMode = !!task;
 
+    // Оновлюємо форму, якщо task змінився (наприклад, при повторному відкритті)
+    useEffect(() => {
+        if (task) {
+            setForm({
+                title: task.title || "",
+                description: task.description || "",
+                tegs: task.tags || "",
+                points: task.points || 50,
+                difficul: task.difficulty ?? "medium",
+                language: task.language ? task?.quiz_challenge?.language : "python",
+                status: task.status ?? "draft",
+                c_type: task.c_type ?? "code",
+
+                e_input: task.code_challenge?.e_input || "",
+                e_output: task.code_challenge?.e_output || "",
+                code: task.code_challenge?.starter_code || "",
+
+                quiz_questions: task.quiz_challenge?.questions 
+                    ? convertBackendToLocal(task.quiz_challenge.questions) 
+                    : [],
+            });
+        }
+    }, [task, convertBackendToLocal]);
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        setForm({ ...form, [e.target.name]: e.target.value });
+        setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
     };
 
     const handleSelectChange = (field: string) => (value: string) => {
-        setForm(prev => ({ ...prev, [field]: value }));
+        setForm(prev => ({ ...prev, [field]: field === 'points' ? Number(value) : value }));
     };
-    const convertLocalToBackend = useCallback((localQuestions: QuizQuestion[]): BackendQuizQuestion[] => {
+
+    const convertLocalToBackend = useCallback((localQuestions: any[]) => {
         return localQuestions.map((q, order) => ({
-            id: q.backend_question_id || 0,
             question_text: q.question_text,
             order: order + 1,
-            answers: q.options.map((text, idx) => ({
-                id: 0,
+            answers: q.options.map((text: string, idx: number) => ({
                 answer_text: text,
                 is_correct: idx === q.correct_answer
             }))
         }));
     }, []);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
@@ -138,7 +165,12 @@ export function ChallangeManage({ task, onSuccess, onDelete }: ChallangeManagePr
         try {
             await getCsrfToken();
 
-            const payload = { ...form, quiz_questions: form.c_type === 'quiz' ? convertLocalToBackend(form.quiz_questions) : [] };
+            const payload = {
+                ...form,
+                quiz_questions: form.c_type === 'quiz' 
+                    ? convertLocalToBackend(form.quiz_questions) 
+                    : []
+            };
 
             if (isEditMode) {
                 await updateTask(task.id, payload);
@@ -159,14 +191,14 @@ export function ChallangeManage({ task, onSuccess, onDelete }: ChallangeManagePr
     };
 
     const updateQuiz = (update: any) => {
-        setForm(prev => {
-            const nextQuestions = typeof update === 'function' 
-                ? update(prev.quiz_questions) 
-                : update;
-            return { ...prev, quiz_questions: nextQuestions };
-        });
+        setForm(prev => ({
+            ...prev,
+            quiz_questions: typeof update === 'function' 
+                ? update(prev.quiz_questions || []) 
+                : update
+        }));
     };
-    // Визначаємо, які вкладки показувати
+
     const showCodeTab = form.c_type === 'code';
     const showQuizTab = form.c_type === 'quiz';
 
@@ -296,7 +328,7 @@ export function ChallangeManage({ task, onSuccess, onDelete }: ChallangeManagePr
 
                             {/* Вибір типу завдання */}
                             <div className='md:w-[30%]'>
-                                <label className="flex items-center gap-2 text-sm font-medium mb-1.5"><AlertTriangle className='w-4 h-4 text-red-500' />Type of Challenge</label>
+                                <label className="flex items-center gap-2 text-sm font-medium mb-1.5"><AlertOctagon className='w-4 h-4 text-red-500' />Type of Challenge</label>
                                 <Select className='nz-bg-input rounded-xl'
                                     options={typeOptions}
                                     value={form.c_type}
@@ -304,27 +336,25 @@ export function ChallangeManage({ task, onSuccess, onDelete }: ChallangeManagePr
                                 />
                             </div>
                         </div>
+                        {form.c_type === 'code' && (
+                            <div>
+                                <label className="flex items-center gap-2 text-sm font-medium mb-1.5 text-amber-500"><FileCode className='w-4 h-4' />Code Challenge are not stable and unsupported yet!</label>
+                            </div>
+                        )}
                     </div>
                 )}
 
                 {/* ==================== CODE TAB ==================== */}
                 {activeTab === 'code' && (
-                    <div>
-                        <CodeChallengeManage 
-                            form={form} 
-                            setForm={setForm} 
-                        />
-                    </div>
+                    <CodeChallengeManage form={form} setForm={setForm} />
                 )}
 
                 {/* ==================== QUIZ TAB ==================== */}
                 {activeTab === 'quiz' && (
-                    <div>
-                        <QuizChallengeManage
-                            questions={form.quiz_questions}
-                            setQuestions={updateQuiz}
-                        />
-                    </div>
+                    <QuizChallengeManage
+                        questions={form.quiz_questions}
+                        setQuestions={updateQuiz}
+                    />
                 )}
             </div>
 
@@ -339,6 +369,7 @@ export function ChallangeManage({ task, onSuccess, onDelete }: ChallangeManagePr
                     >
                         <Trash2 className="w-4 h-4 mr-2" />
                         Delete Task
+                        <span className='absolute -bottom-1 font-bold right-2 text-[8px]'>Double click</span>
                     </Button>
                 )}
 

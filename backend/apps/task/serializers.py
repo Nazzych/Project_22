@@ -1,14 +1,14 @@
 # serializers.py (task).
 #*Підключення бібліотек.
 from rest_framework import serializers
-from .models import Challenge, ChallengeProgress, CodeChallenge, QuizChallenge, QuizAnswer, QuizQuestion
+from .models import Challenge, CodeChallenge, QuizChallenge, QuizAnswer, QuizQuestion, UserChallengeProgress
 
 
 #Клас серелізатора завдання для користувача.
 class ChellangeProgressSerializer (serializers.ModelSerializer):
     class Meta:
-        model = ChallengeProgress
-        fields = ["id", "user", "challenge", "status", "submitted_code", "submitted_at", "mentor_feedback", "mentor_score", "completed_at", "attempts"]
+        model = UserChallengeProgress
+        fields = ["id", "user", "challenge", "status", "submitted_code", "submitted_at", "mentor_feedback", "mentor_score", "completed_at", "attempts", "selected_answers"]
 
 
 class QuizAnswerSerializer(serializers.ModelSerializer):
@@ -39,11 +39,25 @@ class CodeChallengeSerializer(serializers.ModelSerializer):
 class ChallengeSerializer(serializers.ModelSerializer):
     code_challenge = CodeChallengeSerializer(read_only=True)
     quiz_challenge = QuizChallengeSerializer(read_only=True)
+    user_progress = serializers.SerializerMethodField()
 
     class Meta:
         model = Challenge
         fields = [
             "id", "title", "description", "tags", "points",
             "difficulty", "c_type", "status", "created_at", "updated_at",
-            "code_challenge", "quiz_challenge"
+            "code_challenge", "quiz_challenge", "user_progress"
         ]
+
+    def get_user_progress (self, obj):
+        """Повертає прогрес тільки для поточного залогіненого користувача"""
+        user = self.context.get ("user")
+        if not user or not user.is_authenticated:
+            return None
+        progress = UserChallengeProgress.objects.filter (
+            user = user, 
+            challenge = obj
+        ).first()
+        if progress:
+            return ChellangeProgressSerializer (progress).data
+        return None

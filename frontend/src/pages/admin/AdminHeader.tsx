@@ -5,7 +5,7 @@ import { Image } from '../../components/Image';
 export default function AdminHeader() {
     return (
         <>
-            <div className="flex items-center justify-center gap-4 p-2 nz-background-primary rounded-3xl">
+            <div className="flex items-center justify-center gap-4 p-2 nz-background-primary rounded-3xl z-50"> {/*  sticky -top-6 */}
                 <div className="w-24 h-24 font-mono rounded-full overflow-hidden border-2">
                     <Image src='/nz-logo.png' alt='Nezer Hill Foundation' />
                 </div>
