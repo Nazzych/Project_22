@@ -310,7 +310,7 @@ def google_login_callback(request):
             "client_secret": settings.GOOGLE_CLIENT_SECRET,
             "code": code,
             "grant_type": "authorization_code",
-            "redirect_uri": "http://localhost:8000/api/google/callback",
+            "redirect_uri": settings.GOOGLE_REDIRECT_URI,
         },
         timeout=10
     )
@@ -320,25 +320,38 @@ def google_login_callback(request):
         return Response({"error": "Google access token not received", "details": token_data}, status=400)
 
     header = {"Authorization": f"Bearer {access_token}"}
-    user_data = requests.get("https://www.googleapis.com/oauth2/v2/userinfo", headers=header).json()
+    user_data = requests.get("https://openidconnect.googleapis.com/v1/userinfo", headers=header).json()
 
     email = user_data.get("email")
     first_name = user_data.get("given_name", "")
     last_name = user_data.get("family_name", "")
+    avatar_url = user_data.get("picture", "")
     username = email.split("@")[0]
+    print (avatar_url)
+    if not email:
+        return Response ({"error": "No email from Google", "details": user_data}, status=400)
 
     user, created = User.objects.get_or_create(
         email=email,
         defaults={
             "username": username,
             "first_name": first_name,
-            "last_name": last_name,
+            "last_name": last_name
         }
+    )
+    if created:
+        password = secrets.token_urlsafe (16)
+        user.set_password (password)
+        user.save()
+        send_password_email (user.email, password)
+
+    _, _ = Profile.objects.get_or_create (
+        user = user,
+        defaults = {"avatar_url": avatar_url}
     )
 
     auth_login(request, user)
     return redirect("http://localhost:3000/")
-
 
 # @permission_classes([IsAuthenticated])
 @api_view (["PUT"])

@@ -1,39 +1,66 @@
-import React, { forwardRef, useRef, useState } from "react";
+import React, { forwardRef, useRef, useState, useCallback, useEffect } from "react";
 import { cn } from "../../lib/cn";
 import { File, Folder, Plus, Minus } from "lucide-react";
 import { InputProps } from "../../types/componentsUI";
 
-
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-    ({ className, type = "text", icon, buttonLabel = "Select", value, onChange, ...props }, ref) => {
+    ({ 
+        className, 
+        type = "text", 
+        icon, 
+        buttonLabel = "Select", 
+        value, 
+        onChange, 
+        ...props 
+    }, ref) => {
         const fileInputRef = useRef<HTMLInputElement>(null);
 
-        // Локальний стан тільки для number
-        const [localNumberValue, setLocalNumberValue] = useState<number>(
-            value !== undefined ? Number(value) : 0
-        );
-
-        // Синхронізація зі зовнішнім value
-        React.useEffect(() => {
-            if (type === "number" && value !== undefined) {
-                setLocalNumberValue(Number(value));
-            }
+        // ✅ ВСІ useCallback НАВЕРХУ (НЕ в if!)
+        const getNumberValue = useCallback(() => {
+            if (type !== "number") return 0;
+            return typeof value === 'number' ? value : 
+                   typeof value === 'string' ? Number(value) : 0;
         }, [type, value]);
+
+        const [localNumberValue, setLocalNumberValue] = useState<number>(getNumberValue());
+
+        // ✅ Синхронізація
+        useEffect(() => {
+            const numValue = getNumberValue();
+            setLocalNumberValue(numValue);
+        }, [getNumberValue]);
+
+        // ✅ Загальний handleNumberChange
+        const handleNumberChange = useCallback((newValue: number) => {
+            setLocalNumberValue(newValue);
+            const event = {
+                target: { 
+                    value: newValue.toString() as any,
+                    name: props.name || ''
+                }
+            } as React.ChangeEvent<HTMLInputElement>;
+            onChange?.(event);
+        }, [onChange, props.name]);
+
+        // ===== NUMBER handlers =====
+        const handleIncrement = useCallback(() => {
+            const newValue = localNumberValue + 1;
+            handleNumberChange(newValue);
+        }, [localNumberValue, handleNumberChange]);
+
+        const handleDecrement = useCallback(() => {
+            const newValue = Math.max(0, localNumberValue - 1);
+            handleNumberChange(newValue);
+        }, [localNumberValue, handleNumberChange]);
+
+        const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+            const num = Number(e.target.value);
+            const newValue = isNaN(num) ? 0 : Math.max(0, num);
+            handleNumberChange(newValue);
+        }, [handleNumberChange]);
 
         // ===== NUMBER INPUT =====
         if (type === "number") {
-            const handleIncrement = () => {
-                const newValue = localNumberValue + 1;
-                setLocalNumberValue(newValue);
-                onChange?.({ target: { value: newValue.toString() } } as any);
-            };
-
-            const handleDecrement = () => {
-                const newValue = Math.max(0, localNumberValue - 1);
-                setLocalNumberValue(newValue);
-                onChange?.({ target: { value: newValue.toString() } } as any);
-            };
-
             return (
                 <div className="relative w-full">
                     <div className="flex items-center nz-bg-input rounded-xl overflow-hidden focus-within:nz-ring transition-all border border-zinc-700">
@@ -50,12 +77,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
                             ref={ref}
                             type="number"
                             value={localNumberValue}
-                            onChange={(e) => {
-                                const num = Number(e.target.value);
-                                const newValue = isNaN(num) ? 0 : num;
-                                setLocalNumberValue(newValue);
-                                onChange?.(e);
-                            }}
+                            onChange={handleInputChange}
                             className={cn(
                                 "flex-1 bg-transparent text-center text-sm focus:outline-none font-medium [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none",
                                 className
@@ -103,6 +125,28 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
                 </div>
             );
         }
+{/* Приклади використання:
+- Файл
+<Input 
+    type="file" 
+    onChange={handleFileChange}
+    accept=".pdf,.doc"
+/>
+- Папка
+<Input 
+    type="file" 
+    webkitdirectory 
+    multiple
+    onChange={handleFolderChange}
+/>
+- Кілька файлів
+<Input 
+    type="file" 
+    multiple 
+    accept="image/*"
+    onChange={handleImages}
+/>
+*/}
 
         // ===== ЗВИЧАЙНИЙ INPUT =====
         return (

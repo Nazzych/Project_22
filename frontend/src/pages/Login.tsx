@@ -152,7 +152,7 @@ export function Login() {
                                     size='sm'
                                     className='rounded-full'
                                     onClick={() =>
-                                        window.location.assign(`https://accounts.google.com/o/oauth2/v2/auth?client_id=YOUR_GOOGLE_CLIENT_ID&redirect_uri=http://localhost:8000/user/auth/google/callback/&response_type=code&scope=profile email`)
+                                        window.location.assign(`https://accounts.google.com/o/oauth2/v2/auth?client_id=751543173067-ln2sp1ig09oa5kit9rlloa5htdd9qog7.apps.googleusercontent.com&redirect_uri=http://localhost:8000/user/auth/google/callback/&response_type=code&scope=openid profile email`)
                                     }
                                     >
                                     <ChromeIcon className="mr-2 h-4 w-4" /> Google
@@ -180,6 +180,7 @@ export function Login() {
 //TODO: Доробити гарну синю тему.
 // h&XP#*UT,7U_ - martaya[s<z>]h@email.com
 // -> A)-6t7$9bM(& - andre@gmail.com
+// AksdmCKTyYwKa4CbL_mKKA - nezerhillfoundation@gmail.com
 // MM+Zkekh+q58 - nazzych666@gmail.com
 //→ h&XP#*UT,7U_MM+Zkekh+q58 - github oauth.
 //!>.

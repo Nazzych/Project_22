@@ -270,7 +270,7 @@ export function ProjectManage({ onSuccess, onDelete, isAdminMode, project }: Pro
                         <Input
                             type="file"
                             multiple
-                            webkitdirectory={true}
+                            webkitdirectory
                             onChange={handleFileSelect}
                             buttonLabel="Select folder (max lenght - 100 *with folders)"
                             className="block w-full text-sm text-muted-foreground"
