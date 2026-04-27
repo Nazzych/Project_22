@@ -180,11 +180,11 @@ def update_challange(request, challenge_id):  # ✅ Правильна назв�
 
     # ✅ QUIZ CHALLENGE
     elif challenge.c_type == ChallengeType.QUIZ:
-        quiz_challenge, created = QuizChallenge.objects.get_or_create(challenge=challenge)
-        
+        quiz_challenge, _ = QuizChallenge.objects.get_or_create(challenge=challenge)
+
         # Видаляємо старі питання
         QuizQuestion.objects.filter(quiz=quiz_challenge).delete()
-        
+
         # Нові питання
         quiz_questions = data.get("quiz_questions", [])
         if isinstance(quiz_questions, list):
@@ -207,7 +207,7 @@ def update_challange(request, challenge_id):  # ✅ Правильна назв�
                                 is_correct=answer_data.get("is_correct", False)
                             )
 
-    serializer = ChallengeSerializer(challenge)  # ✅ Правильний serializer
+    serializer = ChallengeSerializer(challenge)
     return Response({
         "type": "success",
         "message": "Challenge updated successfully",
@@ -557,13 +557,13 @@ def delete_user (request, user_id):
         }, status = Statuse.HTTP_400_BAD_REQUEST)
 
     try:
-        user = get_object_or_404 (User, id = user_id).delete()
+        user = get_object_or_404 (User, id = user_id)
         if user.is_superuser:
             return Response ({
                 "type": "error",
                 "message": "You can't manage of the owner this site!"
             }, status = Statuse.HTTP_403_FORBIDDEN)
-
+        user.delete()
         return Response ({"type": "success", "message": "User deleted successfully"}, status = Statuse.HTTP_204_NO_CONTENT)
     except Exception as e:
         print ("Error deleting user:", str (e))

@@ -10,7 +10,6 @@ import { cn } from '../../lib/cn';
 import { LoadingSpinner } from '../LoadingSpinner';
 import SvipeModal from '../shared/modal/SvipeModal';
 import { getCsrfToken } from '../../api/auth';
-import { Tasks } from '../../types/tasks';
 
 interface QuizAnswer {
     id: number;
@@ -139,6 +138,10 @@ export default function QuizChallengeView({ challenge }: ChallengeViewProps) {
     };
 
     const handleRestart = () => {
+        if (challenge.user_progress?.status) {
+            setIsSubmitted(false);
+            setScore(0);
+        }
         setCurrentQuestionIndex(0);
         setSelectedAnswers({});
         setIsSubmitted(false);
@@ -188,101 +191,38 @@ export default function QuizChallengeView({ challenge }: ChallengeViewProps) {
                 size="md"
                 position="top"
             >
-                <div className="max-h-[70vh] overflow-y-auto">
-                    <h2 className="text-2xl font-bold mb-4">{challenge.title}</h2>
-                    <p className="nz-text-muted text-sm mb-2">Description:</p>
-                    {challenge.description}
+                <div className="max-h-[70vh] space-y-4 overflow-y-auto">
+                    <Button onClick={() => (setIsChevronOpen(false), setShowReview(true))} size="sm" variant="btn_glass" className="flex items-center gap-2 px-2 rounded-lg">
+                        <Eye className="w-4 h-4" />
+                        Review Answers
+                    </Button>
+                    <div className="flex flex-wrap justify-between items-center gap-2">
+                        <div>
+                            <p className="nz-text-muted text-sm mb-1">Attempts:</p>
+                            {challenge.user_progress?.attempts}
+                        </div>
+                        <div>
+                            <p className="nz-text-muted text-sm mb-1">Completed At:</p>
+                            {challenge.user_progress?.completed_at ? new Date(challenge.user_progress.completed_at).toLocaleString() : "Not completed yet"}
+                        </div>
+                    </div>
+                    <h2 className="text-2xl font-bold">{challenge.title}</h2>
+                    <div>
+                        <p className="nz-text-muted text-sm mb-1">Description:</p>
+                        {challenge.description}
+                    </div>
                 </div>
             </SvipeModal>
         );
     }
 
-    // Результат
-    if (isSubmitted || challenge.user_progress?.status) {
-        const isPassed = score >= 70;
-        const correctCount = Math.round((score / 100) * questions.length);
-
+    if (showReview) {
         return (
-            <div className="flex justify-center">
-                {/* Результат тесту */}
-                <Card className="overflow-hidden">
-                    <CardContent className="py-8 text-center">
-                        <div className="flex justify-center mb-8">
-                            {challenge.user_progress?.status === "completed" ? (
-                                <PartyPopper className="h-20 w-20 text-emerald-500" />
-                            ) : challenge.user_progress?.status === "failed" ? (
-                                <XCircle className="h-20 w-20 text-red-500" />
-                            ) : (
-                                isPassed ? (
-                                    <PartyPopper className="h-20 w-20 text-emerald-500" />
-                                ) : score > 0 ? (
-                                    <PieChart className="h-20 w-20 text-blue-500" />
-                                ) : (
-                                    <XCircle className="h-20 w-20 text-red-500" />
-                                )
-                            )}
-                        </div>
-
-                        <h2 className="text-4xl font-bold mb-2">
-                            {challenge.user_progress?.status ? (
-                                <span className="capitalize">{challenge.user_progress.status}</span>
-                                
-                            ) : (
-                                isPassed ? "Excellent!" : score > 0 ? "Test Completed" : "Try Again"
-                            )}
-                        </h2>
-
-                        {!challenge.user_progress?.status && (
-                            <>
-                                <p className={cn(
-                                    "text-7xl font-black mb-3 transition-all",
-                                    isPassed ? "text-emerald-400" : score > 0 ? "text-blue-400" : "text-red-400"
-                                )}>
-                                    {score}%
-                                </p>
-
-                                <p className="text-xl text-zinc-400">
-                                    {correctCount} out of {questions.length} correct
-                                </p>
-                            </>
-                        )}
-
-                        <div className="flex flex-wrap gap-4 justify-center mt-10">
-                            <Button 
-                                onClick={() => navigate ("/challenges")} 
-                                variant="btn_glass" 
-                                className="px-8"
-                            >
-                                Back to Challenges
-                            </Button>
-
-                            {challenge.user_progress?.status !== "failed" || score !== 100 && (
-                                <Button 
-                                    onClick={handleRestart} 
-                                    variant="btn_primary" 
-                                    className="px-8"
-                                >
-                                    <Play className="w-4 h-4 mr-2" />
-                                    Try Again
-                                </Button>
-                            )}
-
-                            <Button 
-                                onClick={() => setShowReview(true)} 
-                                variant="btn_accent" 
-                                className="px-8"
-                            >
-                                <Eye className="w-4 h-4 mr-2" />
-                                Review Answers
-                            </Button>
-                        </div>
-                    </CardContent>
-                </Card>
-
+            <div>
                 {/* Перегляд відповідей — Side Sheet / Bottom Sheet */}
                 <SvipeModal
                     isOpen={showReview}
-                    onClose={() => setShowReview(false)}
+                    onClose={() => (setShowReview(false))}
                     title={
                         <div className='flex items-center gap-2 line-clamp-1'>
                             <Eye className='w-5 h-5' /> Review Your Answers
@@ -345,7 +285,81 @@ export default function QuizChallengeView({ challenge }: ChallengeViewProps) {
                             );
                         })}
                     </div>
-                </SvipeModal>            </div>
+                </SvipeModal>
+            </div>
+        );
+    }
+
+    // Результат
+    if (isSubmitted) {
+        const isPassed = score >= 70;
+        const correctCount = Math.round((score / 100) * questions.length);
+
+        return (
+            <div className="flex justify-center">
+                {/* Результат тесту */}
+                <Card className="overflow-hidden">
+                    <CardContent className="py-8 text-center">
+                        <div className="flex justify-center mb-8">
+                            {isPassed ? (
+                                <PartyPopper className="h-20 w-20 text-emerald-500" />
+                            ) : score > 0 ? (
+                                <PieChart className="h-20 w-20 text-blue-500" />
+                            ) : (
+                                <XCircle className="h-20 w-20 text-red-500" />
+                            )}
+                        </div>
+
+                        <h2 className="text-4xl font-bold mb-2">
+                            {isPassed ? (
+                                "Excellent!"
+                            ) : score > 0 ? (
+                                "Test Completed"
+                            ) : (
+                                "Try Again"
+                            )}
+                        </h2>
+
+                        <p className={cn(
+                            "text-7xl font-black mb-3 transition-all",
+                            isPassed ? "text-emerald-400" : score > 0 ? "text-blue-400" : "text-red-400"
+                        )}>
+                            {score}%
+                        </p>
+                        <p className="text-xl text-zinc-400">
+                            {correctCount} out of {questions.length} correct
+                        </p>
+
+                        <div className="flex flex-wrap gap-4 justify-center mt-10">
+                            <Button 
+                                onClick={() => navigate ("/challenges")} 
+                                variant="btn_glass" 
+                                className="px-8"
+                            >
+                                Back to Challenges
+                            </Button>
+
+                            <Button 
+                                onClick={handleRestart}
+                                variant="btn_primary" 
+                                className="px-8"
+                            >
+                                <Play className="w-4 h-4 mr-2" />
+                                Try Again
+                            </Button>
+
+                            <Button 
+                                onClick={() => setShowReview(true)} 
+                                variant="btn_accent" 
+                                className="px-8"
+                            >
+                                <Eye className="w-4 h-4 mr-2" />
+                                Review Answers
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
         );
     }
 
@@ -365,8 +379,9 @@ export default function QuizChallengeView({ challenge }: ChallengeViewProps) {
                                 <Clock className="w-4 h-4" />
                                 {currentQuestion.time_limit_minutes ? `${currentQuestion.time_limit_minutes} sec` : "Time unlimited"}
                             </div>
-                            <button onClick={handleChevronClick} className="nz-background-primary p-1.5 hover:nz-background-accent border rounded-full">
-                                <Info className="w-4 h-4 nz-text-muted" />
+                            <span>|</span>
+                            <button onClick={handleChevronClick} className="nz-text-secondary hover:nz-text-hover">
+                                <Info className="w-4 h-4" />
                             </button>
                         </div>
                     </div>
@@ -378,11 +393,16 @@ export default function QuizChallengeView({ challenge }: ChallengeViewProps) {
                         <h2 className="text-2xl font-semibold mb-6 leading-tight">
                             {currentQuestion?.question_text || "No question"}
                         </h2>
-                        {currentQuestion?.order && (
-                            <span className="inline-block nz-bg-accent nz-text-accent text-xs px-3 py-1 rounded-full">
-                                Question #{currentQuestion.order}
-                            </span>
-                        )}
+                        <div className="flex flex-wrap justify-between items-center gap-2">
+                            {currentQuestion?.order && (
+                                <span className="inline-block nz-bg-accent nz-text-accent text-xs px-3 py-1 rounded-full">
+                                    Question #{currentQuestion.order}
+                                </span>
+                            )}
+                            <p className={cn("font-medium capitalize", challenge.user_progress?.status === "completed" ? "text-green-500" : challenge.user_progress?.status === "in_progress" ? "text-yellow-500" : "text-red-500")}>
+                                {challenge.user_progress?.status}
+                            </p>
+                        </div>
                     </div>
 
                     {/* Варіанти відповідей */}

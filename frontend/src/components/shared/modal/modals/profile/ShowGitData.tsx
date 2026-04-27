@@ -182,17 +182,17 @@ export function GitHubProfileModal({ githubData, existingBio }: GitHubProfileMod
                     </label>
                     {useAvatar && (
                         <>
-                        <img
-                            src={String(githubData.avatar_url) || '/default-avatar.png'}
-                            alt="GitHub Avatar"
-                            className="w-16 h-16 rounded-full border border-border shadow mb-2"
-                        />
-                        <Input
-                            type="url"
-                            name="avatar_url"
-                            defaultValue={String(githubData.avatar_url || '')}
-                            className="w-full bg-input text-input-foreground border border-border rounded-md px-3 py-2"
-                        />
+                            <img
+                                src={String(githubData.avatar_url) || '/default-avatar.png'}
+                                alt="GitHub Avatar"
+                                className="w-16 h-16 rounded-full border border-border shadow mb-2"
+                            />
+                            <Input
+                                type="url"
+                                name="avatar_url"
+                                defaultValue={String(githubData.avatar_url || '')}
+                                className="w-full bg-input text-input-foreground border border-border rounded-md px-3 py-2"
+                            />
                         </>
                     )}
                     </div>

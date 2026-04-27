@@ -43,8 +43,8 @@ export default function AdminForum() {
                 width: "xl",
                 x: false,
                 title: (
-                    <div className='w-fit flex flex-row justify-center items-center gap-2 nz-background-secondary px-4 py-1 font-mono rounded-lg'>
-                        <Edit className="w-5 h-5 text-primary" /> {user.ban_info && <span className='flex items-center text-red-400 font-bold'>[<Lock className='w-5 h-5' />]</span>} Edit {profile.id === user.id ? <span className='underline'>Your</span> : <span>"{user.email}"</span>} Profile
+                    <div className='w-fit max-w-full flex flex-row justify-center items-center gap-2 nz-background-secondary px-4 py-1 font-mono rounded-lg'>
+                        <Edit className="min-w-5 h-5 text-primary" /><span className='text-blue-400'>[Admin]</span> {user.ban_info && <span className='flex items-center text-red-400 font-bold'>[<Lock className='w-5 h-5' />]</span>} Edit {profile.id === user.id ? <span className='underline'>Your</span> : <span className='line-clamp-1 underline'>"{user.email}"</span>} Profile
                     </div>
                 ),
                 content: (
