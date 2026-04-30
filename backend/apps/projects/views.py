@@ -11,7 +11,7 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework import viewsets
 from storage3.exceptions import StorageApiError
-from users.permissions import isAuthenticated
+from core.permissions.permissions import isAuthenticated
 from .supabase_client import upload_file_to_supabase, get_file, update_file, download_file, delete_file
 from .serializers import ProjectSerializer
 from .tree_builder import build_file_tree

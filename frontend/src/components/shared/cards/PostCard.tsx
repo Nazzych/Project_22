@@ -107,7 +107,7 @@ export function PostCard({
             <div className="nz-background-secondary rounded-2xl max-h-[500px] p-4 space-y-4 border overflow-y-auto transition-all duration-300 cursor-default">
                 <div className='relative flex items-center mb-2'>
                     <div className="w-12 h-12 nz-background-accent rounded-full flex items-center justify-center text-white font-bold border-2">
-                        {logo ? <img className='w-full h-full object-cover rounded-full' src={logo} alt={post.author.username} /> : <span>{post.author.first_name[0]}{post.author.last_name[0]}</span>}
+                        {logo ? <img className='w-full h-full object-cover rounded-full' src={logo} alt={post.author.username} /> : <span>{post.author.first_name[0]}</span>}
                     </div>
                     <div className="ml-3">
                         <p className="text-white">{name} | <span className='text-[12px] nz-text-muted hover:underline cursor-pointer'>@{post.author.username}</span></p>

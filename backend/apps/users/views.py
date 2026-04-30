@@ -16,8 +16,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import viewsets, status
 from backend.settings import GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET
+from core.permissions.permissions import isAuthenticated, IsAdministrator
+from .permissions import login_required_api
 from .serializers import UserSerializer
-from .permissions import isAuthenticated, IsAdministrator, login_required_api
 from dateutil.parser import parse
 from .models import Profile
 from .send_message import send_password_email

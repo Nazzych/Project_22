@@ -1,7 +1,7 @@
 import React from 'react';
 import { XCircle } from 'lucide-react';
 import { Skeleton } from '../../../../components/LoadingSpinner';
-import { ChallengeCard } from '../../../../components/shared/cards/ChellangeCard';
+import { ChallengeCard } from '../../../../components/shared/cards/ChallengeCard';
 import { Tasks } from '../../../../types/tasks';
 
 interface ChallengeGridProps {

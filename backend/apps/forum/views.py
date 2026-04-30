@@ -11,7 +11,7 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework import viewsets, status
 from storage3.exceptions import StorageApiError
-from users.permissions import isAuthenticated
+from core.permissions.permissions import isAuthenticated
 from .models import Post, Channel, Comment
 from .serializers import PostSerializer, ChannelSerializer, CommentSerializer
 # from .permissions import IsAdminOrReadOnly
