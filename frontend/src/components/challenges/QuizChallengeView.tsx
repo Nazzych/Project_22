@@ -158,7 +158,7 @@ export default function QuizChallengeView({ challenge }: ChallengeViewProps) {
         return (
             <Card className="max-w-2xl mx-auto">
                 <CardContent className="py-8 text-center">
-                    <p className="text-xl text-zinc-400 mb-4">No quiz in this chellange.</p>
+                    <p className="text-xl text-zinc-400 mb-4">No quiz in this challenge.</p>
                     <Button 
                         variant="btn_primary" 
                         className="mt-6"
@@ -192,18 +192,24 @@ export default function QuizChallengeView({ challenge }: ChallengeViewProps) {
                 position="top"
             >
                 <div className="max-h-[70vh] space-y-4 overflow-y-auto">
-                    <Button onClick={() => (setIsChevronOpen(false), setShowReview(true))} size="sm" variant="btn_glass" className="flex items-center gap-2 px-2 rounded-lg">
-                        <Eye className="w-4 h-4" />
-                        Review Answers
-                    </Button>
+                    {challenge.user_progress?.selected_answers && (
+                        <Button onClick={() => (setIsChevronOpen(false), setShowReview(true))} size="sm" variant="btn_glass" className="flex items-center gap-2 px-2 rounded-lg">
+                            <Eye className="w-4 h-4" />
+                            Review Answers
+                        </Button>
+                    )}
                     <div className="flex flex-wrap justify-between items-center gap-2">
                         <div>
                             <p className="nz-text-muted text-sm mb-1">Attempts:</p>
-                            {challenge.user_progress?.attempts}
+                            {challenge.user_progress?.attempts || 0}
                         </div>
                         <div>
                             <p className="nz-text-muted text-sm mb-1">Completed At:</p>
-                            {challenge.user_progress?.completed_at ? new Date(challenge.user_progress.completed_at).toLocaleString() : "Not completed yet"}
+                            <span>{challenge.user_progress?.completed_at ? new Date(challenge.user_progress.completed_at).toLocaleString() : "Not completed yet"}</span>
+                        </div>
+                        <div className="capitalize">
+                            <p className="nz-text-muted text-sm mb-1">quiz status:</p>
+                            {challenge.user_progress?.status || "not started"}
                         </div>
                     </div>
                     <h2 className="text-2xl font-bold">{challenge.title}</h2>
@@ -374,35 +380,28 @@ export default function QuizChallengeView({ challenge }: ChallengeViewProps) {
                                 Question {currentQuestionIndex + 1} of {questions.length}
                             </span>
                         </div>
-                        <div className="flex items-center gap-2 text-sm">
-                            <div className="flex items-center gap-1 nz-text-muted">
-                                <Clock className="w-4 h-4" />
-                                {currentQuestion.time_limit_minutes ? `${currentQuestion.time_limit_minutes} sec` : "Time unlimited"}
-                            </div>
-                            <span>|</span>
-                            <button onClick={handleChevronClick} className="nz-text-secondary hover:nz-text-hover">
-                                <Info className="w-4 h-4" />
-                            </button>
-                        </div>
+                        <Button size="sm" onClick={handleChevronClick} className="flex items-center gap-2 rounded-full" variant="btn_info">
+                            <Info className="w-4 h-4" />
+                            Details of challenge
+                        </Button>
                     </div>
                 </CardHeader>
 
                 <CardContent className="space-y-8">
                     {/* Питання */}
                     <div>
-                        <h2 className="text-2xl font-semibold mb-6 leading-tight">
-                            {currentQuestion?.question_text || "No question"}
-                        </h2>
-                        <div className="flex flex-wrap justify-between items-center gap-2">
-                            {currentQuestion?.order && (
-                                <span className="inline-block nz-bg-accent nz-text-accent text-xs px-3 py-1 rounded-full">
-                                    Question #{currentQuestion.order}
-                                </span>
-                            )}
-                            <p className={cn("font-medium capitalize", challenge.user_progress?.status === "completed" ? "text-green-500" : challenge.user_progress?.status === "in_progress" ? "text-yellow-500" : "text-red-500")}>
-                                {challenge.user_progress?.status}
+                        <div className="flex flex-wrap justify-between items-center mb-6 gap-2">
+                            <div className="flex items-center gap-1 nz-text-muted">
+                                <Clock className="w-4 h-4" />
+                                {currentQuestion.time_limit_minutes ? `${currentQuestion.time_limit_minutes} sec` : "Time unlimited"}
+                            </div>
+                            <p className={cn("text-lg font-medium capitalize", challenge.user_progress?.status === "completed" ? "text-green-500" : challenge.user_progress?.status === "in_progress" ? "text-yellow-500" : "text-red-500")}>
+                                • {challenge.user_progress?.status}
                             </p>
                         </div>
+                        <h2 className="text-2xl font-semibold leading-tight">
+                            {currentQuestion?.question_text || "No question"}
+                        </h2>
                     </div>
 
                     {/* Варіанти відповідей */}

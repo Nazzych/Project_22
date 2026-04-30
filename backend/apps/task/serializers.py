@@ -5,7 +5,7 @@ from .models import Challenge, CodeChallenge, QuizChallenge, QuizAnswer, QuizQue
 
 
 #Клас серелізатора завдання для користувача.
-class ChellangeProgressSerializer (serializers.ModelSerializer):
+class ChallengeProgressSerializer (serializers.ModelSerializer):
     class Meta:
         model = UserChallengeProgress
         fields = ["id", "user", "challenge", "status", "submitted_code", "submitted_at", "mentor_feedback", "mentor_score", "completed_at", "attempts", "selected_answers"]
@@ -59,5 +59,5 @@ class ChallengeSerializer(serializers.ModelSerializer):
             challenge = obj
         ).first()
         if progress:
-            return ChellangeProgressSerializer (progress).data
+            return ChallengeProgressSerializer (progress).data
         return None

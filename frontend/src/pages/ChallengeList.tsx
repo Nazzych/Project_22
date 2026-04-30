@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Select';
 import { Button } from '../components/ui/Button';
-import { ChallengeCard } from '../components/shared/cards/ChellangeCard';
+import { ChallengeCard } from '../components/shared/cards/ChallengeCard';
 import { useToast } from '../hooks/useToast';
 import { Tasks } from '../types/tasks';
 import { tasksList } from '../api/tasks';

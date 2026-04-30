@@ -11,7 +11,7 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework import viewsets, status as Statuse
 from storage3.exceptions import StorageApiError
-from users.permissions import isAuthenticated, IsAdministrator
+from core.permissions.permissions import isAuthenticated, IsAdministrator
 from apps.task.serializers import ChallengeSerializer
 from apps.task.models import Challenge, CodeChallenge, QuizChallenge, ChallengeType, QuizQuestion, QuizAnswer
 from apps.forum.serializers import ChannelSerializer
@@ -221,7 +221,7 @@ def delete_challenge (request, challenge_id):
         Challenge.objects.get (id = int (challenge_id)).delete()
         return Response ({
             "type": "success",
-            "message": "Chellange deleted successfully"
+            "message": "Challenge deleted successfully"
         }, status = Statuse.HTTP_200_OK)
     except Challenge.DoesNotExist:
         return Response ({
@@ -229,7 +229,7 @@ def delete_challenge (request, challenge_id):
             "message": "Challenge not found"
         }, status = Statuse.HTTP_404_NOT_FOUND)
     except Exception as e:
-        print ("Error deleting chellange:", str (e))
+        print ("Error deleting Challenge:", str (e))
         return Response ({
             "type": "error",
             "message": f"Server error: {str (e)}"

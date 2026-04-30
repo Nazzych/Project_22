@@ -1,19 +1,8 @@
 # permissions.py (user).
 #*Підключення бібліотек.
 from rest_framework.response import Response
-from rest_framework import permissions
 from rest_framework import status
 from functools import wraps
-
-#Клас залежності авторинизованості.
-class isAuthenticated (permissions.BasePermission):
-    def has_permission (self, request, view):
-        return request.user.is_authenticated and hasattr (request.user, "profile")
-
-#Клас залежності для адміністратора.
-class IsAdministrator (permissions.BasePermission):
-    def has_permission (self, request, view):
-        return request.user.is_authenticated and hasattr (request.user, "profile") and request.user.is_staff
 
 
 #Клас кастомної перевірки авторизованості. 

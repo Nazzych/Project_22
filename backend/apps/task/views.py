@@ -7,7 +7,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework import viewsets, status
-from users.permissions import isAuthenticated
+from core.permissions.permissions import isAuthenticated
 from .models import Challenge, ChallengeProgress, ChallengeType, UserChallengeProgress
 from .serializers import ChallengeSerializer
 
@@ -15,8 +15,8 @@ from .serializers import ChallengeSerializer
 @api_view (["GET"])
 @permission_classes ([isAuthenticated])
 def challenges (request):
-    chellanges = Challenge.objects.all()
-    serializer = ChallengeSerializer (chellanges, many = True, context={'user': request.user})
+    Challenges = Challenge.objects.all()
+    serializer = ChallengeSerializer (Challenges, many = True, context={'user': request.user})
     return Response (serializer.data)
 
 @api_view (["GET"])

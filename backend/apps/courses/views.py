@@ -3,7 +3,7 @@ from django.utils import timezone
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
-from users.permissions import isAuthenticated
+from core.permissions.permissions import isAuthenticated
 from .serializers import CourseSerializer, CourseWithProgressSerializer
 from .models import Course, Lesson, UserLessonProgress
 

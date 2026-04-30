@@ -29,7 +29,7 @@ export function ProjectsHub() {
     }
 
     const { profile } = useProfile();
-    const [activeTab, setActiveTab] = useState<'my' | 'all'>('my');
+    const [activeTab, setActiveTab] = useState<'my' | 'all'>('all');
     const { openModal, closeModal } = useModal();
     const [projects, setProjects] = useState<Project[]>([]);
     const [loading, setLoading] = useState(true);

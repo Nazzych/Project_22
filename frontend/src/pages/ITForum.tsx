@@ -439,7 +439,7 @@ export function ITForum() {
                                         <PostCard
                                             key={post.id}
                                             logo={post.author.profile.avatar_url}
-                                            name={`${post.author.first_name} ${post.author.last_name}`}
+                                            name={post.author.first_name}
                                             post={post}
                                             expandedPosts={expandedPosts}
                                             toggleExpand={toggleExpand}

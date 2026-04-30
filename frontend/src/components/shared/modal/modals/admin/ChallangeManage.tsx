@@ -214,7 +214,7 @@ export function ChallangeManage({ task, onSuccess, onDelete }: ChallangeManagePr
                     General
                     {activeTab === 'general' && (
                         <motion.div
-                            layoutId="chellange-tab-underline"
+                            layoutId="challenge-tab-underline"
                             className="w-[50%] h-1 bg-gradient-to-r from-red-500 to-orange-500 rounded-t-full"
                         />
                     )}
@@ -229,7 +229,7 @@ export function ChallangeManage({ task, onSuccess, onDelete }: ChallangeManagePr
                         Code Challenge
                     {activeTab === 'code' && (
                         <motion.div
-                            layoutId="chellange-tab-underline"
+                            layoutId="challenge-tab-underline"
                             className="w-[50%] h-1 bg-gradient-to-r from-red-500 to-orange-500 rounded-t-full"
                         />
                     )}
@@ -245,7 +245,7 @@ export function ChallangeManage({ task, onSuccess, onDelete }: ChallangeManagePr
                         Quiz Challenge
                     {activeTab === 'quiz' && (
                         <motion.div
-                            layoutId="chellange-tab-underline"
+                            layoutId="challenge-tab-underline"
                             className="w-[50%] h-1 bg-gradient-to-r from-red-500 to-orange-500 rounded-t-full"
                         />
                     )}

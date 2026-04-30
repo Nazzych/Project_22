@@ -49,13 +49,13 @@ class ChallengeType (models.TextChoices):
     CODE = "code", "Code"
     MENTOR = "mentor", "Mentor Check"
 
-#Class for status in chellange.
+#Class for status in challenge.
 class ChallengeStatus (models.TextChoices):
     DRAFT = "draft", "Draft"
     PUBLISHED = "published", "Published"
     ARCHIVED = "archived", "Archived"
 
-#Class for  status in user chellange.
+#Class for  status in user challenge.
 class ChallengeProgress (models.TextChoices):
     NOT = "not_started", "Not Started"
     PROGGRESS = "in_progress", "In Progress"
@@ -145,7 +145,7 @@ class QuizAnswer (models.Model):
     def __str__ (self):
         return self.answer_text [:50]
 
-#Class for connect user to chellange.
+#Class for connect user to challenge.
 #TODO: python manage.py makemigrations |  python manage.py migrate .
 class UserChallengeProgress(models.Model):
     user = models.ForeignKey(

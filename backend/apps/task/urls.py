@@ -6,12 +6,12 @@ from . import views
 
 #?Налаштування роутера.
 #?router = DefaultRouter()
-#?router.register (r"chellanges", views.ChellangeViewSet, basename = "chellanges")
+#?router.register (r"Challenges", views.ChallengeViewSet, basename = "Challenges")
 
 #Налаштування силок.
 urlpatterns = [
     #?path ("", include (router.urls))
-    path ("chellanges/", views.challenges, name = "challenges"),
-    path ("chellange/<int:challenge_id>/", views.challenge_detail, name = "challenge_detail"),
-    path ("chellange/<int:challenge_id>/submit_quiz/", views.submit_quiz, name = "submit_quiz"),
+    path ("challenges/", views.challenges, name = "challenges"),
+    path ("challenge/<int:challenge_id>/", views.challenge_detail, name = "challenge_detail"),
+    path ("challenge/<int:challenge_id>/submit_quiz/", views.submit_quiz, name = "submit_quiz"),
 ]

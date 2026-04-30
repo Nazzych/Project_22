@@ -5,10 +5,10 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardContent } from '../../ui/Card';
 import { useModal } from '../../../hooks/useModal';
-import { ConfirmModal } from '../../shared/modal/ConfirmModal';
+import { ConfirmModal } from '../modal/ConfirmModal';
 import { getCsrfToken } from '../../../api/auth';
 import { useToast } from '../../../providers/MessageProvider';
-import { ChallangeManage } from '../../shared/modal/modals/admin/ChallangeManage';
+import { ChallangeManage } from '../modal/modals/admin/ChallangeManage';
 import { deleteTask } from '../../../api/admin';
 import { cn } from '../../../lib/cn';
 
@@ -53,7 +53,7 @@ export const ChallengeCard = ({
                         onConfirm={async () => {
                             await getCsrfToken();
                             await deleteTask (id);
-                            showToast('success', 'Success', 'Chellange successfully deleted.');
+                            showToast('success', 'Success', 'Challenge successfully deleted.');
                             if (loadChallenges) loadChallenges();
                             closeModal();
                         }}

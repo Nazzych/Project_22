@@ -6,7 +6,7 @@ from . import views
 
 #?Налаштування роутера.
 #?router = DefaultRouter()
-#?router.register (r"chellanges", views.ChellangeViewSet, basename = "chellanges")
+#?router.register (r"challenges", views.ChallengeViewSet, basename = "challenges")
 
 #Налаштування силок.
 urlpatterns = [
