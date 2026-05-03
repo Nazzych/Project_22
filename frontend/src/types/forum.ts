@@ -51,7 +51,9 @@ export interface PostFormProps {
     onDelete?: () => void;
     post?: Posts;
     channel?: number;
+    channelName?: string;
     content?: string;
+    is_staff?: boolean;
 }
 
 export type EditablePost = {

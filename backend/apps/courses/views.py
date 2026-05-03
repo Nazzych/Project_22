@@ -1,3 +1,5 @@
+# views.py (courses).
+#*Підключення бібліотек.
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework.decorators import api_view, permission_classes
@@ -8,7 +10,7 @@ from .serializers import CourseSerializer, CourseWithProgressSerializer
 from .models import Course, Lesson, UserLessonProgress
 
 
-#.
+#?<.
 """
     course = get_object_or_404(Course, pk=pk)
 
@@ -24,15 +26,20 @@ from .models import Course, Lesson, UserLessonProgress
     serializer = CourseSerializer(course)
     return Response(serializer.data)
 """
+#?>.
+
+#Деф отримання списку курсів.
+@api_view (["GET"])
+@permission_classes ([isAuthenticated])
+def get_courses (request):
+    courses = Course.objects.exclude (lessons__isnull = True)
+    serializer = CourseSerializer (courses, many = True)
+    return Response (serializer.data)
+
+#Деф отримання деталів курсу.
 @api_view (["GET"])
 @permission_classes ([isAuthenticated])
 def get_course (request, course_id):
-    if not course_id:
-        return Response ({
-            "type": "error",
-            "message": "Not provided <course_id>."
-        }, status = status.HTTP_400_BAD_REQUEST)
-
     course = get_object_or_404 (Course, id = course_id)
     if not course.lessons.exists() and not request.user.is_staff:
         return Response (
@@ -49,15 +56,7 @@ def get_course (request, course_id):
         "lessons":serializer.data.get ("lessons", [])
     })
 
-#.
-@api_view (["GET"])
-@permission_classes ([isAuthenticated])
-def get_courses (request):
-    courses = Course.objects.exclude (lessons__isnull = True)
-    serializer = CourseSerializer (courses, many = True)
-    return Response (serializer.data)
-
-#.
+#Деф оновлення прогресу урока.
 @api_view (["POST"])
 @permission_classes ([isAuthenticated])
 def update_lesson_progress (request, lesson_id):
@@ -84,14 +83,11 @@ def update_lesson_progress (request, lesson_id):
     ).first()
 
     if next_lesson:
-        next_progress, _ = UserLessonProgress.objects.get_or_create (
+        _, _ = UserLessonProgress.objects.update_or_create (
             user = user,
             lesson = next_lesson,
-            defaults = {"is_unlocked": True}
+            defaults = {"is_unlocked": True, "is_completed": False}
         )
-        if not next_progress.is_unlocked:
-            next_progress.is_unlocked = True
-            next_progress.save()
 
     return Response ({
         "type": "success",

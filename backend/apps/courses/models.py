@@ -1,7 +1,7 @@
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.models import User
 from django.db import models, transaction
-from apps.task.models import Difficul
+from apps.task.models import Difficulty
 
 
 #Клас категорії для курсу.
@@ -21,7 +21,7 @@ class Course (models.Model):
     description = models.TextField()
     tegs = models.CharField (max_length = 255, null = True, blank = True)
     points = models.PositiveIntegerField (default = 0)
-    level = models.CharField (max_length = 20, choices = Difficul.choices, default = Difficul.EASY)
+    level = models.CharField (max_length = 20, choices = Difficulty.choices, default = Difficulty.EASY)
     category = models.CharField (max_length = 100, choices = Category.choices, default = Category.OTHER)
     image = models.URLField (null = True, blank = True)
     created_at = models.DateTimeField (auto_now_add = True)

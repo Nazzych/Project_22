@@ -216,8 +216,10 @@ export function ChannelPage () {
             content: (
                 <PostManage 
                     post={post}
+                    channelName={channel?.name}
                     onSuccess={() => {loadPoasts()}}
                     onDelete={() => {clickDeletePost (post.id)}}
+                    is_staff={profile?.is_staff || false}
                 />
             ),
         });

@@ -5,37 +5,27 @@ from django.contrib.auth.password_validation import validate_password
 #? from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
 from django.http import HttpResponseNotAllowed, JsonResponse
-from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_http_methods, require_POST
 from django.core.exceptions import ValidationError
-from django.shortcuts import render, redirect
+from django.shortcuts import redirect
 from django.conf import settings
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework import viewsets, status
-from backend.settings import GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET
-from core.permissions.permissions import isAuthenticated, IsAdministrator
+from rest_framework import status
+from core.permissions.permissions import isAuthenticated
+from dateutil.parser import parse
+from .send_message import send_password_email
 from .permissions import login_required_api
 from .serializers import UserSerializer
-from dateutil.parser import parse
 from .models import Profile
-from .send_message import send_password_email
 import json, secrets, requests, jwt, time
 
 
-@api_view (["GET"])
-@ensure_csrf_cookie
-@permission_classes ([AllowAny])
-def csrf_check (request):
-    return JsonResponse({"detail": "CSRF cookie set"})
+#*Отримання користувача.
+User = get_user_model()
 
-@api_view (["GET"])
-@permission_classes ([AllowAny])
-def check_session (request):
-    return Response({"authenticated": request.user.is_authenticated})
-
+#Деф генерації JWT для GitHub App (для сервер-сервер аутентифікації).
 @permission_classes ([AllowAny])
 def generate_github_jwt():
     with open (settings.GITHUB_PRIVATE_KEY_PATH, "r") as f:
@@ -50,25 +40,24 @@ def generate_github_jwt():
     encoded_jwt = jwt.encode (payload, private_key, algorithm = "RS256")
     return encoded_jwt
 
-User = get_user_model()
-
-@require_http_methods(["GET", "POST"])
+#Деф логіну користувача.
+@require_http_methods (["GET", "POST"])
 @permission_classes ([AllowAny])
-def login(request):
+def login (request):
     if request.user.is_authenticated: 
-        return JsonResponse({"detail": "Already logged in"}, status=400)
+        return JsonResponse ({"detail": "Already logged in"}, status = 400)
 
     if request.method == "POST":
         data = json.loads (request.body)
-        email = data.get("email", "").strip().lower()
-        password = data.get("password", "")
+        email = data.get ("email", "").strip().lower()
+        password = data.get ("password", "")
 
         try:
-            user = User.objects.get(email=email)
+            user = User.objects.get (email = email)
             print (f"=> {user.username if user else 'Not found'}")
-            if user.check_password(password):
-                auth_login(request, user)
-                return JsonResponse({
+            if user.check_password (password):
+                auth_login (request, user)
+                return JsonResponse ({
                     "success": True,
                     "user": {
                         "username": user.username,
@@ -79,11 +68,10 @@ def login(request):
                 })
         except User.DoesNotExist:
             print (f"Except error")
+            return JsonResponse ({"success": False, "details": "Invalid email or password. User not found."}, status = 401)
+    return HttpResponseNotAllowed (["GET", "POST"])
 
-        return JsonResponse({"success": False})
-
-    return HttpResponseNotAllowed(["GET", "POST"])
-
+#Деф реєстрації користувача.
 @require_http_methods (["GET", "POST"])
 @permission_classes ([AllowAny])
 def register (request):
@@ -137,13 +125,15 @@ def register (request):
         }
     })
 
+#Деф виходу користувача з акаунту.
 @require_POST
 @permission_classes ([isAuthenticated])
 def logout (request):
     if request.user.is_authenticated: 
         auth_logout (request)
-    return redirect ("user-login")
+    return JsonResponse ({"success": True})
 
+#Деф callback для GitHub OAuth.
 @api_view (["GET"])
 @permission_classes ([AllowAny])
 def github_login_callback (request):
@@ -152,7 +142,7 @@ def github_login_callback (request):
 
     code = request.GET.get ("code")
     if not code:
-        return Response ({"error": "No code provided"}, status = 400)
+        return JsonResponse ({"error": "No code provided"}, status = 400)
 
     token_res = requests.post (
         "https://github.com/login/oauth/access_token",
@@ -167,7 +157,7 @@ def github_login_callback (request):
     token_data = token_res.json()
     access_token = token_data.get ("access_token")
     if not access_token:
-        return Response ({"error": "GitHub access token not received", "details": token_data}, status = 400)
+        return JsonResponse ({"error": "GitHub access token not received", "details": token_data}, status = 400)
 
     header = {"Authorization": f"token {access_token}"}
     user_data = requests.get ("https://api.github.com/user", headers = header).json()
@@ -178,7 +168,7 @@ def github_login_callback (request):
             raise ValueError ("Expected list of emails")
         primary_email = next ((e ["email"] for e in email_data if e.get ("primary") and e.get ("verified")), None)
     except Exception as e:
-        return Response ({
+        return JsonResponse ({
             "error": "Failed to parse email response",
             "details": str (e),
             "raw_response": email_data
@@ -204,18 +194,18 @@ def github_login_callback (request):
     #     user.last_name = last_name
     #     user.save()
     profile_data = {
-        'username': username.lower(),
-        'email': primary_email,
-        'name': full_name,
-        'html_url': user_data.get('html_url'),
-        'company': user_data.get('company'),
-        'blog': user_data.get('blog'),
-        'bio': user_data.get('bio'),
-        'twitter_username': user_data.get('twitter_username'),
-        'public_repos': user_data.get('public_repos'),
-        'followers': user_data.get('followers'),
-        'created_at': user_data.get('created_at'),
-        'avatar_url': user_data.get('avatar_url'),
+        "username": username.lower(),
+        "email": primary_email,
+        "name": full_name,
+        "html_url": user_data.get ("html_url"),
+        "company": user_data.get ("company"),
+        "blog": user_data.get ("blog"),
+        "bio": user_data.get ("bio"),
+        "twitter_username": user_data.get ("twitter_username"),
+        "public_repos": user_data.get ("public_repos"),
+        "followers": user_data.get ("followers"),
+        "created_at": user_data.get ("created_at"),
+        "avatar_url": user_data.get ("avatar_url"),
     }
     #? print (f"==> Profile Data: \n{profile_data}")
     if created:
@@ -235,6 +225,7 @@ def github_login_callback (request):
         auth_login (request, user)
         return redirect ("http://localhost:3000/")
 
+#Деф збереження профілю користувача з даними з GitHub.
 @api_view (["PUT"])
 @permission_classes ([isAuthenticated])
 def github_save_profile (request):
@@ -253,7 +244,7 @@ def github_save_profile (request):
         "followers": "profile",
         "created_at": "profile",
     }
-    # print ("Received data:", request.data)
+    #? print ("Received data:", request.data)
     for field, target in allowed_fields.items():
         value = request.data.get (field)
         if value is not None and value != "":
@@ -284,57 +275,56 @@ def github_save_profile (request):
                     except Exception:
                         continue
                 setattr (profile, field, value)
-
     user.save()
     profile.save()
+    return JsonResponse({"status": "ok"})
 
-    return Response({"status": "ok"})
-
+#Клас для отримання даних поточного користувача.
 class CurrentUserView (APIView):
     permission_classes = [isAuthenticated]
 
     def get (self, request):
         serializer = UserSerializer (request.user)
-        return Response (serializer.data)
+        return JsonResponse (serializer.data)
 
-@api_view(["GET"])
-@permission_classes([AllowAny])
-def google_login_callback(request):
-    code = request.GET.get("code")
+#Деф callback для Google OAuth.
+@api_view (["GET"])
+@permission_classes ([AllowAny])
+def google_login_callback (request):
+    code = request.GET.get ("code")
     if not code:
-        return Response({"error": "No code provided"}, status=400)
+        return JsonResponse ({"error": "No code provided"}, status = 400)
 
-    token_res = requests.post(
+    token_res = requests.post (
         "https://oauth2.googleapis.com/token",
-        data={
+        data = {
             "client_id": settings.GOOGLE_CLIENT_ID,
             "client_secret": settings.GOOGLE_CLIENT_SECRET,
             "code": code,
             "grant_type": "authorization_code",
             "redirect_uri": settings.GOOGLE_REDIRECT_URI,
         },
-        timeout=10
+        timeout = 10
     )
     token_data = token_res.json()
-    access_token = token_data.get("access_token")
+    access_token = token_data.get ("access_token")
     if not access_token:
-        return Response({"error": "Google access token not received", "details": token_data}, status=400)
+        return JsonResponse ({"error": "Google access token not received", "details": token_data}, status = 400)
 
     header = {"Authorization": f"Bearer {access_token}"}
-    user_data = requests.get("https://openidconnect.googleapis.com/v1/userinfo", headers=header).json()
+    user_data = requests.get ("https://openidconnect.googleapis.com/v1/userinfo", headers = header).json()
 
-    email = user_data.get("email")
-    first_name = user_data.get("given_name", "")
-    last_name = user_data.get("family_name", "")
-    avatar_url = user_data.get("picture", "")
-    username = email.split("@")[0]
-    print (avatar_url)
+    email = user_data.get ("email")
+    first_name = user_data.get ("given_name", "")
+    last_name = user_data.get ("family_name", "")
+    avatar_url = user_data.get ("picture", "")
+    username = email.split ("@")[0]
     if not email:
-        return Response ({"error": "No email from Google", "details": user_data}, status=400)
+        return JsonResponse ({"error": "No email from Google", "details": user_data}, status = 400)
 
-    user, created = User.objects.get_or_create(
-        email=email,
-        defaults={
+    user, created = User.objects.get_or_create (
+        email = email,
+        defaults = {
             "username": username,
             "first_name": first_name,
             "last_name": last_name
@@ -351,12 +341,13 @@ def google_login_callback(request):
         defaults = {"avatar_url": avatar_url}
     )
 
-    auth_login(request, user)
-    return redirect("http://localhost:3000/")
+    auth_login (request, user)
+    return redirect ("http://localhost:3000/")
 
-# @permission_classes([IsAuthenticated])
-@api_view (["PUT"])
+#Деф оновлення профілю користувача.
 @login_required_api
+@api_view (["PUT"])
+@permission_classes ([isAuthenticated])
 def update_profile (request):
     user = request.user
     data = request.data
@@ -365,11 +356,11 @@ def update_profile (request):
 
     existing_username = User.objects.filter (username = username).first()
     if existing_username and existing_username.id != user.id:
-        return Response ({"warning": True, "message": "This \"username\" is already taken by another user."}, status = status.HTTP_302_FOUND)
+        return JsonResponse ({"warning": True, "message": "This \"username\" is already taken by another user."}, status = status.HTTP_302_FOUND)
     
     existing_useremail = User.objects.filter (email = email).first()
     if existing_useremail and existing_useremail.id != user.id:
-        return Response ({"warning": True, "message": "This \"E-mail\" is already taken by another user."}, status = status.HTTP_302_FOUND)
+        return JsonResponse ({"warning": True, "message": "This \"E-mail\" is already taken by another user."}, status = status.HTTP_302_FOUND)
 
     user.email = email
     user.username = username
@@ -385,8 +376,9 @@ def update_profile (request):
     user.save()
     user.profile.save()
 
-    return Response ({"success": True}, status = status.HTTP_200_OK)
+    return JsonResponse ({"success": True}, status = status.HTTP_200_OK)
 
+#Деф оновлення паролю користувача.
 @api_view (["PUT"])
 @permission_classes ([isAuthenticated])
 def update_password (request):
@@ -397,33 +389,18 @@ def update_password (request):
     confirm_password = data.get ("confirm_password", "")
 
     if not user.check_password (old_password):
-        return Response ({"success": False, "details": "Incorecr old password!"}, status = status.HTTP_401_UNAUTHORIZED)
+        return JsonResponse ({"success": False, "details": "Incorecr old password!"}, status = status.HTTP_401_UNAUTHORIZED)
     if new_password != confirm_password:
-        return Response ({"success": False, "details": "Password not match!"}, status = status.HTTP_400_BAD_REQUEST)
+        return JsonResponse ({"success": False, "details": "Password not match!"}, status = status.HTTP_400_BAD_REQUEST)
 
     user.set_password (new_password)
     user.save()
     update_session_auth_hash (request, user)
-    return Response ({"success": True}, status = status.HTTP_200_OK)
+    return JsonResponse ({"success": True}, status = status.HTTP_200_OK)
 
+#Деф видалення профілю користувача.
 @api_view (["DELETE"])
 @permission_classes ([isAuthenticated])
 def delete_profile (request):
-    user = request.user
-    user.delete()
-    return Response ({"success": True}, status = status.HTTP_200_OK)
-
-# class UserViewSet (viewsets.ReadOnlyModelViewSet):
-#     """
-#     - GET /users/ → список усіх користувачів
-#     - GET /users/{id}/ → перегляд конкретного користувача
-#     """
-#     queryset = Profile.objects.all()
-#     serializer_class = UserSerializer
-#     permission_classes = [IsAdministrator]
-#     def retrieve (self, request, *args, **kwargs):
-#         user = self.get_object()
-#         borrowed_items = OrderItem.objects.filter (order__user = user.user, order__is_closed = False).select_related ("book", "book__author")
-#         for item in borrowed_items:
-#             item.total_price = item.book.price * item.quantity
-#         return render (request, "user/components/user_detail.html", {"user": user, "books": borrowed_items})
+    request.user.delete()
+    return JsonResponse ({"success": True}, status = status.HTTP_200_OK)

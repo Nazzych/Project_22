@@ -16,8 +16,8 @@ from apps.task.serializers import ChallengeSerializer
 from apps.task.models import Challenge, CodeChallenge, QuizChallenge, ChallengeType, QuizQuestion, QuizAnswer
 from apps.forum.serializers import ChannelSerializer
 from apps.forum.models import Channel
-from apps.courses.models import Course, Lesson
 from apps.courses.serializers import CourseSerializer, LessonSerializer
+from apps.courses.models import Course, Lesson
 from apps.projects.models import Project
 from .permissions import IsAdminOrReadOnly
 from .serializers import AdminUserListSerializer, AdminUserUpdateSerializer, AdminProjectListSerializer, AdminProjectUpdateSerializer

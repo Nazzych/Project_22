@@ -61,7 +61,7 @@ export function ITForum() {
             const data = await forumList();
             setPosts(data);
         } catch (err) {
-            showToast('error', 'Get posts failed', `${err}`);
+            console.error('Get posts failed', `${err}`);
         } finally {
             setLoadingPosts(false);
         }
@@ -74,7 +74,7 @@ export function ITForum() {
             const data = await channelList();
             setChannels(data);
         } catch (err) {
-            showToast('error', 'Get channels failed', `${err}`);
+            console.error('Get channels failed', `${err}`);
         } finally {
             setLoadingChannels(false);
         }
@@ -165,6 +165,7 @@ export function ITForum() {
                     post={post}
                     onSuccess={() => {loadPoasts()}}
                     onDelete={() => {clickDeletePost (post.id)}}
+                    is_staff={false}
                 />
             ),
         });

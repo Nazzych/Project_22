@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import {
-    FileText, File, MessageCircle, Tag, Github, Globe, ImagePlus, XIcon, Trash2, Info
+    FileText, File, MessageCircle, Tag, Github, Globe, ImagePlus, XIcon, Trash2, Info, Hash
 } from 'lucide-react';
 import { Button } from '../../../../ui/Button';
 import { Input } from '../../../../ui/Input';
@@ -9,12 +9,12 @@ import { LoadingSpinner } from '../../../../LoadingSpinner';
 import { useToast } from '../../../../../providers/MessageProvider';
 import { useModal } from '../../../../../hooks/useModal';
 import { getCsrfToken } from '../../../../../api/auth';
-import { createPost, updatePost, deletePost } from '../../../../../api/forum';
+import { createPost, updatePost, deletePost, getPostDetail } from '../../../../../api/forum';
 import { PostFormProps, EditablePost } from '../../../../../types/forum';
 import { motion } from 'framer-motion';
 import axios from 'axios';
 
-export function PostManage({ onSuccess, onDelete, post, content, channel }: PostFormProps) {
+export function PostManage({ onSuccess, onDelete, post, content, channel, channelName, is_staff = false }: PostFormProps) {
     const { showToast } = useToast()
     const { closeModal } = useModal();
     const [loading, setLoading] = useState(false);
@@ -48,11 +48,11 @@ export function PostManage({ onSuccess, onDelete, post, content, channel }: Post
             });
             
             await getCsrfToken();
-            // Редагування проєкту
+            // Редагування існуючого посту
             if (post) {
                 await updatePost(post.id, form);
                 showToast('success', 'Post updated', 'Your post has been successfully updated.');
-            // Створення нового проєкту
+            // Створення нового посту
             } else {
                 await createPost(formData);
                 showToast('success', 'Post created', 'Your post has been successfully added.');
@@ -78,11 +78,16 @@ export function PostManage({ onSuccess, onDelete, post, content, channel }: Post
         <form onSubmit={handleSubmit}>
             {/* Content */}
             <div className="space-y-6 px-2 overflow-y-hidden">
-                {post && (
-                    <div className="space-y-2 line-clamp-1 overflow-hidden">
-                        <h1 className="flex items-center text-lg gap-2 line-clamp-1"><Info className="w-4 h-4" />Edit Post of -<span className="flex items-center nz-text-muted text-md font-semibold"><img src={post.author?.profile.avatar_url} alt={post.author?.username} className="w-8 h-8 rounded-full mr-2" /> @{post.author?.username}</span></h1>
-                    </div>
-                )}
+                <div className="space-y-2">
+                    {channelName && (
+                        <h1 className="flex items-center text-lg font-semibold italic gap-2 line-clamp-1"><Hash className="w-4 h-4" />{channelName}</h1>
+                    )}
+                    {(post && is_staff) && (
+                        <div className="space-y-2 line-clamp-1 overflow-hidden">
+                            <h1 className="flex items-center text-lg gap-2 line-clamp-1"><Info className="w-4 h-4" />Edit Post of -<span className="flex items-center nz-text-muted text-md font-semibold"><img src={post.author?.profile.avatar_url} alt={post.author?.username} className="w-8 h-8 rounded-full mr-2" /> @{post.author?.username}</span></h1>
+                        </div>
+                    )}
+                </div>
                 <div className="space-y-2">
                     <label className="flex items-center text-sm font-medium"><FileText className='w-4 h-4 mr-2'/>Create title for your post</label>
                     <div className='space-y-1'>

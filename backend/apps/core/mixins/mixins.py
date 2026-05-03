@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import PermissionDenied
-from .permissions import IsOwner
+from ..permissions.permissions import IsOwner
 
 
 class OwnerRequiredMixin:

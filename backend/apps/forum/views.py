@@ -6,11 +6,11 @@ from django.core.exceptions import TooManyFilesSent
 from django.shortcuts import get_object_or_404
 from django.db import transaction
 from django.contrib.auth.models import User
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import APIView, api_view, permission_classes
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
-from rest_framework import viewsets, status
-from storage3.exceptions import StorageApiError
+from rest_framework import status
+from core.mixins.mixins import OwnerRequiredMixin
 from core.permissions.permissions import isAuthenticated
 from .models import Post, Channel, Comment
 from .serializers import PostSerializer, ChannelSerializer, CommentSerializer
@@ -19,40 +19,47 @@ from .serializers import PostSerializer, ChannelSerializer, CommentSerializer
 
 
 #*<----------[Дефи для отримання даних]---------->.
-#Пости.
+#Деф отримання постів.
 @api_view (["GET"])
 @permission_classes ([isAuthenticated])
 def get_posts (request):
-    posts = Post.objects.filter (channel = None).all()
+    """Отримати всі глобальні пости (без каналу)"""
+    posts = Post.objects.filter (channel = None, channel__isnull = True).all()
     serializer = PostSerializer (posts, many = True)
     return Response (serializer.data)
 
-#Канали та їх пости.
+#Деф отримання списку каналів.
 @api_view (["GET"])
 @permission_classes ([isAuthenticated])
 def get_channels (request):
+    """Отримати всі схвалені канали"""
     channels = Channel.objects.filter (is_approved = True).all()
     serializer = ChannelSerializer (channels, many = True)
     return Response (serializer.data)
 
+#Деф отримання деталей каналу.
 @api_view (["GET"])
 @permission_classes ([isAuthenticated])
 def get_channel (request, channel_id):
+    """Отримати один канал"""
     channel = get_object_or_404 (Channel, id = channel_id, is_approved = True)
     serializer = ChannelSerializer (channel)
     return Response (serializer.data)
 
+#Деф для отримання постів каналу.
 @api_view (["GET"])
 @permission_classes ([isAuthenticated])
 def get_channel_posts (request, channel_id):
+    """Отримати пости в конкретному каналі"""
     posts = Post.objects.filter (channel_id = channel_id)
     serializer = PostSerializer (posts, many = True)
     return Response (serializer.data)
 
-#Коментарі.
+#Деф отримання коментарів до поста.
 @api_view (["GET"])
 @permission_classes ([isAuthenticated])
 def get_post_comments (request, post_id):
+    """Отримати коментарі до поста"""
     post = get_object_or_404 (Post, id = post_id)
     post_type = ContentType.objects.get_for_model (Post)
 
@@ -60,19 +67,21 @@ def get_post_comments (request, post_id):
         content_type = post_type,
         object_id = post.id,
         parent__isnull = True
-    ).prefetch_related("replies")
+    ).prefetch_related ("replies")
 
     serializer = CommentSerializer (comments, many = True)
     return Response (serializer.data)
 
 
 #*<----------[Дефи для CRUD постів]---------->.
+#Деф для створення поста.
 @api_view (["POST"])
 @permission_classes ([isAuthenticated])
 def add_post (request):
+    """Створити новий пост"""
     data = request.data
-    title = data.get ("title", "")
-    content = data.get ("content", "")
+    title = data.get ("title", "").strip()
+    content = data.get ("content", "").strip()
     channel_id = data.get ("channel")
 
     if not title or not content:
@@ -113,6 +122,7 @@ def add_post (request):
             "message": f"Server error: {str (e)}"
         }, status = status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+#Деф для редагування поста.
 @api_view (["PUT"])
 @permission_classes ([isAuthenticated])
 def edit_post (request, post_id):
@@ -179,6 +189,53 @@ def delete_post (request, post_id):
             "message": f"Server error: {str (e)}"
         }, status = status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+class PostDetailView(OwnerRequiredMixin, APIView):
+    permission_classes = [isAuthenticated]
+
+    def get(self, request, post_id):
+        post = self.get_object()
+        serializer = PostSerializer(post)
+        return Response(serializer.data)
+
+    def put(self, request, post_id):
+        data = request.data
+        title = data.get ("title", "")
+        content = data.get ("content", "")
+        post = self.get_object()
+        if not (request.user.is_staff or post.author == request.user):
+            return Response (
+                {"type": "error", "message": "You do not have permission to edit this post."},
+                status = status.HTTP_403_FORBIDDEN
+            )
+
+        if Post.objects.filter (title = title).exclude (id = post.id).exists():
+            return Response ({
+                "type": "warning",
+                "message": "Post exist with this title. Please rename."
+            }, status = status.HTTP_400_BAD_REQUEST)
+
+        try:
+            with transaction.atomic():
+                post.title = title or post.title
+                post.content = content or post.content
+                post.is_edited = True
+                post.save()
+
+            return Response (
+                {"success": True, "message": "Post updated successfully."},
+                status = status.HTTP_200_OK
+            )
+        except Exception as e:
+            print ("Error updating post:", str (e))
+            return Response ({
+                "type": "error",
+                "message": f"Server error: {str (e)}"
+            }, status = status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def delete(self, request, post_id):
+        post = self.get_object()
+        post.delete()
+        return Response({"type": "success", "message": "Post deleted"}, status=status.HTTP_204_NO_CONTENT)
 
 #*<----------[Дефи для CRUD каналів]---------->.
 @api_view (["POST"])

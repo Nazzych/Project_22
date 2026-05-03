@@ -102,6 +102,7 @@ export default function AdminPostsList() {
                     post={post}
                     onSuccess={() => {loadPoasts()}}
                     onDelete={() => {clickDeletePost (post.id)}}
+                    is_staff={true}
                 />
             ),
         });
