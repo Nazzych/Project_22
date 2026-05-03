@@ -38,7 +38,7 @@ class Language (models.TextChoices):
     INI = "ini", "INI"
 
 #Class for difficul.
-class Difficul (models.TextChoices):
+class Difficulty (models.TextChoices):
     EASY = "easy", "Easy"
     MEDIUM = "medium", "Medium"
     HARD = "hard", "Hard"
@@ -58,10 +58,10 @@ class ChallengeStatus (models.TextChoices):
 #Class for  status in user challenge.
 class ChallengeProgress (models.TextChoices):
     NOT = "not_started", "Not Started"
-    PROGGRESS = "in_progress", "In Progress"
+    IN_PROGRESS = "in_progress", "In Progress"
     COMPLETED = "completed", "Completed"
-    FAIL = "failed", "Failed"
-    SUBMIT = "submitted", "Submitted (awaiting review)"
+    FAILED = "failed", "Failed"
+    SUBMITED = "submitted", "Submitted (awaiting review)"
 
 
 #*[-----<Models>-----].
@@ -72,7 +72,7 @@ class Challenge (models.Model):
     description = models.TextField()
     tags = models.CharField (max_length = 255, blank = True, help_text = "Через кому: easy, python")
     points = models.PositiveIntegerField (default = 0)
-    difficulty = models.CharField (max_length = 20, choices = Difficul.choices, default = Difficul.EASY)
+    difficulty = models.CharField (max_length = 20, choices = Difficulty.choices, default = Difficulty.EASY)
     c_type = models.CharField (max_length = 20, choices = ChallengeType.choices)
     status = models.CharField (max_length = 20, choices = ChallengeStatus.choices, default = ChallengeStatus.DRAFT)
     created_at = models.DateTimeField (auto_now_add = True)

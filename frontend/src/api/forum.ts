@@ -106,3 +106,10 @@ export async function deleteComment(commentId: number) {
     });
     return response.data;
 }
+
+export async function getPostDetail(postId: number) {
+    const response = await axios.get(`${API_BASE}/forum/post/${postId}/`, {
+        withCredentials: true,
+    });
+    return response.data;
+}

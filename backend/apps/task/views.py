@@ -1,61 +1,66 @@
-from django.http import HttpResponse, JsonResponse
+# views.py (task).
+#*Підключення бібліотек.
 from django.views.decorators.http import require_http_methods
 from django.core.exceptions import TooManyFilesSent
 from django.shortcuts import get_object_or_404
-from django.db import transaction
+from django.http import JsonResponse
+from django.utils import timezone
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
-from rest_framework import viewsets, status
+from rest_framework import status
 from core.permissions.permissions import isAuthenticated
 from .models import Challenge, ChallengeProgress, ChallengeType, UserChallengeProgress
 from .serializers import ChallengeSerializer
 
 
+#Для отримання списку завдань.
 @api_view (["GET"])
 @permission_classes ([isAuthenticated])
 def challenges (request):
-    Challenges = Challenge.objects.all()
-    serializer = ChallengeSerializer (Challenges, many = True, context={'user': request.user})
+    challenges = Challenge.objects.all()
+    serializer = ChallengeSerializer (challenges, many = True, context = {"user": request.user})
     return Response (serializer.data)
 
+#Для отримання детальної інформації про завдання.
 @api_view (["GET"])
 @permission_classes ([isAuthenticated])
 def challenge_detail (request, challenge_id):
     challenge = get_object_or_404 (Challenge, id = challenge_id)
-    serializer = ChallengeSerializer (challenge, context={'user': request.user})
+    serializer = ChallengeSerializer (challenge, context = {"user": request.user})
     return Response (serializer.data)
 
-@api_view(["POST"])
-@permission_classes([isAuthenticated])
-def submit_quiz(request, challenge_id):
+#Деф для подачі відповідей на Quiz завдання.
+@api_view (["POST"])
+@permission_classes ([isAuthenticated])
+def submit_quiz (request, challenge_id):
     """Подача відповідей на Quiz"""
-    challenge = get_object_or_404(Challenge, id=challenge_id, c_type="quiz")
+    challenge = get_object_or_404 (Challenge, id = challenge_id, c_type = "quiz")
 
-    if not hasattr(challenge, 'quiz_challenge') or not challenge.quiz_challenge:
-        return Response({"error": "This is not a quiz challenge"}, status=status.HTTP_400_BAD_REQUEST)
+    if not hasattr (challenge, "quiz_challenge") or not challenge.quiz_challenge:
+        return JsonResponse ({"error": "This is not a quiz challenge"}, status = status.HTTP_400_BAD_REQUEST)
 
     quiz_challenge = challenge.quiz_challenge
     user = request.user
-    answers_data = request.data.get("answers", {})   # формат: {"48": 0, "49": 2, ...}
+    answers_data = request.data.get ("answers", {})   #? формат: {"48": 0, "49": 2, ...}
 
-    print("Received answers_data:", answers_data)
+    #? print("Received answers_data:", answers_data)
 
-    questions = list(quiz_challenge.questions.all().order_by('order'))
-    total_questions = len(questions)
+    questions = list (quiz_challenge.questions.all().order_by ("order"))
+    total_questions = len (questions)
 
     if total_questions == 0:
-        return Response({"error": "No questions in this quiz"}, status=status.HTTP_400_BAD_REQUEST)
+        return JsonResponse ({"error": "No questions in this quiz"}, status = status.HTTP_400_BAD_REQUEST)
 
     correct_count = 0
     detailed_results = []
 
     for question in questions:
-        q_id_str = str(question.id)
-        user_answer_idx = answers_data.get(q_id_str)
+        q_id_str = str (question.id)
+        user_answer_idx = answers_data.get (q_id_str)
 
         if user_answer_idx is None:
-            detailed_results.append({
+            detailed_results.append ({
                 "question_id": question.id,
                 "is_correct": False,
                 "user_answer_index": None
@@ -63,32 +68,32 @@ def submit_quiz(request, challenge_id):
             continue
 
         try:
-            user_answer_idx = int(user_answer_idx)
+            user_answer_idx = int (user_answer_idx)
         except (ValueError, TypeError):
-            return Response({"error": f"Invalid answer for question {question.id}"}, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse ({"error": f"Invalid answer for question {question.id}"}, status = status.HTTP_400_BAD_REQUEST)
 
-        answers_list = list(question.answers.all())
+        answers_list = list (question.answers.all())
 
         is_correct = False
-        if 0 <= user_answer_idx < len(answers_list):
-            selected_answer = answers_list[user_answer_idx]
+        if 0 <= user_answer_idx < len (answers_list):
+            selected_answer = answers_list [user_answer_idx]
             is_correct = selected_answer.is_correct
 
         if is_correct:
             correct_count += 1
 
-        detailed_results.append({
+        detailed_results.append ({
             "question_id": question.id,
             "is_correct": is_correct,
             "user_answer_index": user_answer_idx
         })
 
-    score_percent = round((correct_count / total_questions) * 100) if total_questions > 0 else 0
-    passing_score = getattr(quiz_challenge, 'passing_score', 70) or 70
+    score_percent = round ((correct_count / total_questions) * 100) if total_questions > 0 else 0
+    passing_score = getattr (quiz_challenge, "passing_score", 70) or 70
     passed = score_percent >= passing_score
 
     # === Оновлюємо прогрес користувача ===
-    progress, _ = UserChallengeProgress.objects.get_or_create(
+    progress, _ = UserChallengeProgress.objects.get_or_create (
         user=user,
         challenge=challenge
     )
@@ -99,18 +104,16 @@ def submit_quiz(request, challenge_id):
 
     if passed:
         progress.status = ChallengeProgress.COMPLETED
-        # progress.completed_at = timezone.now()
+        progress.completed_at = timezone.now()
 
-        # Нараховуємо очки
-        if hasattr(user, 'profile') and user.profile:
-            user.profile.total_points = (getattr(user.profile, 'total_points', 0) or 0) + (challenge.points or 0)
+        if progress.completed_at is None and hasattr (user, "profile") and user.profile:
+            user.profile.total_points = (getattr (user.profile, "total_points", 0) or 0) + (challenge.points or 0)
             user.profile.save()
     else:
-        progress.status = ChallengeProgress.FAIL
-
+        progress.status = ChallengeProgress.FAILED
     progress.save()
 
-    return Response({
+    return JsonResponse ({
         "success": True,
         "score": score_percent,
         "correct_count": correct_count,

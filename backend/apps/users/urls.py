@@ -1,6 +1,7 @@
 # urls.py (user).
 #*Підключення бібліотек.
 #?from rest_framework.routers import DefaultRouter
+from ..core.api.auth_views import csrf_check, check_session
 from django.urls import path, include
 from . import views
 
@@ -9,8 +10,8 @@ from . import views
 
 #Налаштування силок.
 urlpatterns = [
-    path ("check-csrf/", views.csrf_check, name = "check-csrf"),
-    path ("check-session/", views.check_session, name = "check-session"),
+    path ("check-csrf/", csrf_check, name = "check-csrf"),
+    path ("check-session/", check_session, name = "check-session"),
     path ("login/", views.login, name = "user-login"),
     path ("register/", views.register, name = "user-register"),
     path ("logout/", views.logout, name = "user-logout"),
@@ -23,4 +24,3 @@ urlpatterns = [
     path ("delete/", views.delete_profile, name = "delete-profile"),
     #?path ("api/", include (router.urls))
 ]
-
