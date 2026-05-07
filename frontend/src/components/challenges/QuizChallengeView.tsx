@@ -182,120 +182,6 @@ export default function QuizChallengeView({ challenge }: ChallengeViewProps) {
         );
     }
 
-    if (isChevronOpen) {
-        return (
-            <SvipeModal
-                isOpen={isChevronOpen}
-                onClose={() => setIsChevronOpen(false)}
-                title="Challenge Details"
-                size="md"
-                position="top"
-            >
-                <div className="max-h-[70vh] space-y-4 overflow-y-auto">
-                    {challenge.user_progress?.selected_answers && (
-                        <Button onClick={() => (setIsChevronOpen(false), setShowReview(true))} size="sm" variant="btn_glass" className="flex items-center gap-2 px-2 rounded-lg">
-                            <Eye className="w-4 h-4" />
-                            Review Answers
-                        </Button>
-                    )}
-                    <div className="flex flex-wrap justify-between items-center gap-2">
-                        <div>
-                            <p className="nz-text-muted text-sm mb-1">Attempts:</p>
-                            {challenge.user_progress?.attempts || 0}
-                        </div>
-                        <div>
-                            <p className="nz-text-muted text-sm mb-1">Completed At:</p>
-                            <span>{challenge.user_progress?.completed_at ? new Date(challenge.user_progress.completed_at).toLocaleString() : "Not completed yet"}</span>
-                        </div>
-                        <div className="capitalize">
-                            <p className="nz-text-muted text-sm mb-1">quiz status:</p>
-                            {challenge.user_progress?.status || "not started"}
-                        </div>
-                    </div>
-                    <h2 className="text-2xl font-bold">{challenge.title}</h2>
-                    <div>
-                        <p className="nz-text-muted text-sm mb-1">Description:</p>
-                        {challenge.description}
-                    </div>
-                </div>
-            </SvipeModal>
-        );
-    }
-
-    if (showReview) {
-        return (
-            <div>
-                {/* Перегляд відповідей — Side Sheet / Bottom Sheet */}
-                <SvipeModal
-                    isOpen={showReview}
-                    onClose={() => (setShowReview(false))}
-                    title={
-                        <div className='flex items-center gap-2 line-clamp-1'>
-                            <Eye className='w-5 h-5' /> Review Your Answers
-                        </div>
-                    }
-                    size="lg"
-                    position="right"
-                >
-                    <div className="space-y-8 max-h-[82.5vh] md:max-h-[70vh] overflow-y-auto pr-2">
-                        {questions.map((question, idx) => {
-                            const savedAnswerIndex = challenge.user_progress?.selected_answers?.[question.id];
-                            // Якщо користувач вже вибрав щось в цьому сеансі — беремо його
-                            const selectedIdx = selectedAnswers[idx] !== undefined 
-                                ? selectedAnswers[idx] 
-                                : savedAnswerIndex;
-                            const correctIdx = question.answers.findIndex(a => a.is_correct);
-                            const isCorrect = selectedIdx === correctIdx;
-                            const answered = selectedIdx !== undefined;
-
-                            return (
-                                <div key={question.id} className="nz-background-accent border rounded-2xl p-6">
-                                    <div className="flex justify-between mb-4">
-                                        <h4 className="font-semibold">Question {idx + 1}</h4>
-                                        <span className={cn(
-                                            "px-3 py-1 rounded-full text-sm font-medium",
-                                            isCorrect ? "bg-emerald-500/20 text-emerald-400" :
-                                            answered ? "bg-red-500/20 text-red-400" : "bg-zinc-700 text-zinc-400"
-                                        )}>
-                                            {isCorrect ? "Correct" : answered ? "Wrong" : "Not answered"}
-                                        </span>
-                                    </div>
-
-                                    <p className="text-lg mb-6">{question.question_text}</p>
-
-                                    <div className="space-y-3">
-                                        {question.answers.map((answer, aIdx) => {
-                                            const isSelected = selectedIdx === aIdx;
-                                            const isRightAnswer = aIdx === correctIdx;
-
-                                            return (
-                                                <div 
-                                                    key={aIdx}
-                                                    className={cn(
-                                                        "p-4 rounded-xl border flex items-start gap-3",
-                                                        isRightAnswer ? "border-emerald-500 bg-emerald-500/10" :
-                                                        isSelected ? "border-red-500 bg-red-500/10" : "nz-background-secondary"
-                                                    )}
-                                                >
-                                                    <span className="font-mono w-6 nz-text-muted mt-0.5 shrink-0">
-                                                        {String.fromCharCode(65 + aIdx)}
-                                                    </span>
-                                                    <span className="flex-1">{answer.answer_text}</span>
-                                                    {isRightAnswer && <CheckCircle className="w-5 h-5 text-emerald-500 mt-0.5 shrink-0" />}
-                                                    {isSelected && !isRightAnswer && <XCircle className="w-5 h-5 text-red-500 mt-0.5 shrink-0" />}
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </SvipeModal>
-            </div>
-        );
-    }
-
     // Результат
     if (isSubmitted) {
         const isPassed = score >= 70;
@@ -371,6 +257,109 @@ export default function QuizChallengeView({ challenge }: ChallengeViewProps) {
 
     return (
         <div className="flex justify-center">
+            <div>
+                <SvipeModal
+                    isOpen={isChevronOpen}
+                    onClose={() => setIsChevronOpen(false)}
+                    title="Challenge Details"
+                    size="md"
+                    position="top"
+                >
+                    <div className="max-h-[70vh] space-y-4 overflow-y-auto">
+                        {challenge.user_progress?.selected_answers && (
+                            <Button onClick={() => (setIsChevronOpen(false), setShowReview(true))} size="sm" variant="btn_glass" className="flex items-center gap-2 px-2 rounded-lg">
+                                <Eye className="w-4 h-4" />
+                                Review Answers
+                            </Button>
+                        )}
+                        <div className="flex flex-wrap justify-between items-center gap-2">
+                            <div>
+                                <p className="nz-text-muted text-sm mb-1">Attempts:</p>
+                                {challenge.user_progress?.attempts || 0}
+                            </div>
+                            <div>
+                                <p className="nz-text-muted text-sm mb-1">Completed At:</p>
+                                <span>{challenge.user_progress?.completed_at ? new Date(challenge.user_progress.completed_at).toLocaleString() : "Not completed yet"}</span>
+                            </div>
+                            <div className="capitalize">
+                                <p className="nz-text-muted text-sm mb-1">quiz status:</p>
+                                {challenge.user_progress?.status || "not started"}
+                            </div>
+                        </div>
+                        <h2 className="text-2xl font-bold">{challenge.title}</h2>
+                        <div>
+                            <p className="nz-text-muted text-sm mb-1">Description:</p>
+                            {challenge.description}
+                        </div>
+                    </div>
+                </SvipeModal>
+                <SvipeModal
+                    isOpen={showReview}
+                    onClose={() => (setShowReview(false))}
+                    title={
+                        <div className='flex items-center gap-2 line-clamp-1'>
+                            <Eye className='w-5 h-5' /> Review Your Answers
+                        </div>
+                    }
+                    size="lg"
+                    position="right"
+                >
+                    <div className="space-y-8 max-h-[82.5vh] md:max-h-[70vh] overflow-y-auto pr-2">
+                        {questions.map((question, idx) => {
+                            const savedAnswerIndex = challenge.user_progress?.selected_answers?.[question.id];
+                            // Якщо користувач вже вибрав щось в цьому сеансі — беремо його
+                            const selectedIdx = selectedAnswers[idx] !== undefined 
+                                ? selectedAnswers[idx] 
+                                : savedAnswerIndex;
+                            const correctIdx = question.answers.findIndex(a => a.is_correct);
+                            const isCorrect = selectedIdx === correctIdx;
+                            const answered = selectedIdx !== undefined;
+
+                            return (
+                                <div key={question.id} className="nz-background-accent border rounded-2xl p-6">
+                                    <div className="flex justify-between mb-4">
+                                        <h4 className="font-semibold">Question {idx + 1}</h4>
+                                        <span className={cn(
+                                            "px-3 py-1 rounded-full text-sm font-medium",
+                                            isCorrect ? "bg-emerald-500/20 text-emerald-400" :
+                                            answered ? "bg-red-500/20 text-red-400" : "bg-zinc-700 text-zinc-400"
+                                        )}>
+                                            {isCorrect ? "Correct" : answered ? "Wrong" : "Not answered"}
+                                        </span>
+                                    </div>
+
+                                    <p className="text-lg mb-6">{question.question_text}</p>
+
+                                    <div className="space-y-3">
+                                        {question.answers.map((answer, aIdx) => {
+                                            const isSelected = selectedIdx === aIdx;
+                                            const isRightAnswer = aIdx === correctIdx;
+
+                                            return (
+                                                <div 
+                                                    key={aIdx}
+                                                    className={cn(
+                                                        "p-4 rounded-xl border flex items-start gap-3",
+                                                        isRightAnswer ? "border-emerald-500 bg-emerald-500/10" :
+                                                        isSelected ? "border-red-500 bg-red-500/10" : "nz-background-secondary"
+                                                    )}
+                                                >
+                                                    <span className="font-mono w-6 nz-text-muted mt-0.5 shrink-0">
+                                                        {String.fromCharCode(65 + aIdx)}
+                                                    </span>
+                                                    <span className="flex-1">{answer.answer_text}</span>
+                                                    {isRightAnswer && <CheckCircle className="w-5 h-5 text-emerald-500 mt-0.5 shrink-0" />}
+                                                    {isSelected && !isRightAnswer && <XCircle className="w-5 h-5 text-red-500 mt-0.5 shrink-0" />}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </SvipeModal>
+            </div>
             <Card className='min-w-[400px]'>
                 <CardHeader className="pb-4">
                     <div className="flex flex-wrap justify-between items-center">

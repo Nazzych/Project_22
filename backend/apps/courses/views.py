@@ -32,6 +32,7 @@ from .models import Course, Lesson, UserLessonProgress
 @api_view (["GET"])
 @permission_classes ([isAuthenticated])
 def get_courses (request):
+    """Отримати список всіх курсів"""
     courses = Course.objects.exclude (lessons__isnull = True)
     serializer = CourseSerializer (courses, many = True)
     return Response (serializer.data)
@@ -40,6 +41,7 @@ def get_courses (request):
 @api_view (["GET"])
 @permission_classes ([isAuthenticated])
 def get_course (request, course_id):
+    """Отримати деталі одного курсу + прогрес користувача"""
     course = get_object_or_404 (Course, id = course_id)
     if not course.lessons.exists() and not request.user.is_staff:
         return Response (
@@ -68,13 +70,12 @@ def update_lesson_progress (request, lesson_id):
     progress, _ = UserLessonProgress.objects.get_or_create (
         user = user,
         lesson = lesson,
-        defaults = {"is_unlocked": True}
+        defaults = {
+            "is_unlocked": True,
+            "is_completed": True,
+            "completed_at": timezone.now()
+        }
     )
-
-    progress.is_unlocked = True
-    progress.is_completed = True
-    progress.completed_at = timezone.now()
-    progress.save()
 
 #* === РОЗБЛОКУВАННЯ НАСТУПНОГО УРОКУ ===
     next_lesson = Lesson.objects.filter (
@@ -83,7 +84,7 @@ def update_lesson_progress (request, lesson_id):
     ).first()
 
     if next_lesson:
-        _, _ = UserLessonProgress.objects.update_or_create (
+        UserLessonProgress.objects.update_or_create (
             user = user,
             lesson = next_lesson,
             defaults = {"is_unlocked": True, "is_completed": False}

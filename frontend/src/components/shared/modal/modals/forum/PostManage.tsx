@@ -9,7 +9,7 @@ import { LoadingSpinner } from '../../../../LoadingSpinner';
 import { useToast } from '../../../../../providers/MessageProvider';
 import { useModal } from '../../../../../hooks/useModal';
 import { getCsrfToken } from '../../../../../api/auth';
-import { createPost, updatePost, deletePost, getPostDetail } from '../../../../../api/forum';
+import { createPost, updatePost, deletePost } from '../../../../../api/forum';
 import { PostFormProps, EditablePost } from '../../../../../types/forum';
 import { motion } from 'framer-motion';
 import axios from 'axios';
@@ -50,7 +50,7 @@ export function PostManage({ onSuccess, onDelete, post, content, channel, channe
             await getCsrfToken();
             // Редагування існуючого посту
             if (post) {
-                await updatePost(post.id, form);
+                await updatePost(post.id, formData);
                 showToast('success', 'Post updated', 'Your post has been successfully updated.');
             // Створення нового посту
             } else {

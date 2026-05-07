@@ -86,7 +86,7 @@ export default function AdminProjects() {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
                 {[...Array(4)].map((_, i) => (
                     <div key={i}>
-                        <Skeleton className="w-64 h-50 rounded-[18px]" />
+                        <Skeleton className="w-64 h-52 rounded-[18px]" />
                     </div>
                 ))}
             </div>

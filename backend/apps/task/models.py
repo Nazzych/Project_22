@@ -1,7 +1,8 @@
 # models.py (task). [клан сопрано]
+#*Підключення бібліотек.
 from django.db import models, transaction
-from django.conf import settings
 from django.utils import timezone
+from django.conf import settings
 
 
 #*[-----<Choices>-----].
@@ -57,29 +58,33 @@ class ChallengeStatus (models.TextChoices):
 
 #Class for  status in user challenge.
 class ChallengeProgress (models.TextChoices):
-    NOT = "not_started", "Not Started"
+    NOT_STARTED = "not_started", "Not Started"
     IN_PROGRESS = "in_progress", "In Progress"
     COMPLETED = "completed", "Completed"
     FAILED = "failed", "Failed"
-    SUBMITED = "submitted", "Submitted (awaiting review)"
+    SUBMITTED = "submitted", "Submitted (awaiting review)"
 
 
 #*[-----<Models>-----].
 #Клас <загальний> завданнь.
 class Challenge (models.Model):
     """Базова модель для всіх типів завдань"""
-    title = models.CharField (max_length = 200)
-    description = models.TextField()
+    author = models.ForeignKey (settings.AUTH_USER_MODEL, on_delete = models.CASCADE, related_name = "created_challenges", verbose_name = "Автор")
+    title = models.CharField (max_length = 200, verbose_name = "Назва завдання")
+    description = models.TextField (verbose_name = "Опис завдання")
     tags = models.CharField (max_length = 255, blank = True, help_text = "Через кому: easy, python")
-    points = models.PositiveIntegerField (default = 0)
+    points = models.PositiveIntegerField (default = 0, help_text = "Кількість балів за виконання завдання", verbose_name = "Бали")
     difficulty = models.CharField (max_length = 20, choices = Difficulty.choices, default = Difficulty.EASY)
-    c_type = models.CharField (max_length = 20, choices = ChallengeType.choices)
+    c_type = models.CharField (max_length = 20, choices = ChallengeType.choices, verbose_name = "Тип завдання")
     status = models.CharField (max_length = 20, choices = ChallengeStatus.choices, default = ChallengeStatus.DRAFT)
+    language = models.CharField (max_length = 40, choices = Language.choices)
     created_at = models.DateTimeField (auto_now_add = True)
     updated_at = models.DateTimeField (auto_now = True)
 
     class Meta:
         ordering = ["-created_at"]
+        verbose_name = "Завдання"
+        verbose_name_plural = "Завдання"
 
     def __str__ (self):
         return f"{self.title} ({self.c_type})"
@@ -88,7 +93,6 @@ class Challenge (models.Model):
 class CodeChallenge (models.Model):
     """Специфічні поля для завдань з кодом"""
     challenge = models.OneToOneField (Challenge, on_delete = models.CASCADE, related_name = "code_challenge")
-    language = models.CharField (max_length = 40, choices = Language.choices)
     starter_code = models.TextField (blank = True, null = True)
     e_input = models.TextField (blank = True, null = True)
     e_output = models.TextField (blank = True, null = True)
@@ -101,7 +105,7 @@ class QuizChallenge (models.Model):
     """Специфічні поля для Quiz"""
     challenge = models.OneToOneField (Challenge, on_delete = models.CASCADE, related_name = "quiz_challenge")
     time_limit_minutes = models.PositiveIntegerField (null = True, blank = True)
-    passing_score = models.PositiveIntegerField (default = 70)
+    passing_score = models.PositiveIntegerField (default = 70, help_text = "Мінімальний бал для проходження квізу")
 
     def __str__ (self):
         return f"Quiz: {self.challenge.title}"
@@ -146,56 +150,54 @@ class QuizAnswer (models.Model):
         return self.answer_text [:50]
 
 #Class for connect user to challenge.
-#TODO: python manage.py makemigrations |  python manage.py migrate .
-class UserChallengeProgress(models.Model):
-    user = models.ForeignKey(
+class UserChallengeProgress (models.Model):
+    user = models.ForeignKey (
         settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="challenge_progress"
+        on_delete = models.CASCADE,
+        related_name = "challenge_progress"
     )
-    
-    challenge = models.ForeignKey(
+    challenge = models.ForeignKey (
         Challenge,
-        on_delete=models.CASCADE,
-        related_name="user_progress"
+        on_delete = models.CASCADE,
+        related_name = "user_progress"
     )
-
-    # Загальний статус
-    status = models.CharField(
-        max_length=30,
-        choices=ChallengeProgress.choices,
-        default=ChallengeProgress.NOT
+    status = models.CharField (
+        max_length = 30,
+        choices = ChallengeProgress.choices,
+        default = ChallengeProgress.NOT_STARTED
     )
+    attempts = models.PositiveIntegerField (default = 0)
 
-    completed_at = models.DateTimeField(null=True, blank=True)
-    attempts = models.PositiveIntegerField(default=0)
+    completed_at = models.DateTimeField (null = True, blank = True)
+    attempted_at = models.DateTimeField (auto_now_add = True, null = True, blank = True)
 
-    # === Поля для Code Challenge ===
-    submitted_code = models.TextField(blank=True, null=True)
-    submitted_at = models.DateTimeField(null=True, blank=True)
+# === Поля для Code Challenge ===
+    submitted_code = models.TextField (blank = True, null = True)
+    submitted_at = models.DateTimeField (null = True, blank = True)
 
-    # === Поля для Quiz ===
-    current_question_index = models.PositiveIntegerField(default=0)
-    selected_answers = models.JSONField(default=dict, blank=True)   # { "question_id": answer_index }
+# === Поля для Quiz ===
+    current_question_index = models.PositiveIntegerField (default = 0)
+    selected_answers = models.JSONField (default = dict, blank = True)   #? { "question_id": answer_index }
 
-    # === Поля для Mentor Check ===
-    mentor_feedback = models.TextField(blank=True, null=True)
-    mentor_score = models.PositiveIntegerField(null=True, blank=True)
+# === Поля для Mentor Check ===
+    mentor_feedback = models.TextField (blank = True, null = True)
+    mentor_score = models.PositiveIntegerField (null = True, blank = True)
 
     class Meta:
-        unique_together = ('user', 'challenge')
+        unique_together = ("user", "challenge")
         ordering = ["-completed_at", "-submitted_at"]
 
-    def __str__(self):
-        return f"{self.user.username} — {self.challenge.title} ({self.status})"
+    def __str__ (self):
+        return f"{self.user.username} — {self.challenge.title} [{self.status}]"
 
     @property
-    def is_completed(self):
+    def is_completed (self):
+        """Повертає True, якщо завдання виконано"""
         return self.status == ChallengeProgress.COMPLETED
 
     # ====================== МЕТОДИ ======================
 
-    def mark_completed(self, score=None):
+    def mark_completed (self, score = None):
         """Позначити завдання як виконане"""
         self.status = ChallengeProgress.COMPLETED
         self.completed_at = timezone.now()
@@ -203,17 +205,14 @@ class UserChallengeProgress(models.Model):
             self.mentor_score = score
         self.save()
 
-    def save_selected_answer(self, question_id: int, answer_index: int):
+    def save_selected_answer (self, question_id: int, answer_index: int):
         """Зберегти вибрану відповідь на конкретне питання (для Quiz)"""
-        if not isinstance(self.selected_answers, dict):
-            self.selected_answers = {}
-        
-        self.selected_answers[str(question_id)] = answer_index
-        self.save()
+        self.selected_answers [str (question_id)] = answer_index
+        self.save (update_fields = ["selected_answers"])
 
-    def get_selected_answer(self, question_id: int):
+    def get_selected_answer (self, question_id: int):
         """Отримати вибрану відповідь на питання"""
-        return self.selected_answers.get(str(question_id))
+        return self.selected_answers.get (str (question_id))
 
 #?<.
     # def reset_progress(self):
@@ -226,10 +225,5 @@ class UserChallengeProgress(models.Model):
     #     self.selected_answers = {}
     #     self.mentor_feedback = None
     #     self.mentor_score = None
-    #     self.save()
-
-    # def increment_attempts(self):
-    #     """Збільшити кількість спроб"""
-    #     self.attempts += 1
     #     self.save()
 #?>.

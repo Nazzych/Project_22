@@ -21,9 +21,9 @@ from .serializers import UserSerializer
 from .models import Profile
 import json, secrets, requests, jwt, time
 
-
 #*Отримання користувача.
 User = get_user_model()
+
 
 #Деф генерації JWT для GitHub App (для сервер-сервер аутентифікації).
 @permission_classes ([AllowAny])
@@ -137,9 +137,6 @@ def logout (request):
 @api_view (["GET"])
 @permission_classes ([AllowAny])
 def github_login_callback (request):
-    #?print ("CLIENT_ID:", GITHUB_CLIENT_ID)
-    #?print ("CLIENT_SECRET:", GITHUB_CLIENT_SECRET)
-
     code = request.GET.get ("code")
     if not code:
         return JsonResponse ({"error": "No code provided"}, status = 400)
@@ -357,7 +354,7 @@ def update_profile (request):
     existing_username = User.objects.filter (username = username).first()
     if existing_username and existing_username.id != user.id:
         return JsonResponse ({"warning": True, "message": "This \"username\" is already taken by another user."}, status = status.HTTP_302_FOUND)
-    
+
     existing_useremail = User.objects.filter (email = email).first()
     if existing_useremail and existing_useremail.id != user.id:
         return JsonResponse ({"warning": True, "message": "This \"E-mail\" is already taken by another user."}, status = status.HTTP_302_FOUND)
@@ -365,14 +362,13 @@ def update_profile (request):
     user.email = email
     user.username = username
     user.first_name = data.get ("first_name", user.first_name)
-    user.last_name = data.get ("last_name", user.last_name)
-    user.profile.bio = data.get ("bio", user.profile.bio)
-    user.profile.git = data.get ("git", user.profile.git)
-    user.profile.address = data.get ("address", user.profile.address)
-    user.profile.youtube = data.get ("youtube", user.profile.youtube)
-    user.profile.twitter = data.get ("twitter", user.profile.twitter)
-    user.profile.linkedin = data.get ("linkedin", user.profile.linkedin)
-
+    user.last_name = data.get ("last_name", "")
+    user.profile.bio = data.get ("bio", None)
+    user.profile.git = data.get ("git", None)
+    user.profile.address = data.get ("address", None)
+    user.profile.youtube = data.get ("youtube", None)
+    user.profile.twitter = data.get ("twitter", None)
+    user.profile.linkedin = data.get ("linkedin", None)
     user.save()
     user.profile.save()
 

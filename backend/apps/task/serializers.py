@@ -5,46 +5,53 @@ from .models import Challenge, CodeChallenge, QuizChallenge, QuizAnswer, QuizQue
 
 
 #Клас серелізатора завдання для користувача.
-class ChallengeProgressSerializer (serializers.ModelSerializer):
+class UserChallengeProgressSerializer (serializers.ModelSerializer):
     class Meta:
         model = UserChallengeProgress
-        fields = ["id", "user", "challenge", "status", "submitted_code", "submitted_at", "mentor_feedback", "mentor_score", "completed_at", "attempts", "selected_answers"]
+        fields = ["id", "user", "challenge", "status", "submitted_code", "submitted_at", "mentor_feedback", "mentor_score", "completed_at", "attempted_at", "attempts", "selected_answers"]
 
-
-class QuizAnswerSerializer(serializers.ModelSerializer):
+#Клас серелізатора відповіді на питання вікторини.
+class QuizAnswerSerializer (serializers.ModelSerializer):
     class Meta:
         model = QuizAnswer
         fields = ["id", "answer_text", "is_correct"]
 
-class QuizQuestionSerializer(serializers.ModelSerializer):
-    answers = QuizAnswerSerializer(many=True, read_only=True)
+#Клас серелізатора питання вікторини.
+class QuizQuestionSerializer (serializers.ModelSerializer):
+    answers = QuizAnswerSerializer (many = True, read_only = True)
+    answers_count = serializers.SerializerMethodField()
 
     class Meta:
         model = QuizQuestion
-        fields = ["id", "question_text", "order", "answers"]
+        fields = ["id", "question_text", "order", "answers", "answers_count"]
 
-class QuizChallengeSerializer(serializers.ModelSerializer):
-    questions = QuizQuestionSerializer(many=True, read_only=True)
+    def get_answers_count (self, obj):
+        return obj.answers.count()
+
+#Клас серелізатора завдання вікторини.
+class QuizChallengeSerializer (serializers.ModelSerializer):
+    questions = QuizQuestionSerializer (many = True, read_only = True)
 
     class Meta:
         model = QuizChallenge
         fields = ["id", "time_limit_minutes", "passing_score", "questions"]
 
-class CodeChallengeSerializer(serializers.ModelSerializer):
+#Клас серелізатора завдання коду.
+class CodeChallengeSerializer (serializers.ModelSerializer):
     class Meta:
         model = CodeChallenge
         fields = ["id", "language", "starter_code", "e_input", "e_output"]
 
 #Клас серелізатора завдання.
-class ChallengeSerializer(serializers.ModelSerializer):
-    code_challenge = CodeChallengeSerializer(read_only=True)
-    quiz_challenge = QuizChallengeSerializer(read_only=True)
+class ChallengeSerializer (serializers.ModelSerializer):
+    code_challenge = CodeChallengeSerializer (read_only = True)
+    quiz_challenge = QuizChallengeSerializer (read_only = True)
     user_progress = serializers.SerializerMethodField()
 
     class Meta:
         model = Challenge
         fields = [
-            "id", "title", "description", "tags", "points",
+            "id", "author", "title", "description", "tags", "points",
             "difficulty", "c_type", "status", "created_at", "updated_at",
             "code_challenge", "quiz_challenge", "user_progress"
         ]
@@ -59,5 +66,5 @@ class ChallengeSerializer(serializers.ModelSerializer):
             challenge = obj
         ).first()
         if progress:
-            return ChallengeProgressSerializer (progress).data
+            return UserChallengeProgressSerializer (progress).data
         return None

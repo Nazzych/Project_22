@@ -1,13 +1,10 @@
 # views.py (admin).
 #*Підключення бібліотек.
 from django.contrib.contenttypes.models import ContentType
-from django.http import HttpResponse, JsonResponse
-from django.core.exceptions import TooManyFilesSent
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.db import transaction
-from django.contrib.auth.models import User
-from rest_framework.decorators import APIView, api_view, permission_classes
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 from core.mixins.mixins import OwnerRequiredMixin
@@ -15,7 +12,7 @@ from core.permissions.permissions import isAuthenticated
 from .models import Post, Channel, Comment
 from .serializers import PostSerializer, ChannelSerializer, CommentSerializer
 # from .permissions import IsAdminOrReadOnly
-#* import traceback, json, os, re
+# import traceback, json, os, re
 
 
 #*<----------[Дефи для отримання даних]---------->.
@@ -24,7 +21,7 @@ from .serializers import PostSerializer, ChannelSerializer, CommentSerializer
 @permission_classes ([isAuthenticated])
 def get_posts (request):
     """Отримати всі глобальні пости (без каналу)"""
-    posts = Post.objects.filter (channel = None, channel__isnull = True).all()
+    posts = Post.objects.filter (channel__isnull = True).order_by ("-created_at").all()
     serializer = PostSerializer (posts, many = True)
     return Response (serializer.data)
 
@@ -51,7 +48,7 @@ def get_channel (request, channel_id):
 @permission_classes ([isAuthenticated])
 def get_channel_posts (request, channel_id):
     """Отримати пости в конкретному каналі"""
-    posts = Post.objects.filter (channel_id = channel_id)
+    posts = Post.objects.filter (channel_id = channel_id).order_by ("-created_at").all()
     serializer = PostSerializer (posts, many = True)
     return Response (serializer.data)
 
@@ -189,54 +186,6 @@ def delete_post (request, post_id):
             "message": f"Server error: {str (e)}"
         }, status = status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-class PostDetailView(OwnerRequiredMixin, APIView):
-    permission_classes = [isAuthenticated]
-
-    def get(self, request, post_id):
-        post = self.get_object()
-        serializer = PostSerializer(post)
-        return Response(serializer.data)
-
-    def put(self, request, post_id):
-        data = request.data
-        title = data.get ("title", "")
-        content = data.get ("content", "")
-        post = self.get_object()
-        if not (request.user.is_staff or post.author == request.user):
-            return Response (
-                {"type": "error", "message": "You do not have permission to edit this post."},
-                status = status.HTTP_403_FORBIDDEN
-            )
-
-        if Post.objects.filter (title = title).exclude (id = post.id).exists():
-            return Response ({
-                "type": "warning",
-                "message": "Post exist with this title. Please rename."
-            }, status = status.HTTP_400_BAD_REQUEST)
-
-        try:
-            with transaction.atomic():
-                post.title = title or post.title
-                post.content = content or post.content
-                post.is_edited = True
-                post.save()
-
-            return Response (
-                {"success": True, "message": "Post updated successfully."},
-                status = status.HTTP_200_OK
-            )
-        except Exception as e:
-            print ("Error updating post:", str (e))
-            return Response ({
-                "type": "error",
-                "message": f"Server error: {str (e)}"
-            }, status = status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    def delete(self, request, post_id):
-        post = self.get_object()
-        post.delete()
-        return Response({"type": "success", "message": "Post deleted"}, status=status.HTTP_204_NO_CONTENT)
-
 #*<----------[Дефи для CRUD каналів]---------->.
 @api_view (["POST"])
 @permission_classes ([isAuthenticated])
@@ -246,7 +195,7 @@ def add_channel (request):
     description = data.get ("description", "")
     logo = data.get ("logo", "")
     banner = data.get ("banner", "")
-    is_private = data.get ("is_private", "")
+    is_private = data.get ("is_private")
 
     if not name or not description:
         return JsonResponse ({
@@ -260,6 +209,11 @@ def add_channel (request):
             "message": "Channel exist with this name. Please rename."
         }, status = status.HTTP_400_BAD_REQUEST)
 
+    if isinstance (is_private, str):
+        is_private = is_private.lower() in ["true", "1", "yes"]
+    else:
+        is_private = bool (is_private)
+
     try:
         with transaction.atomic():
             channel = Channel.objects.create (
@@ -267,7 +221,7 @@ def add_channel (request):
                 description = description,
                 logo = logo,
                 banner = banner,
-                is_private = (is_private == "true"),
+                is_private = is_private,
                 is_approved = request.user.is_staff,
                 owner_id = request.user.id
             )
@@ -293,7 +247,7 @@ def edit_channel (request, channel_id):
     description = data.get ("description", "")
     logo = data.get ("logo", "")
     banner = data.get ("banner", "")
-    is_private = data.get ("is_private", "")
+    is_private = data.get ("is_private")
 
     channel = get_object_or_404 (Channel, id = channel_id)
 
@@ -309,13 +263,18 @@ def edit_channel (request, channel_id):
             "message": "Channel exist with this name. Please rename."
         }, status = status.HTTP_400_BAD_REQUEST)
 
+    if isinstance (is_private, str):
+        is_private = is_private.lower() in ["true", "1", "yes"]
+    else:
+        is_private = bool (is_private)
+
     try:
         with transaction.atomic():
             channel.name = name or channel.name
             channel.description = description or channel.description
             channel.logo = logo
             channel.banner = banner
-            channel.is_private = is_private == "true" or channel.is_private
+            channel.is_private = is_private
             channel.save()
 
         return Response (
@@ -368,12 +327,18 @@ def create_comment (request, model_name, object_id):
 
     obj = get_object_or_404 (model, id = object_id)
 
-    content = request.data.get ("content")
+    content = request.data.get ("content", "").strip()
     parent_id = request.data.get ("parent_id")
+
+    if not content:
+        return Response ({"type": "warning", "message": "Content is required"}, status = status.HTTP_400_BAD_REQUEST)
 
     parent = None
     if parent_id:
-        parent = Comment.objects.filter (id = parent_id).first()
+        try:
+            parent = Comment.objects.filter (id = parent_id, content_type = ContentType.objects.get_for_model (model), object_id = obj.id).first()
+        except Comment.DoesNotExist:
+            return Response ({"type": "error", "message": "Invalid parent comment"}, status = status.HTTP_400_BAD_REQUEST)
 
     comment = Comment.objects.create (
         author = request.user,

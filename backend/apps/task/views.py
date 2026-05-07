@@ -10,7 +10,7 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework import status
 from core.permissions.permissions import isAuthenticated
-from .models import Challenge, ChallengeProgress, ChallengeType, UserChallengeProgress
+from .models import Challenge, ChallengeProgress, UserChallengeProgress
 from .serializers import ChallengeSerializer
 
 

@@ -1,8 +1,14 @@
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.models import User
 from django.db import models, transaction
-from apps.task.models import Difficulty
+from django.conf import settings
 
+
+#Клас рівня для курсу.
+class CourseLevel (models.TextChoices):
+    BEGINNER = "beginner", "Beginner"
+    INTERMEDIATE = "intermediate", "Intermediate"
+    ADVANCED = "advanced", "Advanced"
 
 #Клас категорії для курсу.
 class Category(models.TextChoices):
@@ -16,15 +22,19 @@ class Category(models.TextChoices):
 
 #Клас курсу.
 class Course (models.Model):
-    author = models.ForeignKey (User, on_delete = models.CASCADE, related_name = "courses")
+    author = models.ForeignKey (settings.AUTH_USER_MODEL, on_delete = models.CASCADE, related_name = "courses")
     title = models.CharField (max_length = 255)
     description = models.TextField()
-    tegs = models.CharField (max_length = 255, null = True, blank = True)
+    tags = models.CharField (max_length = 255, null = True, blank = True)
     points = models.PositiveIntegerField (default = 0)
-    level = models.CharField (max_length = 20, choices = Difficulty.choices, default = Difficulty.EASY)
+    level = models.CharField (max_length = 20, choices = CourseLevel.choices, default = CourseLevel.BEGINNER)
     category = models.CharField (max_length = 100, choices = Category.choices, default = Category.OTHER)
     image = models.URLField (null = True, blank = True)
     created_at = models.DateTimeField (auto_now_add = True)
+    updated_at = models.DateTimeField (auto_now = True)
+
+    class Meta:
+        ordering = ["-created_at"]
 
     def __str__ (self):
         return self.title
@@ -42,6 +52,8 @@ class Lesson (models.Model):
     content = models.TextField()
     order = models.PositiveIntegerField()
     url = models.URLField (null = True, blank = True)
+    created_at = models.DateTimeField (auto_now_add = True)
+    updated_at = models.DateTimeField (auto_now = True)
 
     class Meta:
         ordering = ["order"]
@@ -65,7 +77,7 @@ class Lesson (models.Model):
 
 #Клас прогресу курсу.
 class UserLessonProgress (models.Model):
-    user = models.ForeignKey (User, on_delete = models.CASCADE, related_name = "lesson_progress")
+    user = models.ForeignKey (settings.AUTH_USER_MODEL, on_delete = models.CASCADE, related_name = "lesson_progress")
     lesson = models.ForeignKey (Lesson, on_delete = models.CASCADE, related_name = "progress")
     is_unlocked = models.BooleanField (default = False)
     is_completed = models.BooleanField (default = False)
@@ -73,3 +85,6 @@ class UserLessonProgress (models.Model):
 
     class Meta:
         unique_together = ("user", "lesson")
+
+    def __str__ (self):
+            return f"{self.user.username} - {self.lesson.title}"

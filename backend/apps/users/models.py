@@ -1,13 +1,13 @@
 # models.py (user).
 #*Підключення бібліотек.
-from django.contrib.auth.models import User
+from django.conf import settings
 from django.db import models
 
 #Клас моделі користувача.
 class Profile (models.Model):
-    user = models.OneToOneField (User, on_delete = models.CASCADE)
+    user = models.OneToOneField (settings.AUTH_USER_MODEL, on_delete = models.CASCADE)
     bio = models.TextField (null = True, blank = True)
-    avatar_url = models.CharField (null = True, blank = True, default = "https://shorturl.at/d4eKR")
+    avatar_url = models.CharField (null = True, blank = True)
     address = models.CharField (max_length = 100, null = True, blank = True)
     git = models.CharField (max_length = 200, null = True, blank = True)
     youtube = models.CharField (max_length = 200, null = True, blank = True)

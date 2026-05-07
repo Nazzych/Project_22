@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.conf import settings
 
 
 #Class for status.
@@ -10,7 +10,7 @@ class Status (models.TextChoices):
 
 #ProjectHub / GitHub projects.
 class Project (models.Model):
-    owner = models.ForeignKey (User, on_delete = models.CASCADE, related_name = "projects")
+    owner = models.ForeignKey (settings.AUTH_USER_MODEL, on_delete = models.CASCADE, related_name = "projects")
     title = models.CharField (max_length = 255, blank = False, null = False)
     description = models.TextField (blank = False, null = False)
     readme = models.TextField (default = "No readme provided", blank = False, null = False)

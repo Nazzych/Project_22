@@ -1,15 +1,15 @@
 # views.py (admin).
 #*Підключення бібліотек.
-from django.http import HttpResponse, JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.core.exceptions import TooManyFilesSent
+from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
-from django.contrib.auth.models import User
-from django.db import transaction, models
+from django.http import JsonResponse
+from django.db import transaction
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
-from rest_framework import viewsets, status as Statuse
+from rest_framework import viewsets, status
 from storage3.exceptions import StorageApiError
 from core.permissions.permissions import isAuthenticated, IsAdministrator
 from apps.task.serializers import ChallengeSerializer
@@ -19,12 +19,16 @@ from apps.forum.models import Channel
 from apps.courses.serializers import CourseSerializer, LessonSerializer
 from apps.courses.models import Course, Lesson
 from apps.projects.models import Project
-from .permissions import IsAdminOrReadOnly
 from .serializers import AdminUserListSerializer, AdminUserUpdateSerializer, AdminProjectListSerializer, AdminProjectUpdateSerializer
+from .permissions import IsAdminOrReadOnly
 from .models import BannedUser
-import traceback, json, os, re
+#? import traceback, json, os, re
+
+#*Отримання користувача.
+User = get_user_model()
 
 
+#.
 @api_view(["POST"])
 @permission_classes([IsAdminOrReadOnly])
 def add_challenge(request):
@@ -32,9 +36,9 @@ def add_challenge(request):
     
     title = data.get("title", "").strip()
     description = data.get("description", "").strip()
-    tegs = data.get("tegs", "").strip()
+    tags = data.get("tags", "").strip()
     points = data.get("points", "50")
-    difficul = data.get("difficul", "medium")
+    difficulty = data.get("difficulty", "medium")
     language = data.get("language", "python")
     status_ = data.get("status", "draft")  # ✅ status - зарезервоване слово
     c_type = data.get("c_type", "code")
@@ -49,22 +53,22 @@ def add_challenge(request):
         return JsonResponse({
             "type": "warning",
             "message": "Fields 'title' and 'description' are required."
-        }, status=Statuse.HTTP_400_BAD_REQUEST)  # ✅ status
+        }, status=status.HTTP_400_BAD_REQUEST)
 
     if Challenge.objects.filter(title=title).exists():
         return Response({
             "type": "warning",
             "message": "Challenge with this name already exists. Please rename."
-        }, status=Statuse.HTTP_400_BAD_REQUEST)  # ✅ status
+        }, status=status.HTTP_400_BAD_REQUEST)
 
     try:
         with transaction.atomic():
             challenge = Challenge.objects.create(
                 title=title,
                 description=description,
-                tags=tegs,
+                tags=tags,
                 points=int(points),
-                difficulty=difficul,
+                difficulty=difficulty,
                 c_type=c_type,
                 status=status_
             )
@@ -119,14 +123,14 @@ def add_challenge(request):
                 "type": "success",
                 "message": "Challenge created successfully",
                 "challenge": serializer.data
-            }, status=Statuse.HTTP_201_CREATED)  # ✅ status
+            }, status=status.HTTP_201_CREATED)  # ✅ status
 
     except ValueError as e:
         print(f"ValueError: {e}")
         return Response({
             "type": "error",
             "message": "Invalid points value"
-        }, status=Statuse.HTTP_400_BAD_REQUEST)
+        }, status=status.HTTP_400_BAD_REQUEST)
     
     except Exception as e:
         print(f"CRITICAL ERROR: {str(e)}")
@@ -135,27 +139,27 @@ def add_challenge(request):
         return Response({
             "type": "error",
             "message": f"Server error: {str(e)}"
-        }, status=Statuse.HTTP_500_INTERNAL_SERVER_ERROR)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(["PUT", "PATCH"])
 @permission_classes([IsAdminOrReadOnly])
-def update_challange(request, challenge_id):  # ✅ Правильна назва
+def update_challenge(request, challenge_id):  # ✅ Правильна назва
     try:
         challenge = Challenge.objects.get(id=challenge_id)
     except Challenge.DoesNotExist:
         return Response({
             "type": "error",
             "message": "Challenge not found"
-        }, status=Statuse.HTTP_404_NOT_FOUND)
+        }, status=status.HTTP_404_NOT_FOUND)
 
     data = request.data
 
     # ✅ Оновлення основних полів Challenge
     challenge.title = data.get("title", challenge.title).strip()
     challenge.description = data.get("description", challenge.description).strip()
-    challenge.tags = data.get("tegs", challenge.tags).strip()  # ✅ tags, не tegs
+    challenge.tags = data.get("tags", challenge.tags).strip()  # ✅ tags, не tags
     challenge.points = int(data.get("points", challenge.points))
-    challenge.difficulty = data.get("difficul", challenge.difficulty)  # ✅ difficulty
+    challenge.difficulty = data.get("difficulty", challenge.difficulty)  # ✅ difficulty
     challenge.c_type = data.get("c_type", challenge.c_type)
     challenge.status = data.get("status", challenge.status)
     challenge.save()
@@ -212,7 +216,7 @@ def update_challange(request, challenge_id):  # ✅ Правильна назв�
         "type": "success",
         "message": "Challenge updated successfully",
         "challenge": serializer.data
-    }, status=Statuse.HTTP_200_OK)
+    }, status=status.HTTP_200_OK)
 @api_view (["DELETE"])
 @require_http_methods (["DELETE"])
 @permission_classes ([IsAdminOrReadOnly])
@@ -222,25 +226,25 @@ def delete_challenge (request, challenge_id):
         return Response ({
             "type": "success",
             "message": "Challenge deleted successfully"
-        }, status = Statuse.HTTP_200_OK)
+        }, status = status.HTTP_200_OK)
     except Challenge.DoesNotExist:
         return Response ({
             "type": "error",
             "message": "Challenge not found"
-        }, status = Statuse.HTTP_404_NOT_FOUND)
+        }, status = status.HTTP_404_NOT_FOUND)
     except Exception as e:
         print ("Error deleting Challenge:", str (e))
         return Response ({
             "type": "error",
             "message": f"Server error: {str (e)}"
-        }, status = Statuse.HTTP_500_INTERNAL_SERVER_ERROR)
+        }, status = status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 #.
 @api_view (["GET"])
 @require_http_methods (["GET"])
 @permission_classes ([IsAdminOrReadOnly])
-def get_unupproved_channels (reguest):
+def get_unupproved_channels (request):
     try:
         channels = Channel.objects.filter (is_approved = False)
         serializer = ChannelSerializer (channels, many = True)
@@ -249,13 +253,13 @@ def get_unupproved_channels (reguest):
         return Response ({
             "type": "error",
             "message": "Channels not found"
-        }, status = Statuse.HTTP_404_NOT_FOUND)
+        }, status = status.HTTP_404_NOT_FOUND)
     except Exception as e:
         print ("Error geting channels:", str (e))
         return Response ({
             "type": "error",
             "message": f"Server error: {str (e)}"
-        }, status = Statuse.HTTP_500_INTERNAL_SERVER_ERROR)
+        }, status = status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view (["PUT"])
 @require_http_methods (["PUT"])
@@ -269,18 +273,18 @@ def approve_channel (request, channel_id):
         return Response ({
             "type": "success",
             "message": "Challenge approved successfully"
-        }, status = Statuse.HTTP_200_OK)
+        }, status = status.HTTP_200_OK)
     except Channel.DoesNotExist:
         return Response ({
             "type": "error",
             "message": "Challenge not found"
-        }, status = Statuse.HTTP_404_NOT_FOUND)
+        }, status = status.HTTP_404_NOT_FOUND)
     except Exception as e:
         print ("Error approving channel:", str (e))
         return Response ({
             "type": "error",
             "message": f"Server error: {str (e)}"
-        }, status = Statuse.HTTP_500_INTERNAL_SERVER_ERROR)
+        }, status = status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view (["PUT"])
 @require_http_methods (["PUT"])
@@ -293,18 +297,18 @@ def reject_channel (request, channel_id):
         return Response ({
             "type": "success",
             "message": "Challenge rejected successfully"
-        }, status = Statuse.HTTP_200_OK)
+        }, status = status.HTTP_200_OK)
     except Channel.DoesNotExist:
         return Response ({
             "type": "error",
             "message": "Challenge not found"
-        }, status = Statuse.HTTP_404_NOT_FOUND)
+        }, status = status.HTTP_404_NOT_FOUND)
     except Exception as e:
         print ("Error rejecting channel:", str (e))
         return Response ({
             "type": "error",
             "message": f"Server error: {str (e)}"
-        }, status = Statuse.HTTP_500_INTERNAL_SERVER_ERROR)
+        }, status = status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view (["GET"])
 @permission_classes ([IsAdminOrReadOnly])
@@ -327,7 +331,7 @@ def add_course (request):
     data = request.data
     title = data.get ("title", "")
     description = data.get ("description", "")
-    tegs = data.get ("tegs", "")
+    tags = data.get ("tags", "")
     level = data.get ("level", "")
     category = data.get ("category", "")
     points = data.get ("points", "")
@@ -337,39 +341,39 @@ def add_course (request):
         return JsonResponse ({
             "type": "warning",
             "message": "Fields \"title\" and \"description\" is required."
-        }, status = Statuse.HTTP_400_BAD_REQUEST)
+        }, status = status.HTTP_400_BAD_REQUEST)
 
     if Course.objects.filter (title = title).exists():
         return Response ({
             "type": "warning",
             "message": "Course exist with this title. Please rename."
-        }, status = Statuse.HTTP_400_BAD_REQUEST)
+        }, status = status.HTTP_400_BAD_REQUEST)
 
     try:
         with transaction.atomic():
-            curse = Course.objects.create (
+            course = Course.objects.create (
                 author = request.user,
                 description = description,
                 title = title,
-                tegs = tegs,
+                tags = tags,
                 level = level,
                 category = category,
                 points = points,
                 image = image
             )
 
-        serializer = CourseSerializer (curse)
+        serializer = CourseSerializer (course)
         return Response ({
             "type": "success",
             "message": "Course created successfully",
             "course": serializer.data
-        }, status = Statuse.HTTP_201_CREATED)
+        }, status = status.HTTP_201_CREATED)
     except Exception as e:
-        print ("Error creating curse:", str (e))
+        print ("Error creating course:", str (e))
         return Response ({
             "type": "error",
             "message": f"Server error: {str (e)}"
-        }, status = Statuse.HTTP_500_INTERNAL_SERVER_ERROR)
+        }, status = status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view (["PUT"])
 @permission_classes ([IsAdminOrReadOnly])
@@ -379,7 +383,7 @@ def edit_course (request, course_id):
     data = request.data
     title = data.get ("title", "").strip()
     description = data.get ("description", "").strip()
-    tegs = data.get ("tegs", "").strip()
+    tags = data.get ("tags", "").strip()
     points = data.get ("points", "")
     level = data.get ("level", "")
     category = data.get ("category", "")
@@ -389,21 +393,21 @@ def edit_course (request, course_id):
         return JsonResponse ({
             "type": "warning",
             "message": "Fields \"title\" and \"description\" requaried."
-        }, status = Statuse.HTTP_400_BAD_REQUEST)
+        }, status = status.HTTP_400_BAD_REQUEST)
 
     if Course.objects.filter (title = title).exclude  ( id=course.id).exists():
         return Response ({
             "type": "warning",
             "message": "Course exist with this name. Pleace rename."
-        }, status = Statuse.HTTP_400_BAD_REQUEST)
+        }, status = status.HTTP_400_BAD_REQUEST)
     
     try:
         if title:
             course.title = title
         if description:
             course.description = description
-        if tegs:
-            course.tegs = tegs
+        if tags:
+            course.tags = tags
         if points is not None:
             course.points = int (points) if str (points).isdigit() else course.points
         if level:
@@ -419,13 +423,13 @@ def edit_course (request, course_id):
             "type": "success",
             "message": "Course updated successfuly",
             "course": serializer.data
-        }, status = Statuse.HTTP_200_OK)
+        }, status = status.HTTP_200_OK)
     except Exception as e:
         print ("Error updating course:", str (e))
         return Response ({
             "type": "error",
             "message": f"Server error: {str (e)}"
-        }, status = Statuse.HTTP_500_INTERNAL_SERVER_ERROR)
+        }, status = status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view (["DELETE"])
@@ -437,18 +441,18 @@ def delete_course (request, course_id):
         return Response ({
             "type": "success",
             "message": "Course deleted successfully"
-        }, status = Statuse.HTTP_200_OK)
+        }, status = status.HTTP_200_OK)
     except Challenge.DoesNotExist:
         return Response ({
             "type": "error",
             "message": "Course not found"
-        }, status = Statuse.HTTP_404_NOT_FOUND)
+        }, status = status.HTTP_404_NOT_FOUND)
     except Exception as e:
         print ("Error deleting course:", str (e))
         return Response ({
             "type": "error",
             "message": f"Server error: {str (e)}"
-        }, status = Statuse.HTTP_500_INTERNAL_SERVER_ERROR)
+        }, status = status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view (["POST"])
@@ -461,13 +465,13 @@ def add_lesson (request, course_id):
         return Response ({
             "type": "error",
             "message": "Expected a list of lessons"
-        }, status = Statuse.HTTP_400_BAD_REQUEST)
+        }, status = status.HTTP_400_BAD_REQUEST)
 
     if not lessons_data:
         return Response ({
             "type": "warning",
             "message": "No lessons provided"
-        }, status = Statuse.HTTP_400_BAD_REQUEST)
+        }, status = status.HTTP_400_BAD_REQUEST)
 
     created_lessons = []
     try:
@@ -499,19 +503,19 @@ def add_lesson (request, course_id):
             "type": "success",
             "message": f"{len (created_lessons)} lessons created successfully",
             "lessons": serializer.data
-        }, status = Statuse.HTTP_201_CREATED)
+        }, status = status.HTTP_201_CREATED)
 
     except ValueError as ve:
         return Response ({
             "type": "warning",
             "message": str (ve)
-        }, status = Statuse.HTTP_400_BAD_REQUEST)
+        }, status = status.HTTP_400_BAD_REQUEST)
     except Exception as e:
         print ("Error creating lessons:", str (e))
         return Response ({
             "type": "error",
             "message": "Server error while creating lessons"
-        }, status = Statuse.HTTP_500_INTERNAL_SERVER_ERROR)
+        }, status = status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view (["GET"])
 @permission_classes ([IsAdminOrReadOnly])
@@ -528,7 +532,7 @@ def update_user (request, user_id):
         return Response ({
             "type": "error",
             "message": "You can't manage of the owner this site!"
-        }, status = Statuse.HTTP_403_FORBIDDEN)
+        }, status = status.HTTP_403_FORBIDDEN)
 
     serializer = AdminUserUpdateSerializer (user, data = request.data, partial = True)
 
@@ -540,11 +544,11 @@ def update_user (request, user_id):
         #? if hasattr (updated_user, 'profile'):
         #?     print ("Profile bio:", updated_user.profile.bio)
         #?     print ("Profile total_points:", updated_user.profile.total_points)
-        return Response ({"type": "success", "message": "User updated successfully"}, status = Statuse.HTTP_200_OK)
+        return Response ({"type": "success", "message": "User updated successfully"}, status = status.HTTP_200_OK)
     return Response ({
         "type": "error",
         "message": serializer.errors
-    }, status = Statuse.HTTP_400_BAD_REQUEST)
+    }, status = status.HTTP_400_BAD_REQUEST)
 
 #.
 @api_view (["DELETE"])
@@ -554,7 +558,7 @@ def delete_user (request, user_id):
         return Response ({
             "type": "error", 
             "message": "You cannot del yourself"
-        }, status = Statuse.HTTP_400_BAD_REQUEST)
+        }, status = status.HTTP_400_BAD_REQUEST)
 
     try:
         user = get_object_or_404 (User, id = user_id)
@@ -562,15 +566,15 @@ def delete_user (request, user_id):
             return Response ({
                 "type": "error",
                 "message": "You can't manage of the owner this site!"
-            }, status = Statuse.HTTP_403_FORBIDDEN)
+            }, status = status.HTTP_403_FORBIDDEN)
         user.delete()
-        return Response ({"type": "success", "message": "User deleted successfully"}, status = Statuse.HTTP_204_NO_CONTENT)
+        return Response ({"type": "success", "message": "User deleted successfully"}, status = status.HTTP_204_NO_CONTENT)
     except Exception as e:
         print ("Error deleting user:", str (e))
         return Response ({
             "type": "error",
             "message": "Server error while deleting user"
-        }, status = Statuse.HTTP_500_INTERNAL_SERVER_ERROR)
+        }, status = status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 #.
 @api_view (["POST"])
@@ -581,13 +585,13 @@ def ban_user (request, user_id):
         return Response ({
             "type": "error",
             "message": "You can't manage of the owner this site!"
-        }, status = Statuse.HTTP_403_FORBIDDEN)
+        }, status = status.HTTP_403_FORBIDDEN)
 
     if user.id == request.user.id:
         return Response ({
             "type": "error", 
             "message": "You cannot ban yourself"
-        }, status = Statuse.HTTP_400_BAD_REQUEST)
+        }, status = status.HTTP_400_BAD_REQUEST)
 
     try:
         #? Перевіряємо, чи вже забанений.
@@ -599,7 +603,7 @@ def ban_user (request, user_id):
             return Response ({
                 "type": "success",
                 "message": f"User @{user.username} has been unbanned successfully"
-            }, status = Statuse.HTTP_200_OK)
+            }, status = status.HTTP_200_OK)
         else:
             #? Забанити.
             data = request.data
@@ -612,14 +616,14 @@ def ban_user (request, user_id):
             return Response ({
                 "type": "success",
                 "message": f"User @{user.username} has been banned successfully"
-            }, status = Statuse.HTTP_200_OK)
+            }, status = status.HTTP_200_OK)
 
     except Exception as e:
         print ("Error banning/unbanning user:", str (e))
         return Response ({
             "type": "error",
             "message": "Server error while processing ban"
-        }, status = Statuse.HTTP_500_INTERNAL_SERVER_ERROR)
+        }, status = status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 #.
 @api_view (["GET"])
@@ -641,13 +645,13 @@ def update_project (request, project_id):
             "type": "success",
             "message": "Project updated successfully by admin",
             "project": serializer.data
-        }, status = Statuse.HTTP_200_OK)
+        }, status = status.HTTP_200_OK)
 
     return Response ({
         "type": "error",
         "message": "Validation failed",
         "errors": serializer.errors
-    }, status = Statuse.HTTP_400_BAD_REQUEST)
+    }, status = status.HTTP_400_BAD_REQUEST)
 
 #.
 @api_view (["DELETE"])
@@ -658,9 +662,9 @@ def delete_project (request, project_id):
         return Response ({
             "type": "success",
             "message": "Project deleted successfully by admin",
-        }, status = Statuse.HTTP_200_OK)
+        }, status = status.HTTP_200_OK)
     except:
         return Response ({
             "type": "error",
             "message": "Server error while deleting project!",
-        }, status = Statuse.HTTP_500_INTERNAL_SERVER_ERROR)
+        }, status = status.HTTP_500_INTERNAL_SERVER_ERROR)
