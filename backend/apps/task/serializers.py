@@ -40,7 +40,7 @@ class QuizChallengeSerializer (serializers.ModelSerializer):
 class CodeChallengeSerializer (serializers.ModelSerializer):
     class Meta:
         model = CodeChallenge
-        fields = ["id", "language", "starter_code", "e_input", "e_output"]
+        fields = ["id", "starter_code", "e_input", "e_output"]
 
 #Клас серелізатора завдання.
 class ChallengeSerializer (serializers.ModelSerializer):
@@ -52,7 +52,7 @@ class ChallengeSerializer (serializers.ModelSerializer):
         model = Challenge
         fields = [
             "id", "author", "title", "description", "tags", "points",
-            "difficulty", "c_type", "status", "created_at", "updated_at",
+            "difficulty", "language", "c_type", "status", "created_at", "updated_at",
             "code_challenge", "quiz_challenge", "user_progress"
         ]
 

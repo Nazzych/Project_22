@@ -1,13 +1,21 @@
 # views.py (apps/dashboard/challenges/).
 #*Підключення бібліотек.
 from django.db import transaction
-from rest_framework import viewsets, status
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework import viewsets, status, filters
 from apps.task.models import Challenge, QuizChallenge, QuizQuestion, QuizAnswer
+from ..models import AuditLog
 from ..permissions import IsAdminOrReadOnly
 from .serializers import ChallengeSerializer
 
+
+#Клас пагінації для завдань.
+class AdminChallengePagination (PageNumberPagination):
+    page_size = 15
+    page_size_query_param = "page_size"
+    max_page_size = 50
 
 #Клас для керування завданнями в адмінці.
 class ChallengeViewSet (viewsets.ModelViewSet):
@@ -15,12 +23,46 @@ class ChallengeViewSet (viewsets.ModelViewSet):
     queryset = Challenge.objects.all()
     serializer_class = ChallengeSerializer
     permission_classes = [IsAdminOrReadOnly]
+    pagination_class = AdminChallengePagination
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ["title", "tags"]
+    ordering = ["-created_at"]
 
     def perform_create (self, serializer):
-        serializer.save (author = self.request.user)
+        challenge = serializer.save (author = self.request.user)
+
+        AuditLog.objects.create (
+            admin = self.request.user,
+            action = "create",
+            target_model = "Challenge",
+            target_id = challenge.id,
+            details = {"title": challenge.title, "c_type": challenge.c_type},
+            ip_address = self.request.META.get ("REMOTE_ADDR")
+        )
 
     def perform_update (self, serializer):
-        serializer.save()
+        challenge = serializer.save()
+        AuditLog.objects.create (
+            admin = self.request.user,
+            action = "update",
+            target_model = "Challenge",
+            target_id = challenge.id,
+            details = {"title": challenge.title},
+            ip_address = self.request.META.get ("REMOTE_ADDR")
+        )
+
+    def perform_destroy (self, instance):
+        challenge_title = instance.title
+        challenge_id = instance.id
+        instance.delete()
+        AuditLog.objects.create (
+            admin = self.request.user,
+            action = "delete",
+            target_model = "Challenge",
+            target_id = challenge_id,
+            details = {"title": challenge_title},
+            ip_address = self.request.META.get ("REMOTE_ADDR")
+        )
 
     @action (detail = True, methods = ["post"])
     def add_quiz_questions (self, request, pk = None):

@@ -8,6 +8,7 @@ from .models import Course, Lesson, UserLessonProgress
 User = get_user_model()
 
 
+#? (Чи треба їх лишати)<.
 # ==================== ПРОСТИЙ СЕРІАЛІЗАТОР УРОКУ (для інших випадків) ====================
 class LessonSerializer (serializers.ModelSerializer):
     class Meta:
@@ -22,6 +23,7 @@ class CourseSerializer (serializers.ModelSerializer):
     class Meta:
         model = Course
         fields = ["id", "author", "title", "description", "tags", "level", "category", "points", "image", "created_at", "lessons_count"]
+#?>.
 
 
 # ==================== УРОК З ПРОГРЕСОМ ====================

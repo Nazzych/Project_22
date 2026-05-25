@@ -1,16 +1,19 @@
-# urls.py (admin).
+# urls.py (dashboard).
 #*Підключення бібліотек.
 #?from rest_framework.routers import DefaultRouter
 from django.urls import path, include
 # from . import views
 
 app_name = "dashboard"
+
+
+#Налаштування силок.
 urlpatterns = [
-    path("users/", include("apps.dashboard.users.urls")),
-    path("challenges/", include("apps.dashboard.challenges.urls")),
-    path("courses/", include("apps.dashboard.courses.urls")),
-    # path("projects/", include("apps.dashboard.projects.urls")),
-    # path("moderation/", include("apps.dashboard.moderation.urls")),
+    path ("users/", include ("apps.dashboard.users.urls")),
+    path ("challenges/", include ("apps.dashboard.challenges.urls")),
+    path ("courses/", include ("apps.dashboard.courses.urls")),
+    path ("projects/", include ("apps.dashboard.projects.urls")),
+    path ("moderation/", include ("apps.dashboard.moderation.urls"))
 ]
 
 #!<

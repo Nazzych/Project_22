@@ -69,7 +69,7 @@ class ChallengeProgress (models.TextChoices):
 #Клас <загальний> завданнь.
 class Challenge (models.Model):
     """Базова модель для всіх типів завдань"""
-    author = models.ForeignKey (settings.AUTH_USER_MODEL, on_delete = models.CASCADE, related_name = "created_challenges", verbose_name = "Автор")
+    author = models.ForeignKey (settings.AUTH_USER_MODEL, on_delete = models.CASCADE, verbose_name = "Автор")
     title = models.CharField (max_length = 200, verbose_name = "Назва завдання")
     description = models.TextField (verbose_name = "Опис завдання")
     tags = models.CharField (max_length = 255, blank = True, help_text = "Через кому: easy, python")

@@ -6,7 +6,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 from core.permissions.permissions import isAuthenticated
-from .serializers import CourseSerializer, CourseWithProgressSerializer
+from .serializers import CourseWithProgressSerializer
 from .models import Course, Lesson, UserLessonProgress
 
 
@@ -34,7 +34,7 @@ from .models import Course, Lesson, UserLessonProgress
 def get_courses (request):
     """Отримати список всіх курсів"""
     courses = Course.objects.exclude (lessons__isnull = True)
-    serializer = CourseSerializer (courses, many = True)
+    serializer = CourseWithProgressSerializer (courses, context = {"user": request.user}, many = True)
     return Response (serializer.data)
 
 #Деф отримання деталів курсу.

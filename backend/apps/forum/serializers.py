@@ -2,7 +2,7 @@
 #*Підключення бібліотек.
 from apps.users.serializers import UserSerializer
 from rest_framework import serializers
-from .models import Post, Channel, Comment
+from .models import Post, Channel, Comment, ContentType
 
 
 #Клас серелізатора форума.
@@ -16,7 +16,12 @@ class PostSerializer (serializers.ModelSerializer):
         fields = ["id", "author", "channel", "title", "content", "slug", "views_count", "likes_count", "dislikes_count", "comments_count", "is_pinned", "is_edited", "created_at"]
 
     def get_comments_count (self, obj):
-        return obj.comment_set.count()
+        if not hasattr (self, "_post_content_type"):
+            self._post_content_type = ContentType.objects.get_for_model (Post)
+        return Comment.objects.filter (
+            content_type = self._post_content_type,
+            object_id = obj.id
+        ).count()
 
 #Клас серелізатора каналу.
 class ChannelSerializer (serializers.ModelSerializer):

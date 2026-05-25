@@ -1,3 +1,5 @@
+# models.py (courses/).
+#*Підключення бібліотек.
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.models import User
 from django.db import models, transaction
@@ -40,10 +42,10 @@ class Course (models.Model):
         return self.title
 
     def get_available_lessons (self, user):
-            lessons = self.lessons.all()
-            if not lessons.exists() and not user.is_staff:
-                raise PermissionDenied ("This course in work.")
-            return lessons
+        lessons = self.lessons.all()
+        if not lessons.exists() and not user.is_staff:
+            raise PermissionDenied ("This course in work.")
+        return lessons
 
 #Клас уроку.
 class Lesson (models.Model):

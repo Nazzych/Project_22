@@ -5,6 +5,7 @@ from django.core.exceptions import TooManyFilesSent
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from django.utils import timezone
+from django.db import models
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
@@ -18,7 +19,7 @@ from .serializers import ChallengeSerializer
 @api_view (["GET"])
 @permission_classes ([isAuthenticated])
 def challenges (request):
-    challenges = Challenge.objects.all()
+    challenges = Challenge.objects.filter (models.Q (quiz_challenge__isnull = False) | models.Q (code_challenge__isnull = False)).distinct()
     serializer = ChallengeSerializer (challenges, many = True, context = {"user": request.user})
     return Response (serializer.data)
 

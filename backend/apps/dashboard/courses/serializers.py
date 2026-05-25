@@ -15,7 +15,7 @@ class LessonSerializer (serializers.ModelSerializer):
 #Клас серелізатора для відображення списку курсів.
 class CourseListSerializer (serializers.ModelSerializer):
     """Список курсів (коротка інформація)"""
-    lessons_count = serializers.IntegerField (read_only = True, source = "lesson_set.count")
+    lessons_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Course
@@ -23,6 +23,10 @@ class CourseListSerializer (serializers.ModelSerializer):
             "id", "author", "title", "description", "image", "level", 
             "category", "points", "tags", "created_at", "updated_at", "lessons_count"
         ]
+        read_only_fields = ["id", "author", "created_at", "updated_at"]
+
+    def get_lessons_count (self, obj):
+        return obj.lessons.count()
 
 #Клас серелізатора для відображення детальної інформації про курс.
 class CourseDetailSerializer (serializers.ModelSerializer):
@@ -35,6 +39,7 @@ class CourseDetailSerializer (serializers.ModelSerializer):
             "id", "author", "title", "description", "image", "level",
             "category", "points", "tags", "lessons", "created_at", "updated_at"
         ]
+        read_only_fields = ["id", "author", "created_at", "updated_at"]
 
 #Клас серелізатора для створення та оновлення курсу.
 class CourseCreateUpdateSerializer (serializers.ModelSerializer):
@@ -42,9 +47,10 @@ class CourseCreateUpdateSerializer (serializers.ModelSerializer):
     class Meta:
         model = Course
         fields = [
-            "title", "description", "image", "level",
+            "id", "title", "description", "image", "level",
             "category", "points", "tags"
         ]
+        read_only_fields = ["id"]
         extra_kwargs = {
             "title": {"required": True},
             "description": {"required": True},
