@@ -30,7 +30,6 @@ class ChallengeViewSet (viewsets.ModelViewSet):
 
     def perform_create (self, serializer):
         challenge = serializer.save (author = self.request.user)
-
         AuditLog.objects.create (
             admin = self.request.user,
             action = "create",

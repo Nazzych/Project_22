@@ -42,6 +42,7 @@ class QuizChallengeSerializer (serializers.ModelSerializer):
 # --- Challenge (Admin) ---
 class ChallengeSerializer (serializers.ModelSerializer):
     quiz_questions = serializers.JSONField (required = False, write_only = True)
+    quiz_challenge = QuizChallengeSerializer (required = False)
     code = serializers.CharField(required=False, write_only=True, allow_blank=True)
     e_input = serializers.CharField(required=False, write_only=True, allow_blank=True)
     e_output = serializers.CharField(required=False, write_only=True, allow_blank=True)
@@ -50,7 +51,7 @@ class ChallengeSerializer (serializers.ModelSerializer):
         model = Challenge
         fields = [
             "id", "author", "title", "description", "tags", "language", "points",
-            "difficulty", "c_type", "status", "created_at", "updated_at", "quiz_questions", "code", "e_input", "e_output"
+            "difficulty", "c_type", "status", "created_at", "updated_at", "quiz_questions", "code", "e_input", "e_output", "quiz_challenge"
         ]
         read_only_fields = ["id", "author", "created_at", "updated_at"]
         extra_kwargs = {
@@ -61,7 +62,7 @@ class ChallengeSerializer (serializers.ModelSerializer):
         }
 
     def create (self, validated_data):
-        quiz_questions = validated_data.pop ("quiz_questions", None)
+        quiz_challenge = validated_data.pop ("quiz_challenge", None)
         code = validated_data.pop ("code", None)
         e_input = validated_data.pop ("e_input", None)
         e_output = validated_data.pop ("e_output", None)
@@ -72,12 +73,12 @@ class ChallengeSerializer (serializers.ModelSerializer):
                 if self._has_code_data (code, e_input, e_output):
                     self._save_nested (challenge, code, e_input, e_output)
             elif challenge.c_type == ChallengeType.QUIZ:
-                if self._has_quiz_data (quiz_questions):
-                    self._save_nested (challenge, quiz_questions)
+                if self._has_quiz_data (quiz_challenge):
+                    self._save_nested (challenge, quiz_challenge)
         return challenge
 
     def update (self, instance, validated_data):
-        quiz_questions = validated_data.pop ("quiz_questions", None)
+        quiz_challenge = validated_data.pop ("quiz_challenge", None)
         code = validated_data.pop ("code", None)
         e_input = validated_data.pop ("e_input", None)
         e_output = validated_data.pop ("e_output", None)
@@ -88,8 +89,8 @@ class ChallengeSerializer (serializers.ModelSerializer):
                 if self._has_code_data (code, e_input, e_output):
                     self._save_nested (instance, code, e_input, e_output)
             elif instance.c_type == ChallengeType.QUIZ:
-                if self._has_quiz_data (quiz_questions):
-                    self._save_nested (instance, quiz_questions)
+                if self._has_quiz_data (quiz_challenge):
+                    self._save_nested (instance, quiz_challenge)
         return instance
 
 # ====================== Допоміжні методи ======================
@@ -102,13 +103,13 @@ class ChallengeSerializer (serializers.ModelSerializer):
             (e_output and str (e_output).strip())
         )
 
-    def _has_quiz_data (self, quiz_questions):
+    def _has_quiz_data (self, quiz_challenge):
         """Перевіряє, чи є реальні питання в квізі"""
-        if not isinstance (quiz_questions, list):
+        if not isinstance (quiz_challenge, list):
             return False
-        return len (quiz_questions) > 0
+        return len (quiz_challenge) > 0
 
-    def _save_nested (self, challenge = None, code = None, e_input = None, e_output = None, quiz_questions = None):
+    def _save_nested (self, challenge = None, code = None, e_input = None, e_output = None, quiz_challenge = None):
         """Зберігаємо дані залежно від типу завдання"""
         if challenge.c_type == ChallengeType.CODE:
             if self._has_code_data (code, e_input, e_output):
@@ -123,12 +124,12 @@ class ChallengeSerializer (serializers.ModelSerializer):
                     }
                 )
 
-        elif challenge.c_type == ChallengeType.QUIZ and isinstance(quiz_questions, list):
-            print(f"→ Saving QUIZ with {len(quiz_questions)} questions")
+        elif challenge.c_type == ChallengeType.QUIZ and isinstance(quiz_challenge, list):
+            print(f"→ Saving QUIZ with {len(quiz_challenge)} questions")
             QuizChallenge.objects.filter(challenge=challenge).delete()
             quiz_challenge = QuizChallenge.objects.create(challenge=challenge)
 
-            for idx, q_data in enumerate(quiz_questions, 1):
+            for idx, q_data in enumerate(quiz_challenge, 1):
                 question = QuizQuestion.objects.create(
                     quiz=quiz_challenge,
                     question_text=q_data.get("question_text", ""),
