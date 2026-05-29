@@ -46,12 +46,13 @@ class ChallengeViewSet (viewsets.ModelViewSet):
             action = "update",
             target_model = "Challenge",
             target_id = challenge.id,
-            details = {"title": challenge.title},
+            details = {"title": challenge.title, "c_type": challenge.c_type},
             ip_address = self.request.META.get ("REMOTE_ADDR")
         )
 
     def perform_destroy (self, instance):
         challenge_title = instance.title
+        challenge_c_type = instance.c_type
         challenge_id = instance.id
         instance.delete()
         AuditLog.objects.create (
@@ -59,7 +60,7 @@ class ChallengeViewSet (viewsets.ModelViewSet):
             action = "delete",
             target_model = "Challenge",
             target_id = challenge_id,
-            details = {"title": challenge_title},
+            details = {"title": challenge_title, "c_type": challenge_c_type},
             ip_address = self.request.META.get ("REMOTE_ADDR")
         )
 

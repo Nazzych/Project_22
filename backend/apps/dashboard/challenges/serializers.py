@@ -50,8 +50,8 @@ class ChallengeSerializer (serializers.ModelSerializer):
     class Meta:
         model = Challenge
         fields = [
-            "id", "author", "title", "description", "tags", "language", "points",
-            "difficulty", "c_type", "status", "created_at", "updated_at", "quiz_questions", "code", "e_input", "e_output", "quiz_challenge"
+            "id", "title", "description", "tags", "language", "points",
+            "difficulty", "c_type", "status", "code", "e_input", "e_output", "quiz_questions", "quiz_challenge"
         ]
         read_only_fields = ["id", "author", "created_at", "updated_at"]
         extra_kwargs = {
@@ -62,35 +62,25 @@ class ChallengeSerializer (serializers.ModelSerializer):
         }
 
     def create (self, validated_data):
-        quiz_challenge = validated_data.pop ("quiz_challenge", None)
+        quiz_questions = validated_data.pop ("quiz_questions", None)
         code = validated_data.pop ("code", None)
         e_input = validated_data.pop ("e_input", None)
         e_output = validated_data.pop ("e_output", None)
 
         with transaction.atomic():
-            challenge = Challenge.objects.create (**validated_data)
-            if challenge.c_type == ChallengeType.CODE:
-                if self._has_code_data (code, e_input, e_output):
-                    self._save_nested (challenge, code, e_input, e_output)
-            elif challenge.c_type == ChallengeType.QUIZ:
-                if self._has_quiz_data (quiz_challenge):
-                    self._save_nested (challenge, quiz_challenge)
+            challenge = Challenge.objects.create (author = self.context ["request"].user, **validated_data)
+            self._save_nested (challenge, code, e_input, e_output, quiz_questions)
         return challenge
 
     def update (self, instance, validated_data):
-        quiz_challenge = validated_data.pop ("quiz_challenge", None)
+        quiz_questions = validated_data.pop ("quiz_questions", None)
         code = validated_data.pop ("code", None)
         e_input = validated_data.pop ("e_input", None)
         e_output = validated_data.pop ("e_output", None)
 
         with transaction.atomic():
             instance = super().update (instance, validated_data)
-            if instance.c_type == ChallengeType.CODE:
-                if self._has_code_data (code, e_input, e_output):
-                    self._save_nested (instance, code, e_input, e_output)
-            elif instance.c_type == ChallengeType.QUIZ:
-                if self._has_quiz_data (quiz_challenge):
-                    self._save_nested (instance, quiz_challenge)
+            self._save_nested (instance, code, e_input, e_output, quiz_questions)
         return instance
 
 # ====================== Допоміжні методи ======================
@@ -103,13 +93,13 @@ class ChallengeSerializer (serializers.ModelSerializer):
             (e_output and str (e_output).strip())
         )
 
-    def _has_quiz_data (self, quiz_challenge):
+    def _has_quiz_data (self, quiz_questions):
         """Перевіряє, чи є реальні питання в квізі"""
-        if not isinstance (quiz_challenge, list):
+        if not isinstance (quiz_questions, list):
             return False
-        return len (quiz_challenge) > 0
+        return len (quiz_questions) > 0
 
-    def _save_nested (self, challenge = None, code = None, e_input = None, e_output = None, quiz_challenge = None):
+    def _save_nested (self, challenge, code, e_input, e_output, quiz_questions):
         """Зберігаємо дані залежно від типу завдання"""
         if challenge.c_type == ChallengeType.CODE:
             if self._has_code_data (code, e_input, e_output):
@@ -124,20 +114,22 @@ class ChallengeSerializer (serializers.ModelSerializer):
                     }
                 )
 
-        elif challenge.c_type == ChallengeType.QUIZ and isinstance(quiz_challenge, list):
-            print(f"→ Saving QUIZ with {len(quiz_challenge)} questions")
-            QuizChallenge.objects.filter(challenge=challenge).delete()
-            quiz_challenge = QuizChallenge.objects.create(challenge=challenge)
+        elif challenge.c_type == ChallengeType.QUIZ:
+            if self._has_quiz_data (quiz_questions):
+                print(f"→ Saving QUIZ with {len(quiz_questions)} questions")
+                QuizChallenge.objects.filter(challenge=challenge).delete()
+                quiz_challenge = QuizChallenge.objects.create(challenge=challenge)
 
-            for idx, q_data in enumerate(quiz_challenge, 1):
-                question = QuizQuestion.objects.create(
-                    quiz=quiz_challenge,
-                    question_text=q_data.get("question_text", ""),
-                    order=idx
-                )
-                for ans in q_data.get("answers", []):
-                    QuizAnswer.objects.create(
-                        question=question,
-                        answer_text=ans.get("answer_text", ""),
-                        is_correct=ans.get("is_correct", False)
+                for idx, q_data in enumerate(quiz_questions, 1):
+                    question = QuizQuestion.objects.create(
+                        quiz=quiz_challenge,
+                        question_text=q_data.get("question_text", "").strip(),
+                        order=idx
                     )
+                    for ans in q_data.get("answers", []):
+                        if ans.get("answer_text", "").strip():
+                            QuizAnswer.objects.create(
+                                question=question,
+                                answer_text=ans.get("answer_text", "").strip(),
+                                is_correct=ans.get("is_correct", False)
+                            )

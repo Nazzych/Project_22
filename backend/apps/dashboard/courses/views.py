@@ -64,27 +64,91 @@ class CourseViewSet (viewsets.ModelViewSet):
             details = {"title": title}
         )
 
-#Додавання уроків до курсу
-    @action (detail = True, methods = ["POST"])
-    def lessons (self, request, pk = None):
+#Додавання/оновлення уроків до курсу.
+# apps/dashboard/courses/views.py
+
+    # 1. Створення нових уроків (POST)
+    @action(detail=True, methods=["POST"], url_path='lessons')
+    def lessons(self, request, pk=None):
+        """Створення нових уроків для курсу"""
         course = self.get_object()
         lessons_data = request.data
 
-        if not isinstance (lessons_data, list):
-            return Response ({"type": "error", "message": "Expected a list of lessons"}, status = status.HTTP_400_BAD_REQUEST)
+        if not isinstance(lessons_data, list):
+            return Response({
+                "type": "error", 
+                "message": "Expected a list of lessons"
+            }, status=status.HTTP_400_BAD_REQUEST)
 
-        created_lessons = []
+        result = []
         with transaction.atomic():
             for item in lessons_data:
-                serializer = LessonSerializer (data = item)
+                serializer = LessonSerializer(data=item)
                 if serializer.is_valid():
-                    serializer.save (course = course)
-                    created_lessons.append (serializer.data)
+                    serializer.save(course=course)
+                    result.append(serializer.data)
                 else:
-                    return Response ({"type": "error", "errors": serializer.errors}, status = status.HTTP_400_BAD_REQUEST)
+                    return Response({
+                        "type": "error",
+                        "errors": serializer.errors
+                    }, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({
+            "type": "success",
+            "message": f"{len(result)} lessons created successfully",
+            "lessons": result
+        }, status=status.HTTP_201_CREATED)
+
+    # Оновлення існуючих уроків
+    @action(detail=True, methods=["PUT"], url_path='lessons')
+    def update_lessons(self, request, pk=None):
+        """Оновлення існуючих уроків (обов'язково передавати id)"""
+        course = self.get_object()
+        lessons_data = request.data
+
+        if not isinstance(lessons_data, list):
+            return Response({"type": "error", "message": "Expected a list of lessons"}, 
+                          status=status.HTTP_400_BAD_REQUEST)
+
+        result = []
+        with transaction.atomic():
+            for item in lessons_data:
+                lesson_id = item.get("id")
+                
+                if not lesson_id:
+                    return Response({
+                        "type": "error", 
+                        "message": "Field 'id' is required for update"
+                    }, status=status.HTTP_400_BAD_REQUEST)
+
+                # Оновлюємо тільки існуючий урок
+                lesson = get_object_or_404(Lesson, id=lesson_id, course=course)
+                serializer = LessonSerializer(lesson, data=item, partial=True)
+
+                if serializer.is_valid():
+                    serializer.save()
+                    result.append(serializer.data)
+                else:
+                    return Response({
+                        "type": "error", 
+                        "errors": serializer.errors
+                    }, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({
+            "type": "success",
+            "message": f"{len(result)} lessons updated successfully",
+            "lessons": result
+        }, status=status.HTTP_200_OK)
+
+#Видалення уроку з курсу.
+    @action (detail = True, methods = ["DELETE"], url_path = "lessons/(?P<lesson_id>\\d+)")
+    def delete_lesson (self, request, pk = None, lesson_id = None):
+        """Видаляє урок з курсу за його ID."""
+        course = self.get_object()
+        lesson = get_object_or_404 (Lesson, id = lesson_id, course = course)
+        lesson.delete()
 
         return Response ({
             "type": "success",
-            "message": f"{len (created_lessons)} lessons created/updated successfully",
-            "lessons": created_lessons
-        }, status = status.HTTP_201_CREATED)
+            "message": f"Lesson with id {lesson_id} deleted successfully"
+        }, status = status.HTTP_204_NO_CONTENT)
