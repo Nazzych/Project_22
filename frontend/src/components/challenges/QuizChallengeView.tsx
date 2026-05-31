@@ -189,6 +189,74 @@ export default function QuizChallengeView({ challenge }: ChallengeViewProps) {
 
         return (
             <div className="flex justify-center">
+                <div>
+                    <SvipeModal
+                        isOpen={showReview}
+                        onClose={() => (setShowReview(false))}
+                        title={
+                            <div className='flex items-center gap-2 line-clamp-1'>
+                                <Eye className='w-5 h-5' /> Review Your Answers
+                            </div>
+                        }
+                        size="lg"
+                        position="right"
+                    >
+                        <div className="space-y-8 max-h-[82.5vh] md:max-h-[70vh] overflow-y-auto pr-2">
+                            {questions.map((question, idx) => {
+                                const savedAnswerIndex = challenge.user_progress?.selected_answers?.[question.id];
+                                // Якщо користувач вже вибрав щось в цьому сеансі — беремо його
+                                const selectedIdx = selectedAnswers[idx] !== undefined 
+                                    ? selectedAnswers[idx] 
+                                    : savedAnswerIndex;
+                                const correctIdx = question.answers.findIndex(a => a.is_correct);
+                                const isCorrect = selectedIdx === correctIdx;
+                                const answered = selectedIdx !== undefined;
+
+                                return (
+                                    <div key={question.id} className="nz-background-accent border rounded-2xl p-6">
+                                        <div className="flex justify-between mb-4">
+                                            <h4 className="font-semibold">Question {idx + 1}</h4>
+                                            <span className={cn(
+                                                "px-3 py-1 rounded-full text-sm font-medium",
+                                                isCorrect ? "bg-emerald-500/20 text-emerald-400" :
+                                                answered ? "bg-red-500/20 text-red-400" : "bg-zinc-700 text-zinc-400"
+                                            )}>
+                                                {isCorrect ? "Correct" : answered ? "Wrong" : "Not answered"}
+                                            </span>
+                                        </div>
+
+                                        <p className="text-lg mb-6">{question.question_text}</p>
+
+                                        <div className="space-y-3">
+                                            {question.answers.map((answer, aIdx) => {
+                                                const isSelected = selectedIdx === aIdx;
+                                                const isRightAnswer = aIdx === correctIdx;
+
+                                                return (
+                                                    <div 
+                                                        key={aIdx}
+                                                        className={cn(
+                                                            "p-4 rounded-xl border flex items-start gap-3",
+                                                            isRightAnswer ? "border-emerald-500 bg-emerald-500/10" :
+                                                            isSelected ? "border-red-500 bg-red-500/10" : "nz-background-secondary"
+                                                        )}
+                                                    >
+                                                        <span className="font-mono w-6 nz-text-muted mt-0.5 shrink-0">
+                                                            {String.fromCharCode(65 + aIdx)}
+                                                        </span>
+                                                        <span className="flex-1">{answer.answer_text}</span>
+                                                        {isRightAnswer && <CheckCircle className="w-5 h-5 text-emerald-500 mt-0.5 shrink-0" />}
+                                                        {isSelected && !isRightAnswer && <XCircle className="w-5 h-5 text-red-500 mt-0.5 shrink-0" />}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </SvipeModal>
+                </div>
                 {/* Результат тесту */}
                 <Card className="overflow-hidden">
                     <CardContent className="py-8 text-center">
@@ -384,9 +452,11 @@ export default function QuizChallengeView({ challenge }: ChallengeViewProps) {
                                 <Clock className="w-4 h-4" />
                                 {currentQuestion.time_limit_minutes ? `${currentQuestion.time_limit_minutes} sec` : "Time unlimited"}
                             </div>
-                            <p className={cn("text-lg font-medium capitalize", challenge.user_progress?.status === "completed" ? "text-green-500" : challenge.user_progress?.status === "in_progress" ? "text-yellow-500" : "text-red-500")}>
-                                • {challenge.user_progress?.status}
-                            </p>
+                            {(challenge.user_progress?.status && challenge.user_progress?.status !== "not_started") && (
+                                <p className={cn("text-lg font-medium capitalize", challenge.user_progress?.status === "completed" ? "text-green-500" : challenge.user_progress?.status === "in_progress" ? "text-yellow-500" : "text-red-500")}>
+                                    • {challenge.user_progress?.status}
+                                </p>
+                            )}
                         </div>
                         <h2 className="text-2xl font-semibold leading-tight">
                             {currentQuestion?.question_text || "No question"}

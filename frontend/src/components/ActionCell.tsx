@@ -1,11 +1,36 @@
-import { useState, useEffect, useRef } from 'react';
-import { Edit, Trash2, Share2, Flag, MoreVertical } from 'lucide-react';
-import { ActionsCellPropsProj } from '../types/projects';
-import { ActionsCellPropsForum, ActionsCellPropsChannel, ActionsCellPropsComment } from '../types/forum';
+import React, { useState, useEffect, useRef, ReactNode } from 'react';
+import { MoreVertical } from 'lucide-react';
+import { Edit, Trash2 } from 'lucide-react';
+import { ActionsCellPropsForum } from '../types/forum';
 import { Button } from './ui/Button';
+import { cn } from '../lib/cn';
 
-// ====================== Project Actions ======================
-export function ActionsCellProj({ entry, startRename }: ActionsCellPropsProj) {
+export type ActionItem = {
+    label: string;
+    icon: ReactNode;
+    onClick: () => void;
+    variant?: 'default' | 'danger';
+};
+
+type ActionsCellProps = {
+    actions: ActionItem[];
+    triggerIcon?: ReactNode;
+    className?: string;
+    buttonClassName?: string;
+    menuClassName?: string;
+    position?: 'top-right' | 'bottom-right';
+    menuWidth?: string;                         //? наприклад "w-40"
+};
+
+export const ActionsCell = ({
+    actions,
+    triggerIcon = <MoreVertical className="w-4 h-4" />,
+    className = "",
+    buttonClassName = "",
+    menuClassName = "",
+    position = 'bottom-right',
+    menuWidth = "w-32"
+}: ActionsCellProps) => {
     const [open, setOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
 
@@ -16,182 +41,63 @@ export function ActionsCellProj({ entry, startRename }: ActionsCellPropsProj) {
             }
         };
 
-        if (open) {
-            document.addEventListener('mousedown', handleClickOutside);
-        }
-
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, [open]);
-
-    return (
-        <td className="relative">
-            <button
-                onClick={(e) => {
-                    e.stopPropagation();
-                    setOpen(!open);
-                }}
-                className="p-1 nz-background-primary rounded-full hover:nz-background-secondary"
-            >
-                <MoreVertical className="w-4 h-4" />
-            </button>
-
-            {open && (
-                <div ref={menuRef} className="absolute right-0 mt-2 w-32 rounded-md shadow-lg border nz-background-accent z-50">
-                    <button 
-                        onClick={(e) => { 
-                            e.stopPropagation(); 
-                            setOpen(false); 
-                            startRename(entry); 
-                        }} 
-                        className="flex w-full text-left px-3 py-2 hover:nz-background-primary rounded-t-md"
-                    >
-                        <Edit className='w-4 h-4 mr-2' /> Edit
-                    </button>
-
-                    <button 
-                        onClick={(e) => { 
-                            e.stopPropagation(); 
-                            setOpen(false); 
-                        }} 
-                        className="flex w-full text-left px-3 py-2 hover:nz-background-primary"
-                    >
-                        <Trash2 className='w-4 h-4 mr-2' /> Delete
-                    </button>
-
-                    <button 
-                        onClick={(e) => { 
-                            e.stopPropagation(); 
-                            setOpen(false); 
-                        }} 
-                        className="flex w-full text-left px-3 py-2 hover:nz-background-primary rounded-b-md"
-                    >
-                        <Share2 className='w-4 h-4 mr-2' /> Share
-                    </button>
-                </div>
-            )}
-        </td>
-    );
-}
-
-// ====================== Forum Actions ======================
-export function ActionsCellForum({ onEdit, onDelete }: ActionsCellPropsForum) {
-    const [open, setOpen] = useState(false);
-    const menuRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        const handleClickOutside = (e: MouseEvent) => {
-            if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-                setOpen(false);
-            }
-        };
-
-        if (open) {
-            document.addEventListener('mousedown', handleClickOutside);
-        }
-
+        if (open) document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [open]);
 
+    const menuPositionClass = position === 'top-right' 
+        ? "top-10 right-0" 
+        : "top-8 right-0";
+
     return (
-        <div ref={menuRef}>
+        <div className={`relative ${className}`} ref={menuRef}>
+            {/* Кнопка-тригер */}
             <button
                 onClick={(e) => {
                     e.stopPropagation();
                     setOpen(!open);
                 }}
-                className="nz-background-accent p-2 rounded-full hover:nz-bg-hover absolute -right-2 -top-1 md:right-1 md:top-1"
+                className={cn(
+                    "p-2 rounded-full nz-background-accent hover:nz-bg-hover transition-colors",
+                    buttonClassName
+                )}
             >
-                <MoreVertical className="w-4 h-4" />
+                {triggerIcon}
             </button>
 
+            {/* Меню */}
             {open && (
-                <div className="absolute right-0 top-5 md:top-10 w-32 rounded-md shadow-lg border nz-background-accent z-50">
-                    <button 
-                        onClick={(e) => { e.stopPropagation(); setOpen(false); onEdit(); }} 
-                        className="flex items-center w-full text-left px-3 py-2 hover:nz-background-primary rounded-t-md"
-                    >
-                        <Edit className='w-4 h-4 mr-2' /> Edit
-                    </button>
-
-                    <button 
-                        onClick={(e) => { e.stopPropagation(); setOpen(false); onDelete(); }} 
-                        className="flex items-center w-full text-left px-3 py-2 hover:nz-background-primary"
-                    >
-                        <Trash2 className='w-4 h-4 mr-2' /> Delete
-                    </button>
-
-                    <button 
-                        onClick={(e) => { e.stopPropagation(); setOpen(false); }} 
-                        className="flex items-center w-full text-left px-3 py-2 hover:nz-background-primary rounded-b-md"
-                    >
-                        <Share2 className='w-4 h-4 mr-2' /> Share
-                    </button>
+                <div 
+                    className={cn(
+                        `absolute ${menuPositionClass} ${menuWidth} rounded-md shadow-lg border nz-background-accent z-50`,
+                        menuClassName
+                    )}
+                >
+                    {actions.map((action, index) => (
+                        <button
+                            key={index}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setOpen(false);
+                                action.onClick();
+                            }}
+                            className={cn(
+                                "flex w-full items-center p-1.5 text-sm hover:nz-background-primary transition-colors",
+                                action.variant === 'danger' && "text-red-400 hover:text-red-300",
+                                index === 0 && "rounded-t-md",
+                                index === actions.length - 1 && "rounded-b-md"
+                            )}
+                        >
+                            <span className="mr-3">{action.icon}</span>
+                            {action.label}
+                        </button>
+                    ))}
                 </div>
             )}
         </div>
     );
-}
+};
 
-// ====================== Channel Actions ======================
-export function ActionsCellChannel({ onEdit, onDelete }: ActionsCellPropsChannel) {
-    const [open, setOpen] = useState(false);
-    const menuRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        const handleClickOutside = (e: MouseEvent) => {
-            if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-                setOpen(false);
-            }
-        };
-
-        if (open) {
-            document.addEventListener('mousedown', handleClickOutside);
-        }
-
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, [open]);
-
-    return (
-        <div className="relative" ref={menuRef}>
-            <button
-                onClick={(e) => {
-                    e.stopPropagation();
-                    setOpen(!open);
-                }}
-                className="nz-background-accent p-2 rounded-full hover:nz-bg-hover absolute right-0 top-0 md:right-1 md:top-1"
-            >
-                <MoreVertical className="w-4 h-4" />
-            </button>
-
-            {open && (
-                <div className="absolute right-0 top-10 w-32 rounded-md shadow-lg border nz-background-accent z-50">
-                    <button 
-                        onClick={(e) => { e.stopPropagation(); setOpen(false); onEdit(); }} 
-                        className="flex items-center w-full text-left px-3 py-1 hover:nz-background-primary rounded-t-md"
-                    >
-                        <Edit className='w-4 h-4 mr-2' /> Edit
-                    </button>
-
-                    <button 
-                        onClick={(e) => { e.stopPropagation(); setOpen(false); onDelete(); }} 
-                        className="flex items-center w-full text-left px-3 py-1 hover:nz-background-primary"
-                    >
-                        <Trash2 className='w-4 h-4 mr-2' /> Delete
-                    </button>
-
-                    <button 
-                        onClick={(e) => { e.stopPropagation(); setOpen(false); }} 
-                        className="flex items-center w-full text-left px-3 py-1 hover:nz-background-primary rounded-b-md"
-                    >
-                        <Share2 className='w-4 h-4 mr-2' /> Share
-                    </button>
-                </div>
-            )}
-        </div>
-    );
-}
 
 export function ActionsCellInChannel({ onEdit, onDelete }: ActionsCellPropsForum) {
     const [open, setOpen] = useState(false);
@@ -239,62 +145,6 @@ export function ActionsCellInChannel({ onEdit, onDelete }: ActionsCellPropsForum
                         className="flex items-center w-full text-left px-3 py-2 hover:nz-background-primary rounded-b-md"
                     >
                         <Trash2 className='w-4 h-4 mr-2' /> Delete
-                    </button>
-                </div>
-            )}
-        </div>
-    );
-}
-
-export function ActionsCellInComment({ onEdit, onDelete, onReport }: ActionsCellPropsComment) {
-    const [open, setOpen] = useState(false);
-    const menuRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        const handleClickOutside = (e: MouseEvent) => {
-            if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-                setOpen(false);
-            }
-        };
-
-        if (open) {
-            document.addEventListener('mousedown', handleClickOutside);
-        }
-
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, [open]);
-
-    return (
-        <div ref={menuRef}>
-            <button className="p-1 text-white nz-background-primary hover:nz-bg-hover rounded-full"
-                onClick={(e) => {
-                    e.stopPropagation();
-                    setOpen(!open);
-                }}
-            >
-                <MoreVertical className="w-4 h-4" />
-            </button>
-
-            {open && (
-                <div className="absolute right-1 top-7 w-32 rounded-md shadow-lg border nz-background-accent z-50">
-                    <button 
-                        onClick={(e) => { e.stopPropagation(); setOpen(false); onEdit(); }} 
-                        className="flex items-center w-full text-left px-3 py-2 hover:nz-background-primary rounded-t-md"
-                    >
-                        <Edit className='w-4 h-4 mr-2' /> Edit
-                    </button>
-
-                    <button 
-                        onClick={(e) => { e.stopPropagation(); setOpen(false); onDelete(); }} 
-                        className="flex items-center w-full text-left px-3 py-2 hover:nz-background-primary rounded-b-md"
-                    >
-                        <Trash2 className='w-4 h-4 mr-2' /> Delete
-                    </button>
-                    <button 
-                        onClick={(e) => { e.stopPropagation(); setOpen(false); onReport(); }} 
-                        className="flex items-center w-full text-left px-3 py-2 hover:nz-background-primary rounded-b-md"
-                    >
-                        <Flag className='w-4 h-4 mr-2' /> Report
                     </button>
                 </div>
             )}

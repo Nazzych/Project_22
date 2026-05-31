@@ -81,14 +81,20 @@ export default function AdminForum() {
                     <p className="text-zinc-400">Here you can manage users and their permissions.</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    {users.map((user: Profile) => (
-                        <AdminUserCard
-                            user={user}
-                            onEdit={(user) => {handleEditClick (user)}} 
-                        />
-                    ))}
-                </div>
+                <>
+                    <div className="flex justify-between items-center gap-2 mb-6">
+                        <h2 className="text-2xl font-semibold">Users Management</h2>
+                        <p className="text-zinc-400">Total: <span className="font-bold nz-text-secondary">{users.length}</span> {users.length === 1 ? 'user' : 'users'}</p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                        {users.map((user: Profile) => (
+                            <AdminUserCard
+                                user={user}
+                                onEdit={(user) => {handleEditClick (user)}} 
+                            />
+                        ))}
+                    </div>
+                </>
             )}
         </div>
     );

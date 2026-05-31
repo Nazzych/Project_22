@@ -19,7 +19,7 @@ interface AdminEditUserModalProps {
     onSuccess: () => void;
 }
 
-const sections = ['General', 'Links', 'Additional', 'Admin'] as const;
+const sections = ['General', 'Links', 'Additional', 'Management'] as const;
 type Section = typeof sections[number];
 
 export function AdminEditUserModal({ user, onSuccess }: AdminEditUserModalProps) {
@@ -162,7 +162,7 @@ export function AdminEditUserModal({ user, onSuccess }: AdminEditUserModalProps)
         General: <UserIcon className="w-5 h-5" />,
         Links: <Linkedin className="w-5 h-5" />,
         Additional: <FileText className="w-5 h-5" />,
-        Admin: <ShieldCheck className="w-5 h-5" />,
+        Management: <ShieldCheck className="w-5 h-5" />,
     };
 
     const renderSection = () => {
@@ -204,7 +204,7 @@ export function AdminEditUserModal({ user, onSuccess }: AdminEditUserModalProps)
                     </div>
                 );
 
-            case 'Admin':
+            case 'Management':
                 return (
                     <div className="space-y-5">
                         <div className="flex items-center gap-3">

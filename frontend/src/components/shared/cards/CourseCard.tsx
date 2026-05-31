@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { 
-    BookOpen, Tag, Trophy, Clock, MoreVertical, Edit2, Circle, CircleCheck
+    BookOpen, Tag, Trophy, Clock, MoreVertical, Edit2, Circle, CircleCheck,
+    Eye, EyeClosed
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardContent } from '../../ui/Card';
@@ -28,8 +29,8 @@ export const CourseCard = ({
     const { showToast } = useToast();
     const tagRef = useRef<HTMLSpanElement>(null);
 
-    const tags: string[] = course?.tegs 
-        ? course.tegs.split(',').map((t: string) => t.trim()).filter(Boolean) 
+    const tags: string[] = course?.tags 
+        ? course.tags.split(',').map((t: string) => t.trim()).filter(Boolean) 
         : [];
 
     const handleView = () => {
@@ -88,9 +89,9 @@ export const CourseCard = ({
     const difficultyLower = (course?.level || 'medium').toLowerCase();
 
     const difficultyColor = {
-        easy: 'nz-foreground bg-green-500/25',
-        medium: 'nz-foreground bg-yellow-500/25',
-        hard: 'nz-foreground bg-red-500/25',
+        beginner: 'nz-foreground bg-green-500/25',
+        intermediate: 'nz-foreground bg-yellow-500/25',
+        advanced: 'nz-foreground bg-red-500/25',
     } as const;
 
     const colorClass = difficultyColor[difficultyLower as keyof typeof difficultyColor] || 'text-gray-500 bg-gray-500/10';
@@ -104,9 +105,28 @@ export const CourseCard = ({
         >
             <div>
                 {/* Бейдж рівня */}
-                <div className="flex items-center justify-between gap-2 p-2">
-                    <Circle className='w-5 h-5' />
+                <div className="flex flex-wrap items-center justify-between gap-2 p-2">
                     {/* Кнопки для адміна */}
+                    <div className="flex items-center gap-4">
+                        {is_staff ? (
+                            course.lessons_count > 0 ? (
+                                <Tooltip text='✔️ Showing for users'>
+                                    <Eye className='w-5 h-5 text-emerald-500' />
+                                </Tooltip>
+                            ) : (
+                                <Tooltip text='❌ Not showing'>
+                                    <EyeClosed className='w-5 h-5 text-red-500' />
+                                </Tooltip>
+                            )
+                        ) : (
+                            course.lessons_count === course.completed_lessons_count ? (
+                                <CircleCheck className='w-5 h-5 text-emerald-500' />
+                            ) : (
+                                <Circle className='w-5 h-5 text-indigo-500' />
+                            )
+                        )}
+                        <span className="text-xs nz-text-muted font-mono">Lessons: {course.lessons_count}</span>
+                    </div>
                     <div className='flex items-center gap-2'>
                         {is_staff && (
                             <div className="transition-opacity">

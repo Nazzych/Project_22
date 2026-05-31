@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Select';
 import { Button } from '../components/ui/Button';
+import { Switch } from '../components/ui/Switch';
 import { ChallengeCard } from '../components/shared/cards/ChallengeCard';
 import { useToast } from '../hooks/useToast';
 import { Tasks } from '../types/tasks';
@@ -19,6 +20,7 @@ export function ChallengeList() {
     const [showCompleted, setShowCompleted] = useState(true);
     const [loading, setLoading] = useState(true);
     const [tasks, setTasks] = useState<Tasks[]>([]);
+    const [completedTasks, setCompletedTasks] = useState(0)
     const [filteredTasks, setFilteredTasks] = useState<Tasks[]>([]);
 
     // Завантаження завдань
@@ -35,9 +37,20 @@ export function ChallengeList() {
         }
     };
 
+    // Фільтрування курсів по виконаному статусі
+    const completed_tasks = () => {
+        return filteredTasks.filter(
+            task => task.user_progress?.status === "completed"
+        )
+    }
+
     useEffect(() => {
         loadTasks();
     }, []);
+
+    useEffect(() => {
+        setCompletedTasks(completed_tasks().length);
+    }, [filteredTasks])
 
     // Фільтрація (пошук + складність + мова)
     useEffect(() => {
@@ -57,13 +70,23 @@ export function ChallengeList() {
             result = result.filter(task => task.difficulty?.toLowerCase() === difficulty.toLowerCase());
         }
 
-        // // Фільтр по мові
-        // if (language) {
-        //     result = result.filter(task => task.language?.toLowerCase() === language.toLowerCase());
-        // }
+        // Фільтр по мові
+        if (language) {
+            result = result.filter(task => task.language?.toLowerCase() === language.toLowerCase());
+        }
 
         setFilteredTasks(result);
     }, [search, difficulty, language, tasks]);
+
+    // 
+    const switchTasks = (need: boolean) => {
+        if (need) {
+            setFilteredTasks (completed_tasks);
+        } else {
+            setFilteredTasks (tasks);
+        }
+        setShowCompleted(!showCompleted);
+    }
 
     // Очищення всіх фільтрів
     const clearFilters = () => {
@@ -93,16 +116,13 @@ export function ChallengeList() {
                             </h1>
 {/* TODO: {count} challenges completed */}
                             <p className="text-muted-foreground mt-1">
-                                {filteredTasks.length} challenges found
+                                <span className='font-semibold nz-text-accent'>{filteredTasks.length}</span> challenges - <span className='font-semibold nz-text-secondary'>{completedTasks}</span> completed
                             </p>
                         </div>
-                        <Button
-                            className="rounded-full"
-                            variant={showCompleted ? 'btn_secondary' : 'btn_accent'}
-                            onClick={() => setShowCompleted(!showCompleted)}
-                        >
-                            {showCompleted ? 'Hide' : 'Show'} Completed
-                        </Button>
+                        <div className='flex flex-wrap items-center gap-2'>
+                            <p>{showCompleted ? 'Hide' : 'Show'} Completed</p>
+                            <Switch checked={false} onChange={() => switchTasks(showCompleted)} size="md" />
+                        </div>
                     </div>
 
                     {/* Фільтри */}
@@ -135,10 +155,11 @@ export function ChallengeList() {
                             className="w-full md:w-[150px] nz-background-accent rounded-xl"
                             placeholder="Language"
                             options={[
-                                { value: 'JavaScript', label: 'JavaScript' },
-                                { value: 'Python', label: 'Python' },
-                                { value: 'TypeScript', label: 'TypeScript' },
-                                { value: 'Java', label: 'Java' },
+                                { value: 'js', label: 'JavaScript' },
+                                { value: 'py', label: 'Python' },
+                                { value: 'ts', label: 'TypeScript' },
+                                { value: 'cpp', label: 'C++' },
+                                { value: 'java', label: 'Java' },
                             ]}
                             value={language}
                             onChange={(value) => setLanguage(value)}

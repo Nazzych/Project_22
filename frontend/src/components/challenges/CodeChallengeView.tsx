@@ -7,7 +7,7 @@ import { Button } from '../../components/ui/Button';
 import { Card, CardContent, CardHeader } from '../../components/ui/Card';
 import { CodeEditor } from '../../components/CodeEditor';
 import { useToast } from '../../providers/MessageProvider';
-import { Tasks, ChallengeViewProps } from '../../types/tasks';
+import { Tasks, ChallengeViewProps, LANGUAGE_LABELS } from '../../types/tasks';
 import { formatRelativeTime } from '../../lib/formatDate';
 
 export default function CodeChallengeView ({ challenge }: ChallengeViewProps) {
@@ -58,7 +58,7 @@ export default function CodeChallengeView ({ challenge }: ChallengeViewProps) {
                         <div className="flex items-center gap-4 text-sm nz-text-muted">
                             <span className="flex items-center gap-1">
                                 <Code2 className='w-4 h-4' />
-                                {challenge.code_challenge.language?.toUpperCase() || "---"}
+                                {LANGUAGE_LABELS[challenge.language] || '—'}
                             </span>
                             <span className='text-xl'>•</span>
                             <span className="flex items-center gap-1">
@@ -99,17 +99,17 @@ export default function CodeChallengeView ({ challenge }: ChallengeViewProps) {
                                     <p className='flex items-center pl-4 gap-2 nz-text-muted'><XCircle className='w-4 h-4' />No tags</p>
                                 )}
                             </div>
-                            {challenge.code_challenge.e_input && (
+                            {(challenge.code_challenge?.e_input || challenge.code_challenge?.e_output) && (
                                 <div>
                                     <h3 className="text-lg font-semibold mb-3">Example:</h3>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="nz-background-accent p-4 rounded-xl">
                                             <p className="text-xs nz-text-muted mb-1">Input:</p>
-                                            <span className="text-sm text-white font-mono">{challenge.code_challenge.e_input}</span>
+                                            <span className="text-sm text-white font-mono">{challenge.code_challenge?.e_input || 'No input provided'}</span>
                                         </div>
                                         <div className="nz-background-accent p-4 rounded-xl">
                                             <p className="text-xs nz-text-muted mb-1">Output:</p>
-                                            <span className="text-sm text-emerald-400 font-mono">{challenge.code_challenge.e_output}</span>
+                                            <span className="text-sm text-emerald-400 font-mono">{challenge.code_challenge?.e_output || 'No output provided'}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -136,7 +136,7 @@ export default function CodeChallengeView ({ challenge }: ChallengeViewProps) {
 
                         <CardContent className="p-0">
                             <CodeEditor
-                                value={challenge.code_challenge.starter_code}
+                                value={challenge.code_challenge?.starter_code}
                                 onChange={setUserCode}
                             />
                         </CardContent>

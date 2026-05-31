@@ -15,17 +15,17 @@ import { createCourse, updateCourse } from '../../../../../api/admin';
 import { motion } from 'framer-motion';
 
 const levelOptions = [
-    { value: 'easy', label: 'Easy' },
-    { value: 'medium', label: 'Medium' },
-    { value: 'hard', label: 'Hard' },
+    { value: 'beginner', label: 'Beginner' },
+    { value: 'intermediate', label: 'Intermediate' },
+    { value: 'advanced', label: 'Advanced' },
 ];
 
 const categoryOptions = [
     { value: 'programming', label: 'Programming' },
-    { value: 'web-development', label: 'Web Development' },
-    { value: 'mobile-development', label: 'Mobile Development' },
-    { value: 'data-science', label: 'Data Science' },
-    { value: 'algorithms', label: 'Algorithms & Data Structures' },
+    { value: 'web', label: 'Web Development' },
+    { value: 'mobile', label: 'Mobile Development' },
+    { value: 'data', label: 'Data Science' },
+    { value: 'algo', label: 'Algorithms & Data Structures' },
     { value: 'devops', label: 'DevOps & Infrastructure' },
     { value: 'other', label: 'Other' },
 ];
@@ -38,10 +38,10 @@ export function CourseManage({ onSuccess, onDelete, course }: CourseManageProps)
     const [form, setForm] = useState({
         title: course?.title || "",
         description: course?.description || "",
-        category: course?.category || "",
-        level: course?.level || "easy",
+        category: course?.category || "other",
+        level: course?.level || "beginner",
         points: course?.points || 0,
-        tegs: course?.tegs || "",
+        tags: course?.tags || "",
         image: course?.image || "",
         created_at: course?.created_at || ""
     });
@@ -142,10 +142,10 @@ export function CourseManage({ onSuccess, onDelete, course }: CourseManageProps)
                     </div>
                 </div>
                 <div>
-                    <label className="block text-md font-medium mb-1.5">Tegs <span className='text-[12px]'>(comma separated)</span></label>
+                    <label className="block text-md font-medium mb-1.5">Tags <span className='text-[12px]'>(comma separated)</span></label>
                     <Input
-                        name="tegs"
-                        value={form.tegs}
+                        name="tags"
+                        value={form.tags}
                         onChange={handleChange}
                         placeholder="python, programming, backend, beginners"
                     />

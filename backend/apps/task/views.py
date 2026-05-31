@@ -109,6 +109,7 @@ def submit_quiz (request, challenge_id):
 
         if progress.completed_at is None and hasattr (user, "profile") and user.profile:
             user.profile.total_points = (getattr (user.profile, "total_points", 0) or 0) + (challenge.points or 0)
+            user.problems_solved = (getattr (user, "problems_solved", 0) or 0) + 1
             user.profile.save()
     else:
         progress.status = ChallengeProgress.FAILED

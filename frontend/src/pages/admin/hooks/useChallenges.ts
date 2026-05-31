@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useToast } from '../../../providers/MessageProvider';
-import { tasksList } from '../../../api/tasks';
+import { getTasks } from '../../../api/admin';
 import { Tasks } from '../../../types/tasks';
 
 export const useChallenges = () => {
@@ -15,8 +15,8 @@ export const useChallenges = () => {
     const loadTasks = async () => {
         setLoading(true);
         try {
-            const data = await tasksList();
-            setTasks(data);
+            const data = await getTasks();
+            setTasks(data.results);
         } catch (err) {
             showToast('error', 'Не вдалося завантажити завдання', String(err));
         } finally {
@@ -39,6 +39,12 @@ export const useChallenges = () => {
         if (difficulty) {
             result = result.filter(task => 
                 task.difficulty?.toLowerCase() === difficulty.toLowerCase()
+            );
+        }
+
+        if (language) {
+            result = result.filter(task =>
+                task.language?.toLowerCase() === language.toLowerCase()
             );
         }
 

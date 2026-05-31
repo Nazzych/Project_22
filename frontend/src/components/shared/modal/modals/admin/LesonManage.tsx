@@ -12,16 +12,17 @@ import { Lesson } from '../../../../../types/curses';
 
 interface LessonBulkCreateProps {
     courseId?: number;
+    lesson: null | Lesson;
     onSuccess: () => void;
 }
 
-export function LessonManage ({ courseId, onSuccess }: LessonBulkCreateProps) {
+export function LessonManage ({ courseId, lesson, onSuccess }: LessonBulkCreateProps) {
     const { showToast } = useToast();
     const { closeModal } = useModal();
     const [loading, setLoading] = useState(false);
 
     const [lessons, setLessons] = useState<Lesson[]>([
-        { id: '1', title: '', content: '', order: 1 , url: ''}
+        { id: lesson?.id || '1', title: lesson?.title || '', content: lesson?.content || '', url: lesson?.url || '', order: lesson?.order || 1}
     ]);
 
     const addLesson = () => {
@@ -81,16 +82,20 @@ export function LessonManage ({ courseId, onSuccess }: LessonBulkCreateProps) {
     return (
         <form onSubmit={handleSubmit} className="space-y-8 max-h-[75vh] overflow-y-auto pr-2">
             <div className="flex nz-background-primary items-center justify-between sticky top-0 pb-4 border-b z-10">
-                <h2 className="text-2xl font-semibold">Add lessons to course</h2>
-                <Button type="button" variant="btn_secondary" onClick={addLesson} className="flex items-center gap-2 rounded-full">
-                    <Plus className="w-4 h-4" />
-                    Add lesson
-                </Button>
+                <h2 className="text-2xl font-semibold">
+                    {lesson ? 'Edit lesson' : 'Create lessons'} for course
+                </h2>
+                {!lesson && (
+                    <Button type="button" variant="btn_secondary" onClick={addLesson} className="flex items-center gap-2 rounded-full">
+                        <Plus className="w-4 h-4" />
+                        Add lesson
+                    </Button>
+                )}
             </div>
 
             <div className="space-y-8">
                 {lessons.map((lesson, index) => (
-                    <div key={lesson.id} className="border rounded-2xl p-6 nz-background-secondary">
+                    <div key={lesson.id} className="border rounded-2xl p-6 nz-background-accent">
                         <div className="flex justify-between items-center mb-4">
                             <h3 className="font-medium text-lg">Lesson {index + 1}</h3>
                             {lessons.length > 1 && (
@@ -157,6 +162,18 @@ export function LessonManage ({ courseId, onSuccess }: LessonBulkCreateProps) {
             </div>
 
             <div className="sticky nz-background-primary bottom-0 pt-6 border-t flex gap-3">
+                {lesson && (
+                    <Button 
+                        type="button" 
+                        variant="btn_destructive" 
+                        onClick={() => {}}
+                        disabled={loading}
+                        className="flex-1"
+                    >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Delete Lesson
+                    </Button>
+                )}
                 <Button 
                     type="button" 
                     variant="btn_secondary" 
@@ -168,14 +185,18 @@ export function LessonManage ({ courseId, onSuccess }: LessonBulkCreateProps) {
                 </Button>
                 <Button 
                     type="submit" 
-                    variant="btn_success" 
+                    variant={lesson ? "btn_warning" : "btn_success"} 
                     disabled={loading}
                     className="flex-1"
                 >
                     {loading ? (
                         <LoadingSpinner text="Creating..." />
                     ) : (
-                        <>Create {lessons.length} lesson's <ArrowRight className="ml-2 w-4 h-4" /></>
+                        lesson ? (
+                            <>Update lesson <ArrowRight className="ml-2 w-4 h-4" /></>
+                        ) : (
+                            <>Create {lessons.length} lesson's <ArrowRight className="ml-2 w-4 h-4" /></>
+                        )
                     )}
                 </Button>
             </div>

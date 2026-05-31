@@ -2,15 +2,18 @@ import { Profile } from "../types/profile"
 
 export interface Course {
     id: string;
+    author: Profile;
     title: string;
     description: string;
-    tegs: string;
+    tags: string;
     level: string;
     category: string;
     points: number;
     image: string;
     created_at: string;
-    author: Profile;
+    lessons: Lesson;
+    lessons_count: number;
+    completed_lessons_count: number;
 }
 
 export interface CourseManageProps {

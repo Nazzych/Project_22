@@ -108,7 +108,7 @@ class CourseViewSet (viewsets.ModelViewSet):
 
         if not isinstance(lessons_data, list):
             return Response({"type": "error", "message": "Expected a list of lessons"}, 
-                          status=status.HTTP_400_BAD_REQUEST)
+                        status=status.HTTP_400_BAD_REQUEST)
 
         result = []
         with transaction.atomic():

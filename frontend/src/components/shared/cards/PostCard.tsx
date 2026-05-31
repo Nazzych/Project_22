@@ -1,8 +1,8 @@
 import React, { useState, useRef } from 'react';
-import { MessageSquare, Heart, Repeat, Pen, ChevronDown, ChevronUp, BadgeCheck, MoreVertical } from 'lucide-react';
+import { MessageSquare, Heart, Repeat, Pen, ChevronDown, ChevronUp, BadgeCheck, MoreVertical, Edit, Trash2, Share2, Flag } from 'lucide-react';
 import { formatDateNumeric, formatRelativeTime } from '../../../lib/formatDate';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ActionsCellForum, ActionsCellInComment } from '../../ActionCell';
+import { ActionsCell } from '../../ActionCell';
 import { PostCardProps, Comment } from '../../../types/forum';
 import { getPostComments, createComment, updateComment, deleteComment } from '../../../api/forum';
 import { getCsrfToken } from '../../../api/auth'
@@ -105,26 +105,36 @@ export function PostCard({
         <div className="mb-8">
             {/* Пост */}
             <div className="nz-background-secondary rounded-2xl max-h-[500px] p-4 space-y-4 border overflow-y-auto transition-all duration-300 cursor-default">
-                <div className='relative flex items-center mb-2'>
-                    <div className="w-12 h-12 nz-background-accent rounded-full flex items-center justify-center text-white font-bold border-2">
-                        {logo ? <img className='w-full h-full object-cover rounded-full' src={logo} alt={post.author.username} /> : <span>{post.author.first_name[0]}</span>}
-                    </div>
-                    <div className="ml-3">
-                        <p className="text-white">{name} | <span className='text-[12px] nz-text-muted hover:underline cursor-pointer'>@{post.author.username}</span></p>
-                        <p className="nz-text-muted text-sm">{formatDateNumeric(post.created_at)} | {formatRelativeTime(post.created_at, true)}</p>
-                    </div>
-                    {post.author.is_staff && (
-                        <div className="absolute -top-1 right-7 md:top-1 md:right-10">
-                            <Tooltip text="Verified Post">
-                                <span className="p-2 flex items-center justify-center nz-background-accent rounded-full" onClick={(e) => e.stopPropagation()}>
-                                    <BadgeCheck className="w-4 h-4" />
-                                </span>
-                            </Tooltip>
+                <div className='flex justify-between items-center mb-2'>
+                    <div className='flex flex-wrap items-center gap-4'>
+                        <div className="w-12 h-12 nz-background-accent rounded-full flex items-center justify-center text-white font-bold border-2">
+                            {logo ? <img className='w-full h-full object-cover rounded-full' src={logo} alt={post.author.username} /> : <span>{post.author.first_name[0]}</span>}
                         </div>
-                    )}
-                    {(profile?.id === post.author.id || profile?.is_staff) && (
-                        <ActionsCellForum onEdit={() => OpenEditPost(post)} onDelete={() => { clickDeletePost(post.id) }} onShare={() => { }} />
-                    )}
+                        <div>
+                            <p className="text-white">{name} | <span className='text-[12px] nz-text-muted hover:underline cursor-pointer'>@{post.author.username}</span></p>
+                            <p className="nz-text-muted text-sm">{formatDateNumeric(post.created_at)} | {formatRelativeTime(post.created_at, true)}</p>
+                        </div>
+                    </div>
+                    <div className='flex flex-wrap items-center gap-1'>
+                        {post.author.is_staff && (
+                            <div>
+                                <Tooltip text="Verified Post">
+                                    <span className="p-2 flex items-center justify-center nz-background-accent rounded-full" onClick={(e) => e.stopPropagation()}>
+                                        <BadgeCheck className="w-4 h-4" />
+                                    </span>
+                                </Tooltip>
+                            </div>
+                        )}
+                        {(profile?.id === post.author.id || profile?.is_staff) && (
+                            <ActionsCell
+                                actions={[
+                                    { label: "Edit", icon: <Edit className="w-4 h-4" />, onClick: () => OpenEditPost(post) },
+                                    { label: "Delete", icon: <Trash2 className="w-4 h-4" />, onClick: () => clickDeletePost(post.id), variant: 'danger' },
+                                    { label: "Share", icon: <Share2 className="w-4 h-4" />, onClick: () => {} },
+                                ]}
+                            />
+                        )}
+                    </div>
                 </div>
                 <div className='space-y-3'>
                     {/* <p className="w-fit text-xl nz-text-primary nz-background-accent font-bold mb-2 p-1 rounded-md">{post.title}</p> */}
@@ -163,7 +173,7 @@ export function PostCard({
                 </div>
                 <div className="flex justify-between gap-2 nz-text-muted text-sm">
                     <div className='flex gap-6'>
-                        <button onClick={() => {setShowComments(!showComments); handleToggleComments(post.id)}} className="flex items-center hover:text-blue-400 gap-2"><MessageSquare className='w-5 h-5' />{comments.length}</button>
+                        <button onClick={() => {setShowComments(!showComments); handleToggleComments(post.id)}} className="flex items-center hover:text-blue-400 gap-2"><MessageSquare className='w-5 h-5' />{post.comments_count}</button>
                         <button className="flex items-center hover:text-red-400 gap-2"><Heart className='w-5 h-5' />{post.likes_count}</button>
                         <button className="flex items-center hover:text-green-400 gap-2"><Repeat className='w-5 h-5' />{post.dislikes_count}</button>
                     </div>
@@ -217,7 +227,13 @@ export function PostCard({
                                                 </div>
                                             </div>
                                             <div className="absolute right-2">
-                                                <ActionsCellInComment onEdit={() => handleEditComment(comment.id, String(commentRef.current?.value || ''))} onDelete={() => clickConfirmDeleteComment(comment.id)} onReport={() => {showToast('info', 'Reported', 'Comment reported successfully.');}} />
+                                                <ActionsCell
+                                                    actions={[
+                                                        { label: "Edit", icon: <Edit className="w-4 h-4" />, onClick: () => handleEditComment(comment.id, commentRef.current?.value || comment.content) },
+                                                        { label: "Delete", icon: <Trash2 className="w-4 h-4" />, onClick: () => clickConfirmDeleteComment(comment.id), variant: 'danger' },
+                                                        { label: "Report", icon: <Flag className="w-4 h-4" />, onClick: () => showToast('info', 'Reported', 'Comment reported successfully.') },
+                                                    ]}
+                                                />
                                             </div>
                                         </div>
                                     </div>

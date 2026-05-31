@@ -45,10 +45,15 @@ export default function AdminChallenges() {
                     clearFilters={courses.clearFilters}
                     filtersActive={courses.filtersActive}
                 />
-                <Button onClick={OpenAddCourse}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Course
-                </Button>
+                <div className="flex flex-col items-start lg:items-end gap-2">
+                    <Button size="sm" onClick={OpenAddCourse} className="w-full">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Course
+                    </Button>
+                    <p className="text-sm nz-text-muted">
+                        Total: <span className="font-bold nz-text-secondary">{courses.filteredCourses.length}</span> {courses.filteredCourses.length === 1 ? 'course' : 'courses'}
+                    </p>
+                </div>
             </div>
 
             <CourseGrid 

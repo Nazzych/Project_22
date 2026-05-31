@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { Users, BadgeCheck} from 'lucide-react';
+import { Users, BadgeCheck, Share2, Edit, Trash2} from 'lucide-react';
 import { useProfile } from '../../../contexts/ProfileContext'
 import { Channels } from '../../../types/forum';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ActionsCellChannel } from '../../ActionCell';
+import { ActionsCell } from '../../ActionCell';
 import { Tooltip } from '../../Tooltip';
 import { cn } from '../../../lib/cn';
 
@@ -41,44 +41,52 @@ export function ChannelsSection({
                             className="flex-shrink-0 w-[200px] lg:w-[280px] snap-start cursor-pointer"
                             onClick={() => window.location.href = `/forum/channel/${channel.id}/${channel.name.replace(/\s+/g, '-').toLowerCase()}`}
                         >
-                            <div className="relative nz-background-secondary border border-border rounded-3xl p-4 hover:nz-background-primary transition-all duration-200 h-full flex flex-col">
-                                {/* Аватар */}
-                                <div className="w-16 lg:w-28 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center text-2xl font-bold text-white overflow-hidden mb-3">
-                                    {channel.logo ? (
-                                        <img
-                                            src={channel.logo}
-                                            alt={channel.name}
-                                            className="w-full h-full object-cover"
-                                        />
-                                    ) : (
-                                        channel.name.slice(0, 2).toUpperCase()
-                                    )}
-                                </div>
-                                {channel.owner.is_staff && (
-                                    <div className="absolute top-2 md:top-3 right-12">
-                                        <Tooltip text="Verified Channel">
-                                            <span className="p-2 flex items-center justify-center nz-background-accent rounded-full" onClick={(e) => e.stopPropagation()}>
-                                                <BadgeCheck className="w-4 h-4" />
-                                            </span>
-                                        </Tooltip>
+                            <div className="nz-background-secondary border border-border rounded-3xl p-4 hover:nz-background-primary transition-all duration-200 h-full flex flex-col">
+                                <div className="flex flex-wrap justify-between items-start gap-1">
+                                    {/* Аватар */}
+                                    <div className="w-16 lg:w-28 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center text-2xl font-bold text-white overflow-hidden mb-3">
+                                        {channel.logo ? (
+                                            <img
+                                                src={channel.logo}
+                                                alt={channel.name}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        ) : (
+                                            channel.name.slice(0, 2).toUpperCase()
+                                        )}
                                     </div>
-                                )}
-
-                                {/* Назва */}
-                                <h3 className="font-medium nz-foreground line-clamp-2 text-[15px] leading-tight mb-3 group-hover:text-primary transition-colors">
-                                    {channel.name}
-                                </h3>
-
-                                {/* Підписники */}
-                                <div className="mt-auto flex items-center gap-1.5 text-xs nz-text-muted">
-                                    <Users className="w-3.5 h-3.5" />
-                                    <span>{channel.subscribers.toLocaleString() || 0} subscribers</span>
+                                    <div className="flex items-center gap-1">
+                                        {channel.owner.is_staff && (
+                                            <div>
+                                                <Tooltip text="Verified Channel">
+                                                    <span className="p-2 flex items-center justify-center nz-background-accent rounded-full" onClick={(e) => e.stopPropagation()}>
+                                                        <BadgeCheck className="w-4 h-4" />
+                                                    </span>
+                                                </Tooltip>
+                                            </div>
+                                        )}
+                                        {profile?.id === channel.owner?.id && (
+                                            <ActionsCell
+                                                actions={[
+                                                    { label: "Edit", icon: <Edit className="w-4 h-4" />, onClick: () => OpenEditChannel(channel) },
+                                                    { label: "Delete", icon: <Trash2 className="w-4 h-4" />, onClick: () => handleDeleteChannel(channel.id), variant: 'danger' },
+                                                    { label: "Share", icon: <Share2 className="w-4 h-4" />, onClick: () => {} },
+                                                ]}
+                                            />
+                                        )}
+                                    </div>
                                 </div>
-                                
-                                <div className="absolute top-2 right-2">
-                                    {profile?.id === channel.owner?.id && (
-                                        <ActionsCellChannel onEdit={() => {OpenEditChannel(channel)}} onDelete={() => {handleDeleteChannel(channel.id)}} onShare={() => {}} />
-                                    )}
+                                <div>
+                                    {/* Назва */}
+                                    <h3 className="font-medium nz-foreground line-clamp-2 text-[15px] leading-tight mb-3 group-hover:text-primary transition-colors">
+                                        {channel.name}
+                                    </h3>
+
+                                    {/* Підписники */}
+                                    <div className="mt-auto flex items-center gap-1.5 text-xs nz-text-muted">
+                                        <Users className="w-3.5 h-3.5" />
+                                        <span>{channel.subscribers.toLocaleString() || 0} subscribers</span>
+                                    </div>
                                 </div>
                             </div>
                         </motion.div>

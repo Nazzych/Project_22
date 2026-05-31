@@ -19,7 +19,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         const getNumberValue = useCallback(() => {
             if (type !== "number") return 0;
             return typeof value === 'number' ? value : 
-                   typeof value === 'string' ? Number(value) : 0;
+                typeof value === 'string' ? Number(value) : 0;
         }, [type, value]);
 
         const [localNumberValue, setLocalNumberValue] = useState<number>(getNumberValue());

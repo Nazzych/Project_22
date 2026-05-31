@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { XCircle, BadgeCheck, Users } from 'lucide-react';
+import { XCircle, BadgeCheck, Users, Trash2, Edit, Share2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { Channels } from '../../../../types/forum';
@@ -10,7 +10,7 @@ import { useModal } from '../../../../hooks/useModal';
 import { ChannelManage } from '../../../../components/shared/modal/modals/forum/ChannelManager';
 import { getCsrfToken } from '../../../../api/auth';
 import { ConfirmModal } from '../../../../components/shared/modal/ConfirmModal';
-import { ActionsCellChannel } from '../../../../components/ActionCell';
+import { ActionsCell } from '../../../../components/ActionCell';
 import { Tooltip } from '../../../../components/Tooltip';
 
 export default function AdminChannelsList() {
@@ -99,61 +99,74 @@ export default function AdminChannelsList() {
                     ))}
                 </div>
             ) : channels.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    <AnimatePresence>
-                        {channels.map((channel, index) => (
-                            <motion.div
-                                key={channel.id}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.3, delay: index * 0.03 }}
-                                className="relative nz-background-secondary border border-border rounded-3xl p-5 hover:nz-background-primary transition-all flex flex-col cursor-pointer"
-                                onClick={() => window.location.href = `/forum/channel/${channel.id}/${channel.name.replace(/\s+/g, '-').toLowerCase()}`}
-                            >
-                                {/* Аватар */}
-                                <div className="w-16 lg:w-28 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center text-2xl font-bold text-white overflow-hidden mb-3">
-                                    {channel.logo ? (
-                                        <img
-                                            src={channel.logo}
-                                            alt={channel.name}
-                                            className="w-full h-full object-cover"
-                                        />
-                                    ) : (
-                                        channel.name.slice(0, 2).toUpperCase()
-                                    )}
-                                </div>
-
-                                {/* Verified badge */}
-                                {channel.owner.is_staff && (
-                                    <div className="absolute top-2 md:top-3 right-12">
-                                        <Tooltip text="Verified Channel">
-                                            <span className="p-2 flex items-center justify-center nz-background-accent rounded-full" onClick={(e) => e.stopPropagation()}>
-                                                <BadgeCheck className="w-4 h-4" />
-                                            </span>
-                                        </Tooltip>
+                <>
+                    <div className="flex items-center justify-between">
+                        <h2 className="text-2xl font-semibold mb-4">Channels Management</h2>
+                        <p className="nz-text-muted">Channels count: <span className="font-bold nz-text-secondary">{channels.length}</span></p>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                        <AnimatePresence>
+                            {channels.map((channel, index) => (
+                                <motion.div
+                                    key={channel.id}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.3, delay: index * 0.03 }}
+                                    className="nz-background-secondary border border-border rounded-3xl p-5 hover:nz-background-primary transition-all flex flex-col cursor-pointer"
+                                    onClick={() => window.location.href = `/forum/channel/${channel.id}/${channel.name.replace(/\s+/g, '-').toLowerCase()}`}
+                                >
+                                    <div className='flex flex-wrap justify-between items-start gap-1'>
+                                        {/* Аватар */}
+                                        <div className="w-16 lg:w-28 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center text-2xl font-bold text-white overflow-hidden mb-3">
+                                            {channel.logo ? (
+                                                <img
+                                                    src={channel.logo}
+                                                    alt={channel.name}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            ) : (
+                                                channel.name.slice(0, 2).toUpperCase()
+                                            )}
+                                        </div>
+                                        <div className='flex items-center gap-1'>
+                                            {/* Verified badge */}
+                                            {channel.owner.is_staff && (
+                                                <div>
+                                                    <Tooltip text="Verified Channel">
+                                                        <span className="p-2 flex items-center justify-center nz-background-accent rounded-full" onClick={(e) => e.stopPropagation()}>
+                                                            <BadgeCheck className="w-4 h-4" />
+                                                        </span>
+                                                    </Tooltip>
+                                                </div>
+                                            )}
+                                            {(profile?.id === channel.owner?.id || profile?.is_staff) && (
+                                                <ActionsCell
+                                                    actions={[
+                                                        { label: "Edit", icon: <Edit className="w-4 h-4" />, onClick: () => OpenEditChannel(channel) },
+                                                        { label: "Delete", icon: <Trash2 className="w-4 h-4" />, onClick: () => handleDeleteChannel(channel.id), variant: 'danger' },
+                                                        { label: "Share", icon: <Share2 className="w-4 h-4" />, onClick: () => {} },
+                                                    ]}
+                                                />
+                                            )}
+                                        </div>
                                     </div>
-                                )}
+                                    <div>
+                                        {/* Назва */}
+                                        <h3 className="font-medium nz-foreground line-clamp-2 text-[15px] leading-tight mb-3 group-hover:text-primary transition-colors">
+                                            {channel.name}
+                                        </h3>
 
-                                {/* Назва */}
-                                <h3 className="font-medium nz-foreground line-clamp-2 text-[15px] leading-tight mb-3 group-hover:text-primary transition-colors">
-                                    {channel.name}
-                                </h3>
-
-                                {/* Підписники */}
-                                <div className="mt-auto flex items-center gap-1.5 text-xs nz-text-muted">
-                                    <Users className="w-3.5 h-3.5" />
-                                    <span>{channel.subscribers.toLocaleString() || 0} subscribers</span>
-                                </div>
-                                
-                                <div className="absolute top-2 right-2">
-                                    {(profile?.id === channel.owner?.id || profile?.is_staff) && (
-                                        <ActionsCellChannel onEdit={() => {OpenEditChannel(channel)}} onDelete={() => {clickDeleteChannel(channel.id)}} onShare={() => {}} />
-                                    )}
-                                </div>
-                            </motion.div>
-                        ))}
-                    </AnimatePresence>
-                </div>
+                                        {/* Підписники */}
+                                        <div className="mt-auto flex items-center gap-1.5 text-xs nz-text-muted">
+                                            <Users className="w-3.5 h-3.5" />
+                                            <span>{channel.subscribers.toLocaleString() || 0} subscribers</span>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </AnimatePresence>
+                    </div>
+                </>
             ) : (
                 <div className="flex flex-col items-center justify-center py-16 text-center">
                     <XCircle className="w-12 h-12 mb-4 text-muted-foreground" />

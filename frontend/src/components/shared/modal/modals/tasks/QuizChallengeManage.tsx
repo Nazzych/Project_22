@@ -85,8 +85,8 @@ export function QuizChallengeManage({ questions, setQuestions }: QuizChallengeMa
     }, []); // ✅ Порожній dependency
 
     return (
-        <div className="space-y-6 max-h-[70vh] overflow-y-auto">
-            <div className="flex justify-between items-center -mt-2">
+        <div className="space-y-6 overflow-y-hidden">
+            <div className="flex justify-between items-center">
                 <h3 className="font-semibold text-lg flex items-center gap-2">
                     <FileText className="w-5 h-5 text-orange-500" />
                     Questions ({questions.length})
@@ -112,7 +112,7 @@ export function QuizChallengeManage({ questions, setQuestions }: QuizChallengeMa
                         animate={{ opacity: 1, height: "auto" }}
                         exit={{ opacity: 0, height: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="overflow-hidden border border-zinc-700/50 rounded-2xl p-5 bg-card/50 backdrop-blur-sm shadow-sm"
+                        className="overflow-hidden border rounded-2xl p-5 bg-card/50 backdrop-blur-sm shadow-sm"
                     >
                         <div className="flex justify-between items-center mb-4 pb-3 border-b border-border">
                             <span className="text-muted-foreground font-medium text-sm">

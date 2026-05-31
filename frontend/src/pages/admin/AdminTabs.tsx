@@ -29,13 +29,13 @@ export default function AdminTabs({ tabs, activeTab, onTabChange }: AdminTabsPro
                             onClick={() => onTabChange(tab.id)}
                             className={`group relative pb-4 flex items-center gap-2.5 text-sm font-medium transition-all ${
                                 isActive 
-                                    ? 'text-white' 
+                                    ? 'nz-text-secondary' 
                                     : 'text-zinc-400 hover:text-zinc-200'
                             }`}
                         >
                             {Icon && (
                                 <Icon className={`h-4 w-4 transition-colors ${
-                                    isActive ? 'text-white' : 'text-zinc-400 group-hover:text-zinc-200'
+                                    isActive ? 'nz-text-secondary' : 'text-zinc-400 group-hover:text-zinc-200'
                                 }`} />
                             )}
                             {tab.label}

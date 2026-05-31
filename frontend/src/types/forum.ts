@@ -28,6 +28,7 @@ export type Posts = {
     content: string;
     views_count: number;
     likes_count: number;
+    comments_count: number;
     dislikes_count: number;
     slug: string;
     is_pinned: boolean;
@@ -65,6 +66,7 @@ export type EditablePost = {
 export type Channels = {
     id: number;
     owner: any;
+    owner_username: string;
     moderators: any;
     subscribers: any;
     name: string;    

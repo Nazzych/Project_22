@@ -191,25 +191,6 @@ export function Profile() {
                                 </span>
                             </div>
                         </div>
-                            {/* <label htmlFor="AcceptConditions1" className="relative block h-4 w-8 rounded-full bg-gray-300 transition-colors [-webkit-tap-highlight-color:transparent] has-checked:bg-blue-500 dark:bg-gray-600 dark:has-checked:bg-blue-600">
-                                <input type="checkbox" id="AcceptConditions1" className="peer sr-only" />
-
-                                <span className="absolute inset-y-0 start-0 size-3 rounded-full bg-gray-300 ring-[4px] ring-white transition-all ring-inset peer-checked:start-5 peer-checked:w-2 peer-checked:bg-white peer-checked:ring-transparent dark:bg-gray-600 dark:ring-gray-900 dark:peer-checked:bg-gray-900">
-                                </span>
-                            </label>
-                            <label htmlFor="AcceptConditions2" className="relative block h-8 w-14 rounded-full bg-gray-300 transition-colors [-webkit-tap-highlight-color:transparent] has-checked:bg-green-500 dark:bg-gray-600 dark:has-checked:bg-green-600">
-                                <input type="checkbox" id="AcceptConditions2" className="peer sr-only" />
-
-                                <span className="absolute inset-y-0 start-0 m-1 grid size-6 place-content-center rounded-full bg-white text-gray-700 transition-[inset-inline-start] peer-checked:start-6 peer-checked:*:first:hidden *:last:hidden peer-checked:*:last:block dark:bg-gray-900 dark:text-gray-200">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="size-4">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"></path>
-                                    </svg>
-
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="size-4">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"></path>
-                                    </svg>
-                                </span>
-                            </label> */}
                         <div className="flex gap-3 w-full md:w-auto md:mb-4">
                             {profile?.profile.youtube && (
                                 <Link to={profile?.profile.youtube} target="_blank">

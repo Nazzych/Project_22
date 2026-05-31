@@ -1,7 +1,7 @@
 // pages/CourseDetailPage.tsx
 import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ChevronLeft, Plus, XCircle, Trophy, PlayCircle, Lock, CheckCircle, ChevronUp, ChevronDown, Share2, Play, MessageCirclePlusIcon, PlusCircle, Unlock } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, Plus, XCircle, Trophy, PlayCircle, Lock, CheckCircle, ChevronUp, ChevronDown, Share2, Play, MessageCirclePlusIcon, PlusCircle, Unlock, Edit, Trash2 } from 'lucide-react';
 import { useProfile } from '../contexts/ProfileContext'
 import { useToast } from '../providers/MessageProvider';
 import { useModal } from '../hooks/useModal';
@@ -17,9 +17,9 @@ import { CourseManage } from '../components/shared/modal/modals/admin/CourseMana
 import { ConfirmModal } from '../components/shared/modal/ConfirmModal';
 import { LessonViewerModal } from '../components/shared/modal/modals/curses/LessonModal';
 import { ProgressBar } from '../components/ui/ProgressBar';
-import { ActionsCellInChannel } from '../components/ActionCell';
+import { ActionsCell, ActionsCellInChannel } from '../components/ActionCell';
 import { getCsrfToken } from '../api/auth';
-import { deleteCourse } from '../api/admin';
+import { deleteCourse, deleteLesson } from '../api/admin';
 import { getCourse } from '../api/curses';
 import { Course, Lesson } from '../types/curses';
 
@@ -123,28 +123,69 @@ export function CoursePage() {
                 ),
             });
         }
-        
-        const OpenAddLesson = () => {
-            openModal({
-                id: 'course-add-lessons',
-                width: "xl",
-                x: false,
-                title: (
-                    <span className="flex items-center gap-2">
-                    <div className="w-fit nz-background-accent rounded-lg py-1 px-4 flex flex-row justify-center items-center gap-2">
-                        <PlusCircle className="w-5 h-5" />
-                        <span className="nz-foreground">Add lesson for curse</span>
-                    </div>
-                </span>
-            ),
-            content: (
-                <LessonManage
+
+    const OpenAddLesson = () => {
+        openModal({
+            id: 'course-add-lessons',
+            width: "xl",
+            x: false,
+            title: (
+                <span className="flex items-center gap-2">
+                <div className="w-fit nz-background-accent rounded-lg py-1 px-4 flex flex-row justify-center items-center gap-2">
+                    <PlusCircle className="w-5 h-5" />
+                    <span className="nz-foreground">Add lesson for curse</span>
+                </div>
+            </span>
+        ),
+        content: (
+            <LessonManage
                 courseId={Number(course?.id)}
-                    onSuccess={() => {loadCourseData(); closeModal()}}
-                    />
-            ),
-        });
-    };
+                lesson={null}
+                onSuccess={() => {loadCourseData(); closeModal()}}
+            />
+        ),
+    });}
+
+    const OpenEditLesson = (lesson: Lesson) => {
+        openModal({
+            id: 'course-edit-lesson',
+            width: "xl",
+            x: false,
+            title: (
+                <span className="flex items-center gap-2">
+                <div className="w-fit nz-background-accent rounded-lg py-1 px-4 flex flex-row justify-center items-center gap-2">
+                    <Edit className="w-5 h-5" />
+                    <span className="nz-foreground">Edit lesson</span>
+                </div>
+            </span>
+        ),
+        content: (
+            <LessonManage
+                courseId={Number(course?.id)}
+                lesson={lesson}
+                onSuccess={loadCourseData}
+            />
+        ),
+    })};
+
+    const handleDeleteLesson = async (lesson_id: string) => {
+        try {
+            if (courseId && lesson_id) {
+                await getCsrfToken();
+                await deleteLesson(Number(courseId), Number(lesson_id));
+                showToast('success', 'Lesson deleted', 'Your lesson has been successfully deleted.');
+                setLessons(lessons.filter((lesson: Lesson) => lesson.id !== lesson_id));
+            }
+        } catch (err) {
+            console.error('Error deleting lesson:', err);
+            if (axios.isAxiosError(err) && err.response?.data) {
+                const { type, message } = err.response.data;
+                showToast(type || 'error', 'Deleting failed', message || 'Unknown error');
+            } else {
+                showToast('error', 'Deleting failed', 'Something went wrong while deleting your lesson.');
+            }
+        }
+    }
 
 // Перший розблокований урок.
     const firstUnlocked = lessons.findIndex((lesson: Lesson) => lesson.is_unlocked);
@@ -177,8 +218,8 @@ export function CoursePage() {
         })
     };
 
-    const tags = course?.tegs
-        ? course.tegs
+    const tags = course?.tags
+        ? course.tags
             .split(',')
             .map((tag: string) => tag.trim())
             .filter((tag: string) => tag.length > 0)
@@ -188,9 +229,9 @@ export function CoursePage() {
     const difficultyLower = (course?.level || 'medium').toLowerCase();
 
     const difficultyColor = {
-        easy: 'text-green-500',
-        medium: 'text-yellow-500',
-        hard: 'text-red-500',
+        beginner: 'text-green-500',
+        intermediate: 'text-yellow-500',
+        advanced: 'text-red-500',
     } as const;
 
     const colorClass = difficultyColor[difficultyLower as keyof typeof difficultyColor] || 'text-gray-500';
@@ -228,7 +269,7 @@ export function CoursePage() {
                                         animate={{ opacity: 1, height: "auto" }}
                                         exit={{ opacity: 0, height: 0 }}
                                         transition={{ duration: 0.45 }}
-                                        className="overflow-hidden w-full"
+                                        className="overflow-hidden md:max-w-[125px] w-full"
                                     >
                                         <div className="grid grid-cols-2 lg:grid-cols-1 gap-x-4 gap-y-2 text-xs nz-text-muted w-full">
                                             <div className='flex justify-between flex-wrap'>
@@ -248,7 +289,13 @@ export function CoursePage() {
                                                     {course.points ? course.points : "Free"}
                                                 </span>
                                             </div>
-                                            <div className='flex justify-between flex-wrap'>
+                                            <div className='flex flex-wrap justify-between'>
+                                                <span className="block">Category</span>
+                                                <span className="flex items-center gap-1 font-medium nz-text-accent capitalize">
+                                                    {course.category ? course.category : "other"}
+                                                </span>
+                                            </div>
+                                            <div className='flex flex-wrap justify-between'>
                                                 <span className="block">Level</span>
                                                 <span className={cn("font-medium text-white", colorClass)}>
                                                     {course.level.toUpperCase()}
@@ -286,7 +333,7 @@ export function CoursePage() {
                                             {course.description || "No description available."}
                                         </p>
                                         <div className='my-4 p-2 nz-background-accent rounded-lg'>
-                                            {tags ? (
+                                            {tags && tags.length > 0 ? (
                                                 <div>
                                                     <div className="flex flex-wrap gap-2 pl-4">
                                                         {tags.map((tag: string, index: number) => (
@@ -378,33 +425,45 @@ export function CoursePage() {
                             </CardContent>
                         </Card>
                     ) : (
-                        <div className='max-h-[40vh] p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 nz-background-primary border overflow-y-auto rounded-3xl'>
+                        <div className='max-h-[40vh] p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 nz-background-primary border overflow-y-auto rounded-3xl'>
                             {
                                 lessons
                                 .sort((a: any, b: any) => a.order - b.order)
                                 .map((lesson: Lesson, index: number) => (
-                                    <Card variant='card_accent' size='wf'
-                                        key={lesson.id}
-                                        className="h-fit overflow-hidden transition-all"
-                                    >
-                                        <CardHeader className="flex flex-row items-center justify-between py-5">
-                                            <div className="w-full flex items-center gap-4">
-                                                <div className="min-w-8 min-h-8 rounded-xl nz-background-secondary border flex items-center justify-center text-sm font-mono">
-                                                    {index + 1}
+                                    <div className='relative'>
+                                        <Card variant='card_accent' size='wf'
+                                            key={lesson.id}
+                                            className="h-fit overflow-hidden transition-all"
+                                        >
+                                            <CardHeader className="flex flex-row items-center justify-between py-5">
+                                                <div className="w-full flex items-center gap-4">
+                                                    <div className="min-w-8 min-h-8 rounded-xl nz-background-secondary border flex items-center justify-center text-sm font-mono">
+                                                        {index + 1}
+                                                    </div>
+                                                    <div className='w-full flex justify-between items-center gap-2'>
+                                                        <h3 className="font-medium line-clamp-1">{lesson.title}</h3>
+                                                        {lesson.is_completed ? (
+                                                            <CheckCircle className='min-w-4 min-h-4 text-emerald-400' />
+                                                        ) : lesson.is_unlocked ? (
+                                                            <Unlock className='min-w-4 min-h-4 text-indigo-400' />
+                                                        ) : (
+                                                            <Lock className="min-w-4 min-h-4 text-zinc-500" />
+                                                        )}
+                                                    </div>
                                                 </div>
-                                                <div className='w-full flex justify-between items-center gap-2'>
-                                                    <h3 className="font-medium line-clamp-1">{lesson.title}</h3>
-                                                    {lesson.is_completed ? (
-                                                        <CheckCircle className='min-w-4 min-h-4 text-emerald-400' />
-                                                    ) : lesson.is_unlocked ? (
-                                                        <Unlock className='min-w-4 min-h-4 text-indigo-400' />
-                                                    ) : (
-                                                        <Lock className="min-w-4 min-h-4 text-zinc-500" />
-                                                    )}
-                                                </div>
+                                            </CardHeader>
+                                        </Card>
+                                        {profile?.is_staff && (
+                                            <div className='absolute top-5 -right-3.5'>
+                                                <ActionsCell className='border rounded-full'
+                                                    actions={[
+                                                        { label: "Edit", icon: <Edit className="w-4 h-4" />, onClick: () => OpenEditLesson(lesson), variant: 'default' },
+                                                        { label: "Delete", icon: <Trash2 className="w-4 h-4" />, onClick: () => handleDeleteLesson(lesson.id), variant: 'danger' },
+                                                    ]}
+                                                />
                                             </div>
-                                        </CardHeader>
-                                    </Card>
+                                        )}
+                                    </div>
                                 ))
                             }
                         </div>

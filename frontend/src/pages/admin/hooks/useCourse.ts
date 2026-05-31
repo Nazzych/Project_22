@@ -16,7 +16,7 @@ export const useCourse = () => {
         setLoading(true);
         try {
             const data = await getCourses();
-            setCourses(data);
+            setCourses(data.results || []);
         } catch (err) {
             showToast('error', 'Не вдалося завантажити завдання', String(err));
         } finally {
@@ -32,7 +32,7 @@ export const useCourse = () => {
             const q = search.toLowerCase().trim();
             result = result.filter(task =>
                 task.title?.toLowerCase().includes(q) ||
-                task.tegs?.toLowerCase().includes(q)
+                task.tags?.toLowerCase().includes(q)
             );
         }
 

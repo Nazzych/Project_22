@@ -55,11 +55,11 @@ export function ChannelManage({ onSuccess, onDelete, channel }: ChannellFormProp
             // Редагування проєкту
             if (channel) {
                 await updateChannel(channel.id, form);
-                showToast('success', 'Channel updated', 'Your channel has been successfully updated.');
+                showToast('info', 'Channel updated', 'Your channel has been successfully updated.');
             // Створення нового проєкту
             } else {
                 await createChannel(formData);
-                showToast('success', 'Channel created', 'Your channel has been successfully added.');
+                showToast('info', 'Channel created', 'Your channel has been sended on review.');
             }
 
             onSuccess();

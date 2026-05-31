@@ -1,22 +1,18 @@
 import React, { useState, useRef } from 'react';
-import {
-    XCircle, Code2, Pen, Grid2X2Check, CodeSquare, Trophy, Circle, CheckCircle, MoreVertical
+import { 
+    Trophy, Code2, Edit, CircleCheck, XCircle, Circle, 
+    Grid2X2Check, CodeSquare 
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardHeader, CardContent } from '../../ui/Card';
+import { Card, CardContent } from '../../ui/Card';
 import { useModal } from '../../../hooks/useModal';
 import { ConfirmModal } from '../modal/ConfirmModal';
 import { getCsrfToken } from '../../../api/auth';
 import { useToast } from '../../../providers/MessageProvider';
 import { ChallangeManage } from '../modal/modals/admin/ChallangeManage';
 import { deleteTask } from '../../../api/admin';
+import { ChallengeCardProps, LANGUAGE_LABELS } from '../../../types/tasks';
 import { cn } from '../../../lib/cn';
-
-interface ChallengeCardProps {
-    challenge: any;
-    loadChallenges?: () => void;
-    is_staff: boolean;
-}
 
 export const ChallengeCard = ({
     challenge,
@@ -28,17 +24,24 @@ export const ChallengeCard = ({
     const { showToast } = useToast();
 
     const slugify = (text: string) =>
-        text
-            .toLowerCase()
-            .trim()
-            .replace(/[\s\W-]+/g, '-')
-            .replace(/^-+|-+$/g, '');
+        text.toLowerCase().trim().replace(/[\s\W-]+/g, '-').replace(/^-+|-+$/g, '');
 
     const handleView = () => {
         const slug = slugify(challenge.title);
         navigate(`/challenges/${challenge.id}/${slug}`);
     };
 
+    // === Гарний бейдж типу (Quiz / Code) ===
+    const isQuiz = challenge.c_type === "quiz";
+
+    const typeStyle = isQuiz 
+        ? "from-purple-600 via-pink-600 to-violet-600" 
+        : "from-cyan-600 via-blue-600 to-sky-600";
+
+    const TypeIcon = isQuiz ? Grid2X2Check : CodeSquare;
+    const typeLabel = isQuiz ? "QUIZ" : "CODE";
+
+    // === Функціонал ===
     const DeleteChallenge = async (id: string) => {
         try {
             openModal({
@@ -51,18 +54,23 @@ export const ChallengeCard = ({
                         confirmText="Yes, delete"
                         cancelText="Cancel"
                         onConfirm={async () => {
-                            await getCsrfToken();
-                            await deleteTask (id);
-                            showToast('success', 'Success', 'Challenge successfully deleted.');
-                            if (loadChallenges) loadChallenges();
-                            closeModal();
+                            try {
+                                await getCsrfToken();
+                                await deleteTask(id);
+                                showToast('success', 'Success', 'Challenge successfully deleted.');
+                                if (loadChallenges) loadChallenges();
+                                closeModal();
+                            } catch (error) {
+                                showToast('error', 'Error', "Can't delete challenge.");
+                                console.error('Deleting error:', error);
+                            }
                         }}
                         onCancel={closeModal}
                     />
                 ),
             });
         } catch (error) {
-            showToast('error', 'Error', 'Can\'t delete challange.');
+            showToast('error', 'Error', "Can't delete challenge.");
             console.error('Deleting error:', error);
         }
     };
@@ -74,7 +82,7 @@ export const ChallengeCard = ({
             x: false,
             title: (
                 <div className="w-fit nz-background-secondary rounded-lg py-1 px-4 flex flex-row justify-center items-center gap-2">
-                    <Pen className="w-5 h-5 text-primary" />
+                    <Edit className="w-5 h-5 text-primary" />
                     <span className="line-clamp-1">Editing "{challenge.title}"</span>
                 </div>
             ),
@@ -90,9 +98,11 @@ export const ChallengeCard = ({
 
     const [tooltipPos, setTooltipPos] = useState<{ top: number; left: number } | null>(null);
     const tagRef = useRef<HTMLSpanElement>(null);
+
     const tags: string[] = challenge?.tags
         ? challenge.tags.split(',').map((tag: string) => tag.trim()).filter(Boolean)
-    : [];
+        : [];
+
     const handleTagHover = () => {
         if (tagRef.current) {
             const rect = tagRef.current.getBoundingClientRect();
@@ -102,116 +112,87 @@ export const ChallengeCard = ({
             });
         }
     };
-    
-    // Визначення кольору складності
-    const difficultyLower = (challenge.difficulty || 'medium').toLowerCase();
 
+    const difficultyLower = (challenge.difficulty || 'medium').toLowerCase();
     const difficultyColor = {
-        easy: 'text-green-500 bg-green-500/10',
-        medium: 'text-yellow-500 bg-yellow-500/10',
-        hard: 'text-red-500 bg-red-500/10',
+        easy: 'text-green-500 border-green-500',
+        medium: 'text-yellow-500 border-yellow-500',
+        hard: 'text-red-500 border-red-500',
     } as const;
 
     const colorClass = difficultyColor[difficultyLower as keyof typeof difficultyColor] || 'text-gray-500 bg-gray-500/10';
+
     return (
         <Card
-            onClick={(e) => {
-                e.stopPropagation();
-                handleView();
-            }}
-            size="wf"
-            variant="card_primary"
-            className="relative group transition duration-300 border overflow-hidden min-h-[20vh] hover:nz-background-secondary"
+            onClick={handleView}
+            className="relative group overflow-hidden border hover:border-violet-700 transition-all duration-300 cursor-pointer h-full flex flex-col"
         >
-            <CardHeader className="py-2 mb-1 border-b-2">
-                <div className="flex justify-between items-center gap-2">
-                    {/* {!is_staff && (
-                        challenge.status
-                        ? <CheckCircle className="w-5 h-5 text-indigo-500" /> 
-                        : <Circle className="w-5 h-5 text-indigo-500" />
-                    )} */}
-                    {challenge.user_progress?.status === "completed" ? (
-                        <CheckCircle className="w-5 h-5 text-emerald-500" /> 
-                    ) : challenge.user_progress?.status === "failed" ? (
-                        <XCircle className="w-5 h-5 text-red-500" />
-                    ) : (
-                        <Circle className="w-5 h-5 text-indigo-500" />
-                    )}
-                    <div className='w-full flex justify-between items-center gap-2'>
-                        <h3 className="text-lg font-semibold nz-text-foreground line-clamp-1">
-                            {challenge.title}
-                        </h3>
-                        {/* Бейдж складності */}
-                        <span
-                            className={cn(
-                                'px-2.5 py-1 text-xs font-medium group-hover:nz-background-primary rounded-full cursor-default',
-                                colorClass
-                            )}
-                        >
-                            {challenge.difficulty ? challenge.difficulty.slice(0, 1).toUpperCase() : 'MED'}
-                        </span>
+            {/* === ГРАДІЄНТНИЙ БЛОК З ВЕЛИКИМ ТЕКСТОМ === */}
+            <div className={cn(
+                "relative h-40 flex items-center justify-center bg-gradient-to-br overflow-hidden",
+                typeStyle
+            )}>
+                <div className="absolute inset-0 bg-[radial-gradient(#ffffff15_1px,transparent_1px)] [background-size:24px_24px]"></div>
+
+                <div className="text-center z-10">
+                    <TypeIcon className="w-14 h-14 mx-auto mb-3 opacity-90" />
+                    <div className="text-4xl font-black tracking-tighter drop-shadow-2xl text-white">
+                        {typeLabel}
                     </div>
                 </div>
-            </CardHeader>
 
-            <CardContent className="space-y-3">
-                {/* Опис */}
-                <div className='flex gap-2'>
-                    {challenge.c_type === "quiz" ? (
-                        <Grid2X2Check className="min-w-5 h-5 text-cyan-500" /> 
-                    ) : challenge.c_type === "code" ? (
-                        <CodeSquare className="min-w-5 h-5 text-cyan-500" /> 
-                    ) : (
-                        <XCircle className="min-w-5 h-5 text-red-500" /> 
-                    )}
-                    <p className="text-sm font-mono text-muted-foreground line-clamp-3 min-h-[60px] cursor-default">
-                        {challenge.description || 'No description...'}
-                    </p>
+                {/* Складність */}
+                <div className={cn(
+                    "absolute top-4 right-4 px-4 py-1 text-xs font-bold rounded-full border bg-black/65",
+                    colorClass
+                )}>
+                    {challenge.difficulty?.toUpperCase() || 'MEDIUM'}
                 </div>
-                {/* Додаткова інформація */}
-                <div className="flex justify-between flex-wrap gap-4">
-                    <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground cursor-default">
-                        <div className="flex items-center gap-1">
-                            <Trophy className="w-4 h-4 text-amber-500" />
-                            {challenge.points} pts
+            </div>
+
+            <CardContent className="flex-1 p-3 flex flex-col space-y-2">
+                <h3 className="text-lg font-semibold nz-text-foreground line-clamp-2">
+                    {challenge.title}
+                </h3>
+
+                <p className="text-sm nz-text-muted line-clamp-3 flex-1">
+                    {challenge.description || 'No description...'}
+                </p>
+
+                {/* Нижня інформація */}
+                <div className="flex justify-between items-center text-sm pt-4 border-t">
+                    <div className="flex items-center gap-5">
+                        <div className="flex items-center gap-1 text-amber-400">
+                            <Trophy className="w-4 h-4" />
+                            <span>{challenge.points}</span>
                         </div>
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1 text-zinc-400">
                             <Code2 className="w-4 h-4" />
-                            {challenge.code_challenge?.language?.toUpperCase() || '—'}
+                            <span>{LANGUAGE_LABELS[challenge.language] || '—'}</span>
                         </div>
-                        {/* Теги */}
-                        {challenge?.tags && (
-                            <div className="relative">
-                                <span 
-                                    ref={tagRef}
-                                    onClick={(e) => e.stopPropagation()}
-                                    onMouseEnter={handleTagHover}
-                                    onMouseLeave={() => setTooltipPos(null)}
-                                    className="text-xs nz-background-secondary px-2 py-1 rounded-full text-muted-foreground border group-hover:nz-background-primary cursor-default"
-                                >
-                                    Tags
-                                </span>
-
-                                {/* Tooltip - Fixed positioning */}
-                                {tooltipPos && (
-                                    <div 
-                                        className="fixed w-max max-w-xs nz-background-accent border rounded-md shadow-lg p-2 text-xs nz-text-foreground z-50 whitespace-pre-wrap break-words pointer-events-none animate-in fade-in"
-                                        style={{
-                                            top: `${tooltipPos.top}px`,
-                                            left: `${tooltipPos.left}px`,
-                                            transform: 'translate(-50%, -100%)',
-                                        }}
-                                    >
-                                        {tags.join(', ')}
-                                    </div>
-                                )}
-                            </div>
-                        )}
                     </div>
-                    {is_staff && (
-                        <div>
-                            <button onClick={(e) => {e.stopPropagation(); handleEdit(challenge)}} className='p-1 border rounded-full  nz-background-secondary group-hover:nz-background-primary cursor-pointer'><MoreVertical className='w-4 h-4' /></button>
+
+                    {challenge.user_progress?.status === "completed" && (
+                        <div className="flex items-center gap-1 text-emerald-400 text-xs font-medium">
+                            <CircleCheck className="w-4 h-4" />
+                            COMPLETED
                         </div>
+                    )}
+                    {challenge.user_progress?.status === "failed" && (
+                        <div className="flex items-center gap-1 text-red-500 text-xs font-medium">
+                            <XCircle className="w-4 h-4" />
+                            FAILED
+                        </div>
+                    )}
+
+                    {/* Кнопка редагування для staff */}
+                    {is_staff && (
+                        <button
+                            onClick={(e) => { e.stopPropagation(); handleEdit(challenge); }}
+                            className="p-1.5 nz-background-accent hover:nz-background-primary rounded-xl transition-colors"
+                        >
+                            <Edit className="w-4 h-4" />
+                        </button>
                     )}
                 </div>
             </CardContent>

@@ -52,10 +52,14 @@ export default function ChallengeFilters({
                 className="w-full lg:w-[160px] nz-background-primary rounded-xl"
                 placeholder="Language"
                 options={[
-                    { value: 'javascript', label: 'JavaScript' },
-                    { value: 'typescript', label: 'TypeScript' },
-                    { value: 'python', label: 'Python' },
+                    { value: 'py', label: 'Python' },
+                    { value: 'go', label: 'Go' },
+                    { value: 'js', label: 'JavaScript' },
+                    { value: 'ts', label: 'TypeScript' },
                     { value: 'java', label: 'Java' },
+                    { value: 'cpp', label: 'C++' },
+                    { value: 'cs', label: 'C#' },
+                    { value: 'c', label: 'C' },
                 ]}
                 value={language}
                 onChange={setLanguage}

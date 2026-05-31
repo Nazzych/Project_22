@@ -1,4 +1,4 @@
-import { ArrowLeft, Star, Calendar, Github, TriangleAlert, Code2, MessageCircle, GitBranch, FileText, File, LineChart, FolderTree, CircleDot, BookOpen, Book, Tag, XCircle, Folder, Save, Fullscreen, Copy, X, FolderOpen, MinusCircle, Download, CopyCheck, Check, MonitorDot, Activity, Archive, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Star, Calendar, Github, TriangleAlert, Code2, MessageCircle, GitBranch, FileText, File, LineChart, FolderTree, CircleDot, BookOpen, Book, Tag, XCircle, Folder, Save, Fullscreen, Copy, X, FolderOpen, MinusCircle, Download, CopyCheck, Check, MonitorDot, Activity, Archive, CheckCircle2, Edit, Trash2, Share2 } from 'lucide-react';
 import { FullscreenFileView } from '../components/shared/modal/modals/projects/FileView';
 import { useParams } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown'
@@ -18,7 +18,7 @@ import { useProfile } from '../contexts/ProfileContext';
 import { useModal } from '../hooks/useModal';
 import { FileExplorerProps } from '../types/projects';
 import { CodeEditor } from '../components/CodeEditor';
-import { ActionsCellProj } from '../components/ActionCell';
+import { ActionsCell } from '../components/ActionCell';
 import { cn } from '../lib/cn';
 
 
@@ -720,7 +720,28 @@ const ProjectPage = () => {
                                                             </td>
                                                             <td className="px-4 py-2">{entry.content || "-"}</td>
                                                             <td className="px-4 py-2">{entry.uploaded_at || "-"}</td>
-                                                            <td><ActionsCellProj entry={entry} startRename={startRename} onDelete={() => {}} onShare={() => {}} /></td>
+                                                            <td>
+                                                                <ActionsCell
+                                                                    actions={[
+                                                                        { 
+                                                                            label: "Edit", 
+                                                                            icon: <Edit className="w-4 h-4" />, 
+                                                                            onClick: () => startRename(entry) 
+                                                                        },
+                                                                        { 
+                                                                            label: "Delete", 
+                                                                            icon: <Trash2 className="w-4 h-4" />, 
+                                                                            onClick: () => console.log("Delete project", entry.file_id),
+                                                                            variant: 'danger' 
+                                                                        },
+                                                                        { 
+                                                                            label: "Share", 
+                                                                            icon: <Share2 className="w-4 h-4" />, 
+                                                                            onClick: () => console.log("Share project", entry.file_id) 
+                                                                        },
+                                                                    ]}
+                                                                />
+                                                            </td>
                                                         </tr>
                                                     ))}
                                                 </tbody>

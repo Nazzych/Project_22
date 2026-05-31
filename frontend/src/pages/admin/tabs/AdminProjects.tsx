@@ -22,7 +22,7 @@ export default function AdminProjects() {
         try {
             await getCsrfToken()
             const data = await projectsList()
-            setProjects (data.projects);
+            setProjects (data.results || []);
         } catch (err) {
             console.error ("Error geting projects: ", err)
             showToast('error', 'Error', 'Not can load the projects');
@@ -101,24 +101,30 @@ export default function AdminProjects() {
                     <p className="text-zinc-400">Here you can manage projects and their permissions.</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    {projects.map((proj: Project) => (
-                        <ProjectCard
-                            key={proj.id}
-                            id={proj.id}
-                            proj={proj}
-                            title={proj.title}
-                            description={proj.description}
-                            technologies={proj.technologies.split(', ')}
-                            status={proj.status}
-                            image={proj.image}
-                            owner={proj.owner}
-                            canEdit={true}
-                            onEdit={() => handleAdminEdit(proj)}
-                            loadProjs={getProjects}
-                        />
-                    ))}
-                </div>
+                <>
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-2xl font-semibold">Projects Management</h2>
+                        <p className="text-zinc-400">Projects count: <span className="font-bold nz-text-secondary">{projects.length}</span></p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                        {projects.map((proj: Project) => (
+                            <ProjectCard
+                                key={proj.id}
+                                id={proj.id}
+                                proj={proj}
+                                title={proj.title}
+                                description={proj.description}
+                                technologies={proj.technologies.split(', ')}
+                                status={proj.status}
+                                image={proj.image}
+                                owner={proj.owner}
+                                canEdit={true}
+                                onEdit={() => handleAdminEdit(proj)}
+                                loadProjs={getProjects}
+                            />
+                        ))}
+                    </div>
+                </>
             )}
         </div>
     );

@@ -122,19 +122,25 @@ export default function AdminPostsList() {
                 </div>
             ) : (
                 posts.length !== 0 ? (
-                    posts.map((post) => (
-                        <PostCard
-                            key={post.id}
-                            logo={post.author.profile.avatar_url}
-                            name={`${post.author.first_name} ${post.author.last_name}`}
-                            post={post}
-                            expandedPosts={expandedPosts}
-                            toggleExpand={toggleExpand}
-                            OpenEditPost={OpenEditPost}
-                            clickDeletePost={clickDeletePost}
-                            profile={profile}
-                        />
-                    ))
+                    <div>
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-2xl font-semibold mb-4">Posts Management</h2>
+                            <p className="text-zinc-400">Posts count: <span className="font-bold nz-text-secondary">{posts.length}</span></p>
+                        </div>
+                        {posts.map((post) => (
+                            <PostCard
+                                key={post.id}
+                                logo={post.author.profile.avatar_url}
+                                name={`${post.author.first_name} ${post.author.last_name}`}
+                                post={post}
+                                expandedPosts={expandedPosts}
+                                toggleExpand={toggleExpand}
+                                OpenEditPost={OpenEditPost}
+                                clickDeletePost={clickDeletePost}
+                                profile={profile}
+                            />
+                        ))}
+                    </div>
                 ) : (
                     <div className="flex flex-row items-center justify-center py-6 text-center nz-foreground gap-2">
                         <XCircle className="w-6 h-6 text-muted-foreground" />

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { CheckCircle, XCircle, Users } from 'lucide-react';
 import { Button } from '../../../../components/ui/Button';
 import { getCsrfToken } from '../../../../api/auth';
-import { getUnapprovedTasks, acceptTask, rejectTask } from '../../../../api/admin';
+import { getUnapprovedChannels, acceptTask, rejectTask } from '../../../../api/admin';
 import { useToast } from '../../../../providers/MessageProvider'
 import { Channels } from '../../../../types/forum';
 import { useModal } from '../../../../hooks/useModal';
@@ -16,7 +16,7 @@ export default function AdminModeration() {
     const fetchPendingChannels = async () => {
         try {
             await getCsrfToken();
-            const channels = await getUnapprovedTasks();
+            const channels = await getUnapprovedChannels();
             setPendingChannels(channels);
         } catch (error) {
             showToast("error", "Error fetching channels", "Please try again later.");
@@ -27,6 +27,7 @@ export default function AdminModeration() {
     useEffect(() => {
         fetchPendingChannels();
     }, []);
+    const safeChannels = Array.isArray(pendingChannels) ? pendingChannels : [];
 
     const confirmAction = (post_id: number, action: 'approve' | 'reject') => {
         openModal({
@@ -82,54 +83,60 @@ export default function AdminModeration() {
 
     return (
         <div className="space-y-4">
-            {pendingChannels.length === 0 ? (
+            {safeChannels.length === 0 ? (
                 <div className="flex items-center justify-center py-16 nz-text-muted gap-2">
                     <XCircle className="w-8 h-8" />
                     No channels pending for moderation
                 </div>
             ) : (
-                pendingChannels.map((channel) => (
-                    <div key={channel.id} className="bg-nz-background-secondary border border-border rounded-2xl p-4">
-                        <div className="flex justify-between">
-                            <div className="flex items-center gap-4">
-                                {channel.logo ? (
-                                    <img src={channel.logo} alt={channel.name} className="w-16 h-16 object-cover rounded-2xl" />
-                                ) : (
-                                    <div className="w-16 h-16 bg-gradient-to-br from-amber-500 to-red-500 rounded-2xl flex items-center justify-center text-white font-bold">
-                                        {channel.name[0]}
+                <>
+                    <div className="flex justify-between items-center gap-2 mb-4">
+                        <h2 className="text-2xl font-semibold text-white">Channel Moderation</h2>
+                        <p className="nz-text-muted">Channels pending moderation: <span className="font-bold nz-text-secondary">{safeChannels.length}</span></p>
+                    </div>
+                    {safeChannels.map((channel) => (
+                        <div key={channel.id} className="bg-nz-background-secondary border border-border rounded-2xl p-4">
+                            <div className="flex justify-between">
+                                <div className="flex items-center gap-4">
+                                    {channel.logo ? (
+                                        <img src={channel.logo} alt={channel.name} className="w-16 h-16 object-cover rounded-2xl" />
+                                    ) : (
+                                        <div className="w-16 h-16 bg-gradient-to-br from-amber-500 to-red-500 rounded-2xl flex items-center justify-center text-white font-bold">
+                                            {channel.name[0]}
+                                        </div>
+                                    )}
+                                    <div>
+                                        <p className="font-semibold text-white line-clamp-1">{channel.name}</p>
+                                        <p className="text-xs nz-text-muted line-clamp-1">@{channel.owner_username}</p>
+                                        <p className="text-sm text-zinc-400 mt-2 line-clamp-2">
+                                            {channel.description}
+                                        </p>
                                     </div>
-                                )}
-                                <div>
-                                    <p className="font-semibold text-white line-clamp-1">{channel.name}</p>
-                                    <p className="text-xs nz-text-muted line-clamp-1">@{channel.owner.username}</p>
-                                    <p className="text-sm text-zinc-400 mt-2 line-clamp-2">
-                                        {channel.description}
-                                    </p>
+                                </div>
+
+                                <div className="flex flex-col gap-2">
+                                    <Button 
+                                        onClick={() => confirmAction(channel.id, 'approve')}
+                                        variant="btn_success"
+                                        size="sm"
+                                    >
+                                        <CheckCircle className="w-4 h-4 mr-2" />
+                                        Accept
+                                    </Button>
+                                    <Button 
+                                        onClick={() => confirmAction(channel.id, 'reject')}
+                                        variant="btn_destructive"
+                                        size="sm"
+                                    >
+                                        <XCircle className="w-4 h-4 mr-2" />
+                                        Reject
+                                    </Button>
                                 </div>
                             </div>
-
-                            <div className="flex flex-col gap-2">
-                                <Button 
-                                    onClick={() => confirmAction(channel.id, 'approve')}
-                                    variant="btn_success"
-                                    size="sm"
-                                >
-                                    <CheckCircle className="w-4 h-4 mr-2" />
-                                    Accept
-                                </Button>
-                                <Button 
-                                    onClick={() => confirmAction(channel.id, 'reject')}
-                                    variant="btn_destructive"
-                                    size="sm"
-                                >
-                                    <XCircle className="w-4 h-4 mr-2" />
-                                    Reject
-                                </Button>
-                            </div>
                         </div>
-                    </div>
-                )
-            ))}
+                    ))}
+                </>
+            )}
         </div>
     );
 }

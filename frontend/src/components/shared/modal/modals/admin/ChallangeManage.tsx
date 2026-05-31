@@ -47,9 +47,9 @@ const pointsOptions = [
 ];
 
 const languageOptions = [
-    { value: 'python', label: 'Python' },
-    { value: 'javascript', label: 'JavaScript' },
-    { value: 'typescript', label: 'TypeScript' },
+    { value: 'py', label: 'Python' },
+    { value: 'js', label: 'JavaScript' },
+    { value: 'ts', label: 'TypeScript' },
     { value: 'java', label: 'Java' },
     { value: 'cpp', label: 'C++' },
     { value: 'c', label: 'C' },
@@ -90,11 +90,11 @@ export function ChallangeManage({ task, onSuccess, onDelete }: ChallangeManagePr
     const [form, setForm] = useState(() => ({
         title: task?.title || "",
         description: task?.description || "",
-        tegs: task?.tegs || "",
+        tags: task?.tags || "",
         points: task?.points || 50,
-        difficul: task?.difficul ?? "medium",
-        language: task?.language ? task?.quiz_challenge?.language : "python",
-        status: task?.status ?? "draft",
+        difficulty: task?.difficulty ?? "medium",
+        language: task?.language ?? "python",
+        status: task?.status ?? "archived",
         c_type: task?.c_type ?? "code",
 
         e_input: task?.code_challenge?.e_input || "",
@@ -115,11 +115,11 @@ export function ChallangeManage({ task, onSuccess, onDelete }: ChallangeManagePr
             setForm({
                 title: task.title || "",
                 description: task.description || "",
-                tegs: task.tags || "",
+                tags: task.tags || "",
                 points: task.points || 50,
-                difficul: task.difficulty ?? "medium",
-                language: task.language ? task?.quiz_challenge?.language : "python",
-                status: task.status ?? "draft",
+                difficulty: task.difficulty ?? "medium",
+                language: task.language ?? "py",
+                status: task.status ?? "archived",
                 c_type: task.c_type ?? "code",
 
                 e_input: task.code_challenge?.e_input || "",
@@ -164,17 +164,18 @@ export function ChallangeManage({ task, onSuccess, onDelete }: ChallangeManagePr
 
         try {
             await getCsrfToken();
-
+            
             const payload = {
                 ...form,
                 quiz_questions: form.c_type === 'quiz' 
-                    ? convertLocalToBackend(form.quiz_questions) 
-                    : []
+                ? convertLocalToBackend(form.quiz_questions) 
+                : []
             };
 
             if (isEditMode) {
                 await updateTask(task.id, payload);
-                showToast('success', 'Task updated', 'Successfully updated!');
+                showToast ("info", "[DEBUG]", `Task updated with payload: ${JSON.stringify(payload)}`);
+                // showToast('success', 'Task updated', 'Successfully updated!');
             } else {
                 await createTask(payload);
                 showToast('success', 'Task created', 'Successfully created!');
@@ -293,8 +294,8 @@ export function ChallangeManage({ task, onSuccess, onDelete }: ChallangeManagePr
                                 <label className="block text-sm font-medium mb-1.5">Difficulty</label>
                                 <Select className='nz-bg-input rounded-xl'
                                     options={difficultyOptions}
-                                    value={form.difficul}
-                                    onChange={handleSelectChange('difficul')}
+                                    value={form.difficulty}
+                                    onChange={handleSelectChange('difficulty')}
                                 />
                             </div>
                             <div>
@@ -319,8 +320,8 @@ export function ChallangeManage({ task, onSuccess, onDelete }: ChallangeManagePr
                             <div className='flex-1'>
                                 <label className="block text-sm font-medium mb-1.5">Tags <span className='text-[12px] nz-text-muted'>(comma separated)</span></label>
                                 <Input icon={<Tag className='w-4 h-4' />}
-                                    name="tegs"
-                                    value={form.tegs}
+                                    name="tags"
+                                    value={form.tags}
                                     onChange={handleChange}
                                     placeholder="array, hashmap, easy"
                                 />
@@ -338,6 +339,7 @@ export function ChallangeManage({ task, onSuccess, onDelete }: ChallangeManagePr
                         </div>
                         {form.c_type === 'code' && (
                             <div>
+                                <p className='text-5xl text-center mb-2 animate-pulse'>⚠️</p>
                                 <label className="flex items-center gap-2 text-sm font-medium mb-1.5 text-amber-500"><FileCode className='w-4 h-4' />Code Challenge are not stable and unsupported yet!</label>
                             </div>
                         )}

@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react'
 import { useTheme } from '../hooks/useTheme'
-// import { Palette } from 'lucide-react'
 import { Select } from './ui/Select'
 
 const themeOptions = [
@@ -60,7 +59,6 @@ export function ThemeToggle() {
 
     return (
         <div className="flex items-center gap-1">
-            {/* <Palette className="text-primary" size={18} /> */}
             <Select
                 options={filteredOptions}
                 placeholder="Theme"

@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Select';
 import { Button } from '../components/ui/Button';
+import { Switch } from '../components/ui/Switch';
 import { CourseCard } from '../components/shared/cards/CourseCard';
 import { useToast } from '../hooks/useToast';
 import { Course } from '../types/curses';
@@ -15,10 +16,11 @@ export function CoursesList() {
 
     const [search, setSearch] = useState('');
     const [difficulty, setDifficulty] = useState('');
-    const [language, setLanguage] = useState('');
+    const [category, setLanguage] = useState('');
     const [showCompleted, setShowCompleted] = useState(true);
     const [loading, setLoading] = useState(true);
     const [courses, setCourses] = useState<Course[]>([]);
+    const [completed_courses, setCompletedCourses] = useState(0)
     const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
 
     // Завантаження завдань
@@ -35,9 +37,20 @@ export function CoursesList() {
         }
     };
 
+    // Фільтрування курсів по виконаному статусі
+    const completedCourses = () => {
+        return filteredCourses.filter(
+            course => course.completed_lessons_count === course.lessons_count
+        )
+    }
+
     useEffect(() => {
         loadCourses();
     }, []);
+
+    useEffect(() => {
+        setCompletedCourses (completedCourses().length);
+    }, [filteredCourses]);
 
     // Фільтрація (пошук + складність + мова)
     useEffect(() => {
@@ -48,7 +61,7 @@ export function CoursesList() {
             const searchLower = search.toLowerCase().trim();
             result = result.filter(task =>
                 task.title.toLowerCase().includes(searchLower) ||
-                task.tegs?.toLowerCase().includes(searchLower)
+                task.tags?.toLowerCase().includes(searchLower)
             );
         }
 
@@ -58,12 +71,12 @@ export function CoursesList() {
         }
 
         // Фільтр по мові
-        if (language) {
-            result = result.filter(task => task.category?.toLowerCase() === language.toLowerCase());
+        if (category) {
+            result = result.filter(task => task.category?.toLowerCase() === category.toLowerCase());
         }
 
         setFilteredCourses(result);
-    }, [search, difficulty, language, courses]);
+    }, [search, difficulty, category, courses]);
 
     // Очищення всіх фільтрів
     const clearFilters = () => {
@@ -72,8 +85,18 @@ export function CoursesList() {
         setLanguage('');
     };
 
+    // 
+    const switchCourses = (need: boolean) => {
+        if (need) {
+            setFilteredCourses (completedCourses());
+        } else {
+            setFilteredCourses (courses);
+        }
+        setShowCompleted(!showCompleted);
+    }
+
     // Чи активні фільтри (для показу хрестика)
-    const filtersActive = search.trim() || difficulty || language;
+    const filtersActive = search.trim() || difficulty || category;
 
     return (
         <AnimatePresence mode="wait">
@@ -91,18 +114,21 @@ export function CoursesList() {
                                 <Library className="h-8 w-8 text-primary" />
                                 Courses
                             </h1>
-{/* TODO: {count} courses completed */}
                             <p className="text-muted-foreground mt-1">
-                                {filteredCourses.length} courses found
+                                <span className='font-semibold nz-text-accent'>{filteredCourses.length}</span> courses - <span className='font-semibold nz-text-secondary'>{completed_courses}</span> completed
                             </p>
                         </div>
-                        <Button
-                            className="rounded-full"
-                            variant={showCompleted ? 'btn_secondary' : 'btn_accent'}
-                            onClick={() => setShowCompleted(!showCompleted)}
-                        >
-                            {showCompleted ? 'Hide' : 'Show'} Completed
-                        </Button>
+{/* <Button
+    className="rounded-full"
+    variant={showCompleted ? 'btn_secondary' : 'btn_accent'}
+    onClick={() => setShowCompleted(!showCompleted)}
+>
+    {showCompleted ? 'Hide' : 'Show'} Completed
+</Button> */}
+                        <div className='flex flex-wrap items-center gap-2'>
+                            <p>{showCompleted ? 'Hide' : 'Show'} Completed</p>
+                            <Switch checked={false} onChange={() => switchCourses(showCompleted)} size="md" />
+                        </div>
                     </div>
 
                     {/* Фільтри */}
@@ -122,9 +148,9 @@ export function CoursesList() {
                             className="w-full md:w-[150px] nz-background-accent rounded-xl"
                             placeholder="Difficulty"
                             options={[
-                                { value: 'easy', label: 'Easy' },
-                                { value: 'medium', label: 'Medium' },
-                                { value: 'hard', label: 'Hard' },
+                                { value: 'beginner', label: 'Beginner' },
+                                { value: 'intermediate', label: 'Intermediate' },
+                                { value: 'advanced', label: 'Advanced' },
                             ]}
                             value={difficulty}
                             onChange={(value) => setDifficulty(value)}
@@ -133,14 +159,17 @@ export function CoursesList() {
                         {/* Мова */}
                         <Select
                             className="w-full md:w-[150px] nz-background-accent rounded-xl"
-                            placeholder="Language"
+                            placeholder="Category"
                             options={[
-                                { value: 'JavaScript', label: 'JavaScript' },
-                                { value: 'Python', label: 'Python' },
-                                { value: 'TypeScript', label: 'TypeScript' },
-                                { value: 'Java', label: 'Java' },
+                                { value: 'programming', label: 'Programming' },
+                                { value: 'web', label: 'Web Development' },
+                                { value: 'mobile', label: 'Mobile Development' },
+                                { value: 'data', label: 'Data Science' },
+                                {value: 'algo', label: 'Algorithms & Data Structures'},
+                                {value: 'devops', label: 'DevOps & Infrastructure'},
+                                {value: 'other', label: 'Other'}
                             ]}
-                            value={language}
+                            value={category}
                             onChange={(value) => setLanguage(value)}
                         />
 

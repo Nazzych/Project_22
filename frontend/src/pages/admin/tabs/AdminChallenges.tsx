@@ -43,10 +43,15 @@ export default function AdminChallenges() {
                     filtersActive={challenges.filtersActive}
                 />
 
-                <Button onClick={OpenAddChallange}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Challenge
-                </Button>
+                <div className="flex flex-col items-start lg:items-end gap-2">
+                    <Button size="sm" onClick={OpenAddChallange} className="w-full">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Challenge
+                    </Button>
+                    <p className="text-sm nz-text-muted">
+                        Total: <span className="font-bold nz-text-secondary">{challenges.filteredTasks.length}</span> {challenges.filteredTasks.length === 1 ? 'challenge' : 'challenges'}
+                    </p>
+                </div>
             </div>
 
             <ChallengeGrid 
