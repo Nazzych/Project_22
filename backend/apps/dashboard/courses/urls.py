@@ -12,4 +12,5 @@ router.register (r"", CourseViewSet, basename = "admin-courses")
 #Налаштування силок.
 urlpatterns = [
     path ("", include (router.urls)),
+    path ("<int:course_id>/lessons/", CourseViewSet.as_view ({"put": "update_lessons"}), name = "lessons-update"),
 ]

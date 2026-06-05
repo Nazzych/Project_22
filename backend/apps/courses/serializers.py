@@ -14,6 +14,14 @@ class LessonSerializer (serializers.ModelSerializer):
     class Meta:
         model = Lesson
         fields = ["id", "title", "content", "order", "url"]
+        read_only_fields = ["id", "course", "order"]
+
+    def update(self, instance, validated_data):
+        # проходимо по всіх полях і оновлюємо існуючий об’єкт
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance
 
 # ==================== ПРОСТИЙ СЕРІАЛІЗАТОР КУРСУ (якщо треба без прогресу) ====================
 class CourseSerializer (serializers.ModelSerializer):
