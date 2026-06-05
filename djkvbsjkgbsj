@@ -1,0 +1,717 @@
+[1mdiff --git a/.gitignore b/.gitignore[m
+[1mindex 5991bc3..82c1be1 100644[m
+[1m--- a/.gitignore[m
+[1m+++ b/.gitignore[m
+[36m@@ -4,6 +4,11 @@[m [mvenv/[m
+ # Папка модулів з фронтенду[m
+ node_modules/[m
+ [m
+[32m+[m[32m# Логи та тимчасові файли[m
+[32m+[m[32m*.log[m
+[32m+[m[32m*.tmp[m
+[32m+[m[32m*.mp4[m
+[32m+[m
+ # Секретні ключі та паролі (КРИТИЧНО)[m
+ *.pem[m
+ .env[m
+[1mdiff --git a/.vscode/settings.json b/.vscode/settings.json[m
+[1mnew file mode 100644[m
+[1mindex 0000000..5110c94[m
+[1m--- /dev/null[m
+[1m+++ b/.vscode/settings.json[m
+[36m@@ -0,0 +1,22 @@[m
+[32m+[m[32m{[m
+[32m+[m[32m    "workbench.colorCustomizations": {[m
+[32m+[m[32m        "activityBar.activeBackground": "#28693c",[m
+[32m+[m[32m        "activityBar.background": "#28693c",[m
+[32m+[m[32m        "activityBar.foreground": "#e7e7e7",[m
+[32m+[m[32m        "activityBar.inactiveForeground": "#e7e7e799",[m
+[32m+[m[32m        "activityBarBadge.background": "#35235c",[m
+[32m+[m[32m        "activityBarBadge.foreground": "#e7e7e7",[m
+[32m+[m[32m        "commandCenter.border": "#e7e7e799",[m
+[32m+[m[32m        "sash.hoverBorder": "#28693c",[m
+[32m+[m[32m        "statusBar.background": "#1a4427",[m
+[32m+[m[32m        "statusBar.foreground": "#e7e7e7",[m
+[32m+[m[32m        "statusBarItem.hoverBackground": "#28693c",[m
+[32m+[m[32m        "statusBarItem.remoteBackground": "#1a4427",[m
+[32m+[m[32m        "statusBarItem.remoteForeground": "#e7e7e7",[m
+[32m+[m[32m        "titleBar.activeBackground": "#1a4427",[m
+[32m+[m[32m        "titleBar.activeForeground": "#e7e7e7",[m
+[32m+[m[32m        "titleBar.inactiveBackground": "#1a442799",[m
+[32m+[m[32m        "titleBar.inactiveForeground": "#e7e7e799"[m
+[32m+[m[32m    },[m
+[32m+[m[32m    "peacock.color": "#1a4427"[m
+[32m+[m[32m}[m
+\ No newline at end of file[m
+[1mdiff --git a/Helper.md b/Helper.md[m
+[1mindex 999eb14..d4bb05d 100644[m
+[1m--- a/Helper.md[m
+[1m+++ b/Helper.md[m
+[36m@@ -755,3 +755,4 @@[m [mNazzych, якщо ти дотримуєшся стилю як на фото —[m
+ [m
+ [m
+ [m
+[41m+[m
+[1mdiff --git a/backend/apps/dashboard/courses/views.py b/backend/apps/dashboard/courses/views.py[m
+[1mindex 1147560..400dbc0 100644[m
+[1m--- a/backend/apps/dashboard/courses/views.py[m
+[1m+++ b/backend/apps/dashboard/courses/views.py[m
+[36m@@ -108,7 +108,7 @@[m [mclass CourseViewSet (viewsets.ModelViewSet):[m
+ [m
+         if not isinstance(lessons_data, list):[m
+             return Response({"type": "error", "message": "Expected a list of lessons"}, [m
+[31m-                          status=status.HTTP_400_BAD_REQUEST)[m
+[32m+[m[32m                        status=status.HTTP_400_BAD_REQUEST)[m
+ [m
+         result = [][m
+         with transaction.atomic():[m
+[1mdiff --git a/backend/apps/task/views.py b/backend/apps/task/views.py[m
+[1mindex 6c055af..2b3cd63 100644[m
+[1m--- a/backend/apps/task/views.py[m
+[1m+++ b/backend/apps/task/views.py[m
+[36m@@ -109,6 +109,7 @@[m [mdef submit_quiz (request, challenge_id):[m
+ [m
+         if progress.completed_at is None and hasattr (user, "profile") and user.profile:[m
+             user.profile.total_points = (getattr (user.profile, "total_points", 0) or 0) + (challenge.points or 0)[m
+[32m+[m[32m            user.problems_solved = (getattr (user, "problems_solved", 0) or 0) + 1[m
+             user.profile.save()[m
+     else:[m
+         progress.status = ChallengeProgress.FAILED[m
+[1mdiff --git a/backend/db.sqlite3 b/backend/db.sqlite3[m
+[1mindex 0db0a6d..3132802 100644[m
+Binary files a/backend/db.sqlite3 and b/backend/db.sqlite3 differ
+[1mdiff --git a/frontend/public/index.html b/frontend/public/index.html[m
+[1mindex c576837..cb67fc2 100644[m
+[1m--- a/frontend/public/index.html[m
+[1m+++ b/frontend/public/index.html[m
+[36m@@ -10,7 +10,7 @@[m
+     <!-- <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" /> -->[m
+     <!-- <link rel="manifest" href="%PUBLIC_URL%/manifest.json" /> -->[m
+ [m
+[31m-    <!--? https://img.icons8.com/?size=100&id=xM5NpnNBYbws&format=png&color=000000 ; https://img.icons8.com/?size=100&id=3RzpTSOStHOX&format=png&color=000000 -->[m
+[32m+[m[32m    <!--? https://img.icons8.com/?size=100&id=CCP9mksmQp9E&format=png&color=000000 ; https://img.icons8.com/?size=100&id=xM5NpnNBYbws&format=png&color=000000 ; https://img.icons8.com/?size=100&id=3RzpTSOStHOX&format=png&color=000000 -->[m
+     <link rel="icon" href="https://img.icons8.com/?size=100&id=CCP9mksmQp9E&format=png&color=000000" />[m
+     <title>Code-HUB-NH</title>[m
+ </head>[m
+[36m@@ -19,8 +19,13 @@[m
+     tailwind.config = {plugins: [daisyui]}[m
+ </script>[m
+ <script src="https://cdn.jsdelivr.net/npm/daisyui@latest"></script> -->[m
+[31m-<body>[m
+[31m-    <noscript>You need to enable JavaScript to run this app.</noscript>[m
+[32m+[m[32m<body style="padding: 0; margin: 0;">[m
+[32m+[m[32m    <noscript>[m
+[32m+[m[32m        <div style="height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; background-color: black; color: red; text-align: center; font-size: 40px; font-weight: bold; font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;">[m
+[32m+[m[32m            <span style="font-size: 180px;">⚠️</span>[m
+[32m+[m[32m            <p>You need to enable JavaScript to run this app.</p>[m
+[32m+[m[32m        </div>[m
+[32m+[m[32m    </noscript>[m
+     <div id="root"></div>[m
+ </body>[m
+ [m
+[1mdiff --git a/frontend/src/api/admin.ts b/frontend/src/api/admin.ts[m
+[1mindex d749ca7..e484df9 100644[m
+[1m--- a/frontend/src/api/admin.ts[m
+[1m+++ b/frontend/src/api/admin.ts[m
+[36m@@ -2,9 +2,17 @@[m
+ import axios, { API_BASE } from './../../src/lib/config';[m
+ [m
+ [m
+[32m+[m[32m//Отримання завдань[m
+[32m+[m[32mexport async function getTasks() {[m
+[32m+[m[32m    const response = await axios.get(`${API_BASE}/admin/challenges/`, {[m
+[32m+[m[32m        withCredentials: true,[m
+[32m+[m[32m    });[m
+[32m+[m[32m    return response.data;[m
+[32m+[m[32m}[m
+[32m+[m
+ // Створити завдання[m
+ export async function createTask(form: any) {[m
+[31m-    const response = await axios.post(`${API_BASE}/admin/task/add`, form, {[m
+[32m+[m[32m    const response = await axios.post(`${API_BASE}/admin/challenges/`, form, {[m
+         withCredentials: true,[m
+     });[m
+     return response.data;[m
+[36m@@ -12,7 +20,7 @@[m [mexport async function createTask(form: any) {[m
+ [m
+ // Оновити завдання[m
+ export async function updateTask(id: string, form: any) {[m
+[31m-    const response = await axios.put(`${API_BASE}/admin/task/update/${id}/`, form, {[m
+[32m+[m[32m    const response = await axios.put(`${API_BASE}/admin/challenges/${id}/`, form, {[m
+         withCredentials: true,[m
+     });[m
+     return response.data;[m
+[36m@@ -20,29 +28,29 @@[m [mexport async function updateTask(id: string, form: any) {[m
+ [m
+ // Видалити завдання[m
+ export async function deleteTask(id: string) {[m
+[31m-    const response = await axios.delete(`${API_BASE}/admin/task/del/${id}/`, {[m
+[32m+[m[32m    const response = await axios.delete(`${API_BASE}/admin/challenges/${id}/`, {[m
+         withCredentials: true,[m
+     });[m
+     return response.data;[m
+ }[m
+ [m
+ // Отримати всі завдання[m
+[31m-export async function getUnapprovedTasks() {[m
+[31m-    const response = await axios.get(`${API_BASE}/admin/task/unapproved/`, {[m
+[32m+[m[32mexport async function getUnapprovedChannels() {[m
+[32m+[m[32m    const response = await axios.get(`${API_BASE}/admin/moderation/channels/pending/`, {[m
+         withCredentials: true,[m
+     });[m
+     return response.data;[m
+ }[m
+ [m
+ export async function acceptTask(channelId: number) {[m
+[31m-    const response = await axios.put(`${API_BASE}/admin/task/accept/${channelId}/`, {}, {[m
+[32m+[m[32m    const response = await axios.put(`${API_BASE}/admin/moderation/channels/${channelId}/approve/`, {[m
+         withCredentials: true,[m
+     });[m
+     return response.data;[m
+ }[m
+ [m
+ export async function rejectTask(channelId: number) {[m
+[31m-    const response = await axios.put(`${API_BASE}/admin/task/reject/${channelId}/`, {}, {[m
+[32m+[m[32m    const response = await axios.put(`${API_BASE}/admin/moderation/channels/${channelId}/reject/`, {[m
+         withCredentials: true,[m
+     });[m
+     return response.data;[m
+[36m@@ -57,7 +65,7 @@[m [mexport async function getCourses() {[m
+ }[m
+ [m
+ export async function createCourse (form: any) {[m
+[31m-    const response = await axios.post (`${API_BASE}/admin/course/add/`, form, {[m
+[32m+[m[32m    const response = await axios.post (`${API_BASE}/admin/courses/`, form, {[m
+         withCredentials: true,[m
+     })[m
+     return response.data;[m
+[36m@@ -65,21 +73,35 @@[m [mexport async function createCourse (form: any) {[m
+ [m
+ // Оновити курс[m
+ export async function updateCourse(id: string, form: any) {[m
+[31m-    const response = await axios.put(`${API_BASE}/admin/course/edit/${id}/`, form, {[m
+[32m+[m[32m    const response = await axios.put(`${API_BASE}/admin/courses/${id}/`, form, {[m
+         withCredentials: true,[m
+     });[m
+     return response.data;[m
+ }[m
+ [m
+ export async function deleteCourse(id: string) {[m
+[31m-    const response = await axios.delete(`${API_BASE}/admin/course/del/${id}/`, {[m
+[32m+[m[32m    const response = await axios.delete(`${API_BASE}/admin/courses/${id}/`, {[m
+         withCredentials: true,[m
+     });[m
+     return response.data;[m
+ }[m
+ [m
+ export async function createLessons(courseId: number, form: any) {[m
+[31m-    const response = await axios.post(`${API_BASE}/admin/lesson/add/${courseId}/`, form, {[m
+[32m+[m[32m    const response = await axios.post(`${API_BASE}/admin/courses/${courseId}/lessons/`, form, {[m
+[32m+[m[32m        withCredentials: true,[m
+[32m+[m[32m    });[m
+[32m+[m[32m    return response.data;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32mexport async function updateLessons(courseId: number, form: any) {[m
+[32m+[m[32m    const response = await axios.put(`${API_BASE}/admin/courses/${courseId}/lessons/`, form, {[m
+[32m+[m[32m        withCredentials: true,[m
+[32m+[m[32m    });[m
+[32m+[m[32m    return response.data;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32mexport async function deleteLesson(courseId: number, lessonId: number) {[m
+[32m+[m[32m    const response = await axios.delete(`${API_BASE}/admin/courses/${courseId}/lessons/${lessonId}/`, {[m
+         withCredentials: true,[m
+     });[m
+     return response.data;[m
+[36m@@ -93,14 +115,14 @@[m [mexport async function projectsList() {[m
+ }[m
+ [m
+ export async function projectUpdate(ProjId: number, form: any) {[m
+[31m-    const response = await axios.patch(`${API_BASE}/admin/proj/${ProjId}/update/`, form, {[m
+[32m+[m[32m    const response = await axios.patch(`${API_BASE}/admin/projects/${ProjId}/`, form, {[m
+         withCredentials: true,[m
+     });[m
+     return response.data;[m
+ }[m
+ [m
+ export async function projectDelete(ProjId: number) {[m
+[31m-    const response = await axios.delete(`${API_BASE}/admin/proj/${ProjId}/del/`, {[m
+[32m+[m[32m    const response = await axios.delete(`${API_BASE}/admin/projects/${ProjId}/`, {[m
+         withCredentials: true,[m
+     });[m
+     return response.data;[m
+[36m@@ -114,21 +136,21 @@[m [mexport async function usersList() {[m
+ }[m
+ [m
+ export async function adminUpdateUser (user_id: number, form: any) {[m
+[31m-    const response = await axios.patch(`${API_BASE}/admin/user/update/${user_id}/`, form, {[m
+[32m+[m[32m    const response = await axios.patch(`${API_BASE}/admin/users/${user_id}/`, form, {[m
+         withCredentials: true,[m
+     });[m
+     return response.data;[m
+ }[m
+ [m
+ export async function adminDeleteUser (user_id: number) {[m
+[31m-    const response = await axios.delete(`${API_BASE}/admin/user/del/${user_id}/`, {[m
+[32m+[m[32m    const response = await axios.delete(`${API_BASE}/admin/users/${user_id}/`, {[m
+         withCredentials: true,[m
+     });[m
+     return response.data;[m
+ }[m
+ [m
+ export async function adminBanUser (user_id: number, reason: string) {[m
+[31m-    const response = await axios.post(`${API_BASE}/admin/user/ban/${user_id}/`, { reason }, {[m
+[32m+[m[32m    const response = await axios.post(`${API_BASE}/admin/users/${user_id}/ban/`, { reason }, {[m
+         withCredentials: true,[m
+     });[m
+     return response.data;[m
+[1mdiff --git a/frontend/src/api/curses.ts b/frontend/src/api/curses.ts[m
+[1mindex 3054cde..1e50736 100644[m
+[1m--- a/frontend/src/api/curses.ts[m
+[1m+++ b/frontend/src/api/curses.ts[m
+[36m@@ -2,16 +2,16 @@[m [mimport axios, { API_BASE } from './../../src/lib/config';[m
+ [m
+ [m
+ //[m
+[31m-export async function getCourse (id: number) {[m
+[31m-    const response = await axios.get(`${API_BASE}/course/${id}/`, {[m
+[32m+[m[32mexport async function getCourses() {[m
+[32m+[m[32m    const response = await axios.get(`${API_BASE}/course/list/`, {[m
+         withCredentials: true,[m
+     });[m
+     return response.data;[m
+ }[m
+ [m
+ //[m
+[31m-export async function getCourses() {[m
+[31m-    const response = await axios.get(`${API_BASE}/course/list/`, {[m
+[32m+[m[32mexport async function getCourse (id: number) {[m
+[32m+[m[32m    const response = await axios.get(`${API_BASE}/course/${id}/`, {[m
+         withCredentials: true,[m
+     });[m
+     return response.data;[m
+[1mdiff --git a/frontend/src/components/ActionCell.tsx b/frontend/src/components/ActionCell.tsx[m
+[1mindex a50a352..21f9731 100644[m
+[1m--- a/frontend/src/components/ActionCell.tsx[m
+[1m+++ b/frontend/src/components/ActionCell.tsx[m
+[36m@@ -1,82 +1,36 @@[m
+[31m-import { useState, useEffect, useRef } from 'react';[m
+[31m-import { Edit, Trash2, Share2, Flag, MoreVertical } from 'lucide-react';[m
+[31m-import { ActionsCellPropsProj } from '../types/projects';[m
+[31m-import { ActionsCellPropsForum, ActionsCellPropsChannel, ActionsCellPropsComment } from '../types/forum';[m
+[32m+[m[32mimport React, { useState, useEffect, useRef, ReactNode } from 'react';[m
+[32m+[m[32mimport { MoreVertical } from 'lucide-react';[m
+[32m+[m[32mimport { Edit, Trash2 } from 'lucide-react';[m
+[32m+[m[32mimport { ActionsCellPropsForum } from '../types/forum';[m
+ import { Button } from './ui/Button';[m
+[31m-[m
+[31m-// ====================== Project Actions ======================[m
+[31m-export function ActionsCellProj({ entry, startRename }: ActionsCellPropsProj) {[m
+[31m-    const [open, setOpen] = useState(false);[m
+[31m-    const menuRef = useRef<HTMLDivElement>(null);[m
+[31m-[m
+[31m-    useEffect(() => {[m
+[31m-        const handleClickOutside = (e: MouseEvent) => {[m
+[31m-            if (menuRef.current && !menuRef.current.contains(e.target as Node)) {[m
+[31m-                setOpen(false);[m
+[31m-            }[m
+[31m-        };[m
+[31m-[m
+[31m-        if (open) {[m
+[31m-            document.addEventListener('mousedown', handleClickOutside);[m
+[31m-        }[m
+[31m-[m
+[31m-        return () => {[m
+[31m-            document.removeEventListener('mousedown', handleClickOutside);[m
+[31m-        };[m
+[31m-    }, [open]);[m
+[31m-[m
+[31m-    return ([m
+[31m-        <td className="relative">[m
+[31m-            <button[m
+[31m-                onClick={(e) => {[m
+[31m-                    e.stopPropagation();[m
+[31m-                    setOpen(!open);[m
+[31m-                }}[m
+[31m-                className="p-1 nz-background-primary rounded-full hover:nz-background-secondary"[m
+[31m-            >[m
+[31m-                <MoreVertical className="w-4 h-4" />[m
+[31m-            </button>[m
+[31m-[m
+[31m-            {open && ([m
+[31m-                <div ref={menuRef} className="absolute right-0 mt-2 w-32 rounded-md shadow-lg border nz-background-accent z-50">[m
+[31m-                    <button [m
+[31m-                        onClick={(e) => { [m
+[31m-                            e.stopPropagation(); [m
+[31m-                            setOpen(false); [m
+[31m-                            startRename(entry); [m
+[31m-                        }} [m
+[31m-                        className="flex w-full text-left px-3 py-2 hover:nz-background-primary rounded-t-md"[m
+[31m-                    >[m
+[31m-                        <Edit className='w-4 h-4 mr-2' /> Edit[m
+[31m-                    </button>[m
+[31m-[m
+[31m-                    <button [m
+[31m-                        onClick={(e) => { [m
+[31m-                            e.stopPropagation(); [m
+[31m-                            setOpen(false); [m
+[31m-                        }} [m
+[31m-                        className="flex w-full text-left px-3 py-2 hover:nz-background-primary"[m
+[31m-                    >[m
+[31m-                        <Trash2 className='w-4 h-4 mr-2' /> Delete[m
+[31m-                    </button>[m
+[31m-[m
+[31m-                    <button [m
+[31m-                        onClick={(e) => { [m
+[31m-                            e.stopPropagation(); [m
+[31m-                            setOpen(false); [m
+[31m-                        }} [m
+[31m-                        className="flex w-full text-left px-3 py-2 hover:nz-background-primary rounded-b-md"[m
+[31m-                    >[m
+[31m-                        <Share2 className='w-4 h-4 mr-2' /> Share[m
+[31m-                    </button>[m
+[31m-                </div>[m
+[31m-            )}[m
+[31m-        </td>[m
+[31m-    );[m
+[31m-}[m
+[31m-[m
+[31m-// ====================== Forum Actions ======================[m
+[31m-export function ActionsCellForum({ onEdit, onDelete }: ActionsCellPropsForum) {[m
+[32m+[m[32mimport { cn } from '../lib/cn';[m
+[32m+[m
+[32m+[m[32mexport type ActionItem = {[m
+[32m+[m[32m    label: string;[m
+[32m+[m[32m    icon: ReactNode;[m
+[32m+[m[32m    onClick: () => void;[m
+[32m+[m[32m    variant?: 'default' | 'danger';[m
+[32m+[m[32m};[m
+[32m+[m
+[32m+[m[32mtype ActionsCellProps = {[m
+[32m+[m[32m    actions: ActionItem[];[m
+[32m+[m[32m    triggerIcon?: ReactNode;[m
+[32m+[m[32m    className?: string;[m
+[32m+[m[32m    buttonClassName?: string;[m
+[32m+[m[32m    menuClassName?: string;[m
+[32m+[m[32m    position?: 'top-right' | 'bottom-right';[m
+[32m+[m[32m    menuWidth?: string;                         //? наприклад "w-40"[m
+[32m+[m[32m};[m
+[32m+[m
+[32m+[m[32mexport const ActionsCell = ({[m
+[32m+[m[32m    actions,[m
+[32m+[m[32m    triggerIcon = <MoreVertical className="w-4 h-4" />,[m
+[32m+[m[32m    className = "",[m
+[32m+[m[32m    buttonClassName = "",[m
+[32m+[m[32m    menuClassName = "",[m
+[32m+[m[32m    position = 'bottom-right',[m
+[32m+[m[32m    menuWidth = "w-32"[m
+[32m+[m[32m}: ActionsCellProps) => {[m
+     const [open, setOpen] = useState(false);[m
+     const menuRef = useRef<HTMLDivElement>(null);[m
+ [m
+[36m@@ -87,111 +41,63 @@[m [mexport function ActionsCellForum({ onEdit, onDelete }: ActionsCellPropsForum) {[m
+             }[m
+         };[m
+ [m
+[31m-        if (open) {[m
+[31m-            document.addEventListener('mousedown', handleClickOutside);[m
+[31m-        }[m
+[31m-[m
+[32m+[m[32m        if (open) document.addEventListener('mousedown', handleClickOutside);[m
+         return () => document.removeEventListener('mousedown', handleClickOutside);[m
+     }, [open]);[m
+ [m
+[31m-    return ([m
+[31m-        <div ref={menuRef}>[m
+[31m-            <button[m
+[31m-                onClick={(e) => {[m
+[31m-                    e.stopPropagation();[m
+[31m-                    setOpen(!open);[m
+[31m-                }}[m
+[31m-                className="nz-background-accent p-2 rounded-full hover:nz-bg-hover absolute -right-2 -top-1 md:right-1 md:top-1"[m
+[31m-            >[m
+[31m-                <MoreVertical className="w-4 h-4" />[m
+[31m-            </button>[m
+[31m-[m
+[31m-            {open && ([m
+[31m-                <div className="absolute right-0 top-5 md:top-10 w-32 rounded-md shadow-lg border nz-background-accent z-50">[m
+[31m-                    <button [m
+[31m-                        onClick={(e) => { e.stopPropagation(); setOpen(false); onEdit(); }} [m
+[31m-                        className="flex items-center w-full text-left px-3 py-2 hover:nz-background-primary rounded-t-md"[m
+[31m-                    >[m
+[31m-                        <Edit className='w-4 h-4 mr-2' /> Edit[m
+[31m-                    </button>[m
+[31m-[m
+[31m-                    <button [m
+[31m-                        onClick={(e) => { e.stopPropagation(); setOpen(false); onDelete(); }} [m
+[31m-                        className="flex items-center w-full text-left px-3 py-2 hover:nz-background-primary"[m
+[31m-                    >[m
+[31m-                        <Trash2 className='w-4 h-4 mr-2' /> Delete[m
+[31m-                    </button>[m
+[31m-[m
+[31m-                    <button [m
+[31m-                        onClick={(e) => { e.stopPropagation(); setOpen(false); }} [m
+[31m-                        className="flex items-center w-full text-left px-3 py-2 hover:nz-background-primary rounded-b-md"[m
+[31m-                    >[m
+[31m-                        <Share2 className='w-4 h-4 mr-2' /> Share[m
+[31m-                    </button>[m
+[31m-                </div>[m
+[31m-            )}[m
+[31m-        </div>[m
+[31m-    );[m
+[31m-}[m
+[31m-[m
+[31m-// ====================== Channel Actions ======================[m
+[31m-export function ActionsCellChannel({ onEdit, onDelete }: ActionsCellPropsChannel) {[m
+[31m-    const [open, setOpen] = useState(false);[m
+[31m-    const menuRef = useRef<HTMLDivElement>(null);[m
+[31m-[m
+[31m-    useEffect(() => {[m
+[31m-        const handleClickOutside = (e: MouseEvent) => {[m
+[31m-            if (menuRef.current && !menuRef.current.contains(e.target as Node)) {[m
+[31m-                setOpen(false);[m
+[31m-            }[m
+[31m-        };[m
+[31m-[m
+[31m-        if (open) {[m
+[31m-            document.addEventListener('mousedown', handleClickOutside);[m
+[31m-        }[m
+[31m-[m
+[31m-        return () => document.removeEventListener('mousedown', handleClickOutside);[m
+[31m-    }, [open]);[m
+[32m+[m[32m    const menuPositionClass = position === 'top-right'[m[41m [m
+[32m+[m[32m        ? "top-10 right-0"[m[41m [m
+[32m+[m[32m        : "top-8 right-0";[m
+ [m
+     return ([m
+[31m-        <div className="relative" ref={menuRef}>[m
+[32m+[m[32m        <div className={`relative ${className}`} ref={menuRef}>[m
+[32m+[m[32m            {/* Кнопка-тригер */}[m
+             <button[m
+                 onClick={(e) => {[m
+                     e.stopPropagation();[m
+                     setOpen(!open);[m
+                 }}[m
+[31m-                className="nz-background-accent p-2 rounded-full hover:nz-bg-hover absolute right-0 top-0 md:right-1 md:top-1"[m
+[32m+[m[32m                className={cn([m
+[32m+[m[32m                    "p-2 rounded-full nz-background-accent hover:nz-bg-hover transition-colors",[m
+[32m+[m[32m                    buttonClassName[m
+[32m+[m[32m                )}[m
+             >[m
+[31m-                <MoreVertical className="w-4 h-4" />[m
+[32m+[m[32m                {triggerIcon}[m
+             </button>[m
+ [m
+[32m+[m[32m            {/* Меню */}[m
+             {open && ([m
+[31m-                <div className="absolute right-0 top-10 w-32 rounded-md shadow-lg border nz-background-accent z-50">[m
+[31m-                    <button [m
+[31m-                        onClick={(e) => { e.stopPropagation(); setOpen(false); onEdit(); }} [m
+[31m-                        className="flex items-center w-full text-left px-3 py-1 hover:nz-background-primary rounded-t-md"[m
+[31m-                    >[m
+[31m-                        <Edit className='w-4 h-4 mr-2' /> Edit[m
+[31m-                    </button>[m
+[31m-[m
+[31m-                    <button [m
+[31m-                        onClick={(e) => { e.stopPropagation(); setOpen(false); onDelete(); }} [m
+[31m-                        className="flex items-center w-full text-left px-3 py-1 hover:nz-background-primary"[m
+[31m-                    >[m
+[31m-                        <Trash2 className='w-4 h-4 mr-2' /> Delete[m
+[31m-                    </button>[m
+[31m-[m
+[31m-                    <button [m
+[31m-                        onClick={(e) => { e.stopPropagation(); setOpen(false); }} [m
+[31m-                        className="flex items-center w-full text-left px-3 py-1 hover:nz-background-primary rounded-b-md"[m
+[31m-                    >[m
+[31m-                        <Share2 className='w-4 h-4 mr-2' /> Share[m
+[31m-                    </button>[m
+[32m+[m[32m                <div[m[41m [m
+[32m+[m[32m                    className={cn([m
+[32m+[m[32m                        `absolute ${menuPositionClass} ${menuWidth} rounded-md shadow-lg border nz-background-accent z-50`,[m
+[32m+[m[32m                        menuClassName[m
+[32m+[m[32m                    )}[m
+[32m+[m[32m                >[m
+[32m+[m[32m                    {actions.map((action, index) => ([m
+[32m+[m[32m                        <button[m
+[32m+[m[32m                            key={index}[m
+[32m+[m[32m                            onClick={(e) => {[m
+[32m+[m[32m                                e.stopPropagation();[m
+[32m+[m[32m                                setOpen(false);[m
+[32m+[m[32m                                action.onClick();[m
+[32m+[m[32m                            }}[m
+[32m+[m[32m                            className={cn([m
+[32m+[m[32m                                "flex w-full items-center p-1.5 text-sm hover:nz-background-primary transition-colors",[m
+[32m+[m[32m                                action.variant === 'danger' && "text-red-400 hover:text-red-300",[m
+[32m+[m[32m                                index === 0 && "rounded-t-md",[m
+[32m+[m[32m                                index === actions.length - 1 && "rounded-b-md"[m
+[32m+[m[32m                            )}[m
+[32m+[m[32m                        >[m
+[32m+[m[32m                            <span className="mr-3">{action.icon}</span>[m
+[32m+[m[32m                            {action.label}[m
+[32m+[m[32m                        </button>[m
+[32m+[m[32m                    ))}[m
+                 </div>[m
+             )}[m
+         </div>[m
+     );[m
+[31m-}[m
+[32m+[m[32m};[m
+[32m+[m
+ [m
+ export function ActionsCellInChannel({ onEdit, onDelete }: ActionsCellPropsForum) {[m
+     const [open, setOpen] = useState(false);[m
+[36m@@ -245,59 +151,3 @@[m [mexport function ActionsCellInChannel({ onEdit, onDelete }: ActionsCellPropsForum[m
+         </div>[m
+     );[m
+ }[m
+[31m-[m
+[31m-export function ActionsCellInComment({ onEdit, onDelete, onReport }: ActionsCellPropsComment) {[m
+[31m-    const [open, setOpen] = useState(false);[m
+[31m-    const menuRef = useRef<HTMLDivElement>(null);[m
+[31m-[m
+[31m-    useEffect(() => {[m
+[31m-        const handleClickOutside = (e: MouseEvent) => {[m
+[31m-            if (menuRef.current && !menuRef.current.contains(e.target as Node)) {[m
+[31m-                setOpen(false);[m
+[31m-            }[m
+[31m-        };[m
+[31m-[m
+[31m-        if (open) {[m
+[31m-            document.addEventListener('mousedown', handleClickOutside);[m
+[31m-        }[m
+[31m-[m
+[31m-        return () => document.removeEventListener('mousedown', handleClickOutside);[m
+[31m-    }, [open]);[m
+[31m-[m
+[31m-    return ([m
+[31m-        <div ref={menuRef}>[m
+[31m-            <button className="p-1 text-white nz-background-primary hover:nz-bg-hover rounded-full"[m
+[31m-                onClick={(e) => {[m
+[31m-                    e.stopPropagation();[m
+[31m-                    setOpen(!open);[m
+[31m-                }}[m
+[31m-            >[m
+[31m-                <MoreVertical className="w-4 h-4" />[m
+[31m-            </button>[m
+[31m-[m
+[31m-            {open && ([m
+[31m-                <div className="absolute right-1 top-7 w-32 rounded-md shadow-lg border nz-background-accent z-50">[m
+[31m-                    <button [m
+[31m-                        onClick={(e) => { e.stopPropagation(); setOpen(false); onEdit(); }} [m
+[31m-                        className="flex items-center w-full text-left px-3 py-2 hover:nz-background-primary rounded-t-md"[m
+[31m-                    >[m
+[31m-                        <Edit className='w-4 h-4 mr-2' /> Edit[m
+[31m-                    </button>[m
+[31m-[m
+[31m-                    <button [m
+[31m-                        onClick={(e) => { e.stopPropagation(); setOpen(false); onDelete(); }} [m
+[31m-                        className="flex items-center w-full text-left px-3 py-2 hover:nz-background-primary rounded-b-md"[m
+[31m-                    >[m
+[31m-                        <Trash2 className='w-4 h-4 mr-2' /> Delete[m
+[31m-                    </button>[m
+[31m-                    <button [m
+[31m-                        onClick={(e) => { e.stopPropagation(); setOpen(false); onReport(); }} [m
+[31m-                        className="flex items-center w-full text-left px-3 py-2 hover:nz-background-primary rounded-b-md"[m
+[31m-                    >[m
+[31m-                        <Flag className='w-4 h-4 mr-2' /> Report[m
+[31m-                    </button>[m
+[31m-                </div>[m
+[31m-            )}[m
+[31m-        </div>[m
+[31m-    );[m
+[31m-}[m
+[1mdiff --git a/frontend/src/components/ThemeToggle.tsx b/frontend/src/components/ThemeToggle.tsx[m
+[1mindex 83ee2b4..64b66c6 100644[m
+[1m--- a/frontend/src/components/ThemeToggle.tsx[m
+[1m+++ b/frontend/src/components/ThemeToggle.tsx[m
+[36m@@ -1,6 +1,5 @@[m
+ import React, { useMemo } from 'react'[m
+ import { useTheme } from '../hooks/useTheme'[m
+[31m-// import { Palette } from 'lucide-react'[m
+ import { Select } from './ui/Select'[m
+ [m
+ const themeOptions = [[m
+[36m@@ -60,7 +59,6 @@[m [mexport function ThemeToggle() {[m
+ [m
+     return ([m
+         <div className="flex items-center gap-1">[m
+[31m-            {/* <Palette className="text-primary" size={18} /> */}[m
+             <Select[m
+                 options={filteredOptions}[m
+                 placeholder="Theme"[m
+[1mdiff --git a/frontend/src/components/challenges/CodeChallengeView.tsx b/frontend/src/components/challenges/CodeChallengeView.tsx[m
+[1mindex 4576b74..ccafe61 100644[m
+[1m--- a/frontend/src/components/challenges/CodeChallengeView.tsx[m
+[1m+++ b/frontend/src/components/challenges/CodeChallengeView.tsx[m
+[36m@@ -7,7 +7,7 @@[m [mimport { Button } from '../../components/ui/Button';[m
+ import { Card, CardContent, CardHeader } from '../../components/ui/Card';[m
+ import { CodeEditor } from '../../components/CodeEditor';[m
+ import { useToast } from '../../providers/MessageProvider';[m
+[31m-import { Tasks, ChallengeViewProps } from '../../types/tasks';[m
+[32m+[m[32mimport { Tasks, ChallengeViewProps, LANGUAGE_LABELS } from '../../types/tasks';[m
+ import { formatRelativeTime } from '../../lib/formatDate';[m
+ [m
+ export default function CodeChallengeView ({ challenge }: ChallengeViewProps) {[m
+[36m@@ -58,7 +58,7 @@[m [mexport default function CodeChallengeView ({ challenge }: ChallengeViewProps) {[m
+                         <div className="flex items-center gap-4 text-sm nz-text-muted">[m
+                             <span className="flex items-center gap-1">[m
+                                 <Code2 className='w-4 h-4' />[m
+[31m-                                {challenge.code_challenge.language?.toUpperCase() || "---"}[m
+[32m+[m[32m                                {LANGUAGE_LABELS[challenge.language] || '—'}[m
+                             </span>[m
+                             <span className='text-xl'>•</span>[m
+                             <span className="flex items-center gap-1">[m
+[36m@@ -99,17 +99,17 @@[m [mexport default function CodeChallengeView ({ challenge }: ChallengeViewProps) {[m
+                                     <p className='flex items-center pl-4 gap-2 nz-text-muted'><XCircle className='w-4 h-4' />No tags</p>[m
+                                 )}[m
+                             </div>[m
+[31m-                            {challenge.code_challenge.e_input && ([m
+[32m+[m[32m                            {(challenge.code_challenge?.e_input || challenge.code_challenge?.e_output) && ([m
+                                 <div>[m
+                                     <h3 className="text-lg font-semibold mb-3">Example:</h3>[m
+                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">[m
+                                         <div className="nz-background-accent p-4 rounded-xl">[m
+                                             <p className="text-xs nz-text-muted mb-1">Input:</p>[m
+[31m-                                            <span className="text-sm text-white font-mono">{challenge.code_challenge.e_input}</span>[m
+[32m+[m[32m                                            <span className="text-sm text-white font-mono">{challenge.code_challenge?.e_input || 'No input provided'}</span>[m
+                                         </div>[m
+                                         <div className="nz-background-accent p-4 rounded-xl">[m
+                                             <p className="text-xs nz-text-muted mb-1">Output:</p>[m
+[31m-                                            <span className="text-sm text-emerald-400 font-mono">{challenge.code_challenge.e_output}</span>[m
+[32m+[m[32m                                            <span className="text-sm text-emerald-400 font-mono">{challenge.code_challenge?.e_output || 'No output provided'}</span>[m
+                                         </div>[m
+                                     </div>[m
+                                 </div>[m
+[36m@@ -136,7 +136,7 @@[m [mexport default function CodeChallengeView ({ challenge }: ChallengeViewProps) {[m
+ [m
+                         <CardContent className="p-0">[m
+                             <CodeEditor[m
+[31m-                                value={challenge.code_challenge.starter_code}[m
+[32m+[m[32m                                value={challenge.code_challenge?.starter_code}[m
+                                 onChange={setUserCode}[m
+                             />[m
+                         </CardContent>[m
+[1mdiff --git a/frontend/src/components/challenges/QuizChallengeView.tsx b/frontend/src/components/challenges/QuizChallengeView.tsx[m
+[1mindex ba9fbde..af458d7 100644[m
+[1m--- a/frontend/src/components/challenges/QuizChallengeView.tsx[m
+[1m+++ b/frontend/src/components/challenges/QuizChallengeView.tsx[m
+[36m@@ -189,6 +189,74 @@[m [mexport default function QuizChallengeView({ challenge }: ChallengeViewProps) {[m
+ [m
+         return ([m
+             <div className="flex justify-center">[m
+[32m+[m[32m                <div>[m
+[32m+[m[32m                    <SvipeModal[m
+[32m+[m[32m                        isOpen={showReview}[m
+[32m+[m[32m                        onClose={() => (setShowReview(false))}[m
+[32m+[m[32m                        title={[m
+[32m+[m[32m                            <div className='flex items-center gap-2 line-clamp-1'>[m
+[32m+[m[32m                                <Eye className='w-5 h-5' /> Review Your Answers[m
+[32m+[m[32m                            </div>[m
+[32m+[m[32m                        }[m
+[32m+[m[32m                        size="lg"[m
+[32m+[m[32m                        position="right"[m
+[32m+[m[32m                    >[m
+[32m+[m[32m                        <div className="space-y-8 max-h-[82.5vh] md:max-h-[70vh] overflow-y-auto pr-2">[m
+[32m+[m[32m                            {questions.map((question, idx) => {[m
+[32m+[m[32m                                const savedAnswerIndex = challenge.user_progress?.selected_answers?.[question.id];
