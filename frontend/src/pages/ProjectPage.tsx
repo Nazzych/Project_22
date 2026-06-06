@@ -20,6 +20,7 @@ import { FileExplorerProps } from '../types/projects';
 import { CodeEditor } from '../components/CodeEditor';
 import { ActionsCell } from '../components/ActionCell';
 import { cn } from '../lib/cn';
+import { UserProfileModal } from '../components/shared/modal/modals/profile/UserProfileModal';
 
 
 const ProjectPage = () => {
@@ -37,8 +38,19 @@ const ProjectPage = () => {
     const [isSaving, setIsSaving] = useState(false);
     const [editContent, setEditContent] = useState<string>('');
     const [fileContent, setFileContent] = useState<string>('');
+    const [selectedUser, setSelectedUser] = useState<any>(null);
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
 
     var isModified = editContent !== fileContent;
+
+    const OpenUserProfile = (user: any) => {
+        setSelectedUser(user);
+        setIsProfileOpen(true);
+    };
+    const CloseUserProfile = () => {
+        setIsProfileOpen(false);
+        setSelectedUser(null);
+    };
 
     useEffect(() => {
         // const { showToast } = useToast();
@@ -420,6 +432,11 @@ const ProjectPage = () => {
 
     return (
         <div>
+            <UserProfileModal
+                user={selectedUser} 
+                isOpen={isProfileOpen} 
+                onClose={CloseUserProfile} 
+            />
             <Button
                 variant="btn_secondary"
                 size="sm"
@@ -480,7 +497,9 @@ const ProjectPage = () => {
                                     alt="-"
                                     className="w-8 h-8 border object-cover rounded-full"
                                 />
-                                <span className="font-medium nz-foreground hover:underline hover:cursor-pointer">@{project.owner.username}</span>
+                                <span className="font-medium nz-foreground hover:underline hover:cursor-pointer" onClick={() => OpenUserProfile(project.owner)}>
+                                    @{project.owner.username}
+                                </span>
                             </div>
                             <span className='text-xl font-bold'>•</span>
                             <div className="flex items-center gap-1">

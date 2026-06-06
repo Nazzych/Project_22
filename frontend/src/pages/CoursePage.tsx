@@ -11,12 +11,13 @@ import { cn } from '../lib/cn';
 import axios from 'axios';
 
 import { Card, CardContent, CardHeader } from '../components/ui/Card';
-import { Button } from '../components/ui/Button';
+import { UserProfileModal } from '../components/shared/modal/modals/profile/UserProfileModal';
 import { LessonManage } from '../components/shared/modal/modals/admin/LesonManage';
 import { CourseManage } from '../components/shared/modal/modals/admin/CourseManage';
 import { ConfirmModal } from '../components/shared/modal/ConfirmModal';
 import { LessonViewerModal } from '../components/shared/modal/modals/curses/LessonModal';
 import { ProgressBar } from '../components/ui/ProgressBar';
+import { Button } from '../components/ui/Button';
 import { ActionsCell, ActionsCellInChannel } from '../components/ActionCell';
 import { getCsrfToken } from '../api/auth';
 import { deleteCourse, deleteLesson } from '../api/admin';
@@ -35,6 +36,17 @@ export function CoursePage() {
     const [loading, setLoading] = useState(true);
     const [isExpanded, setIsExpanded] = useState(false);
     const toggleExpande = () => setIsExpanded(!isExpanded);
+    const [selectedUser, setSelectedUser] = useState<any>(null);
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
+
+    const OpenUserProfile = (user: any) => {
+        setSelectedUser(user);
+        setIsProfileOpen(true);
+    };
+    const CloseUserProfile = () => {
+        setIsProfileOpen(false);
+        setSelectedUser(null);
+    };
 
     const loadCourseData = async () => {
         if (!courseId) return;
@@ -246,6 +258,11 @@ export function CoursePage() {
 
     return (
         <div className="space-y-8">
+            <UserProfileModal 
+                user={selectedUser} 
+                isOpen={isProfileOpen} 
+                onClose={CloseUserProfile} 
+            />
             {/* Шапка курсу */}
             <div className="relative rounded-3xl overflow-hidden border border-border">
                 <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/50 to-black/70" />
@@ -316,7 +333,7 @@ export function CoursePage() {
                                 </h1>
                             </div>
                             <p className="flex flex-wrap items-center text-zinc-300 text-xs sm:text-sm gap-2 mt-1">
-                                <span className="hover:underline cursor-pointer">@{course.author?.username}</span> {lessons.length !== 0 && (<span className={cn("flex items-center gap-2 " + (isExpanded ? "opacity-0" : "opacity-100"))}>• <Button size="sm" variant='btn_glass' className="flex items-center gap-2 mt-1" onClick={beginStudy} disabled={isExpanded}><Play className="w-4 h-5" />{lessons[0].is_unlocked ? "Countinue" : "Begin"}</Button></span>)}
+                                <span className="hover:underline cursor-pointer" onClick={() => OpenUserProfile(course.author)}>@{course.author?.username}</span> {lessons.length !== 0 && (<span className={cn("flex items-center gap-2 " + (isExpanded ? "opacity-0" : "opacity-100"))}>• <Button size="sm" variant='btn_glass' className="flex items-center gap-2 mt-1" onClick={beginStudy} disabled={isExpanded}><Play className="w-4 h-5" />{lessons[0].is_unlocked ? "Countinue" : "Begin"}</Button></span>)}
                             </p>
                             {/* Розгорнутий опис */}
                             <AnimatePresence>

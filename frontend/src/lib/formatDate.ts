@@ -1,6 +1,9 @@
 //?profile?.date_joined.split('T')[0]
 
 //*<----------[Date]---------->
+/**
+    * Форматує дату у стиль "June 2024" (місяць + рік)
+*/
 export function formatJoinDate(dateString: string): string {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat('en-US', {
@@ -20,7 +23,7 @@ export function formatDateNumeric(dateString: string): string {
 //*<----------[Time]---------->
 /**
  * Форматує дату у стиль "22:00" (тільки час)
- */
+*/
 export function formatTime(dateString: string): string {
     const date = new Date(dateString);
     return date.toLocaleTimeString('uk-UA', {
@@ -31,7 +34,7 @@ export function formatTime(dateString: string): string {
 
 /**
  * Форматує дату у відносний час: "10 хв тому", "2 год тому", "вчора" тощо
- */
+*/
 export function formatRelativeTime(dateString: string, option: boolean = false): string {
     const date = new Date(dateString);
     const now = new Date();

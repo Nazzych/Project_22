@@ -15,6 +15,9 @@ export type ProjectCardProps = {
     owner: {
         id: string;
         username: string;
+        profile: {
+            avatar_url: string;
+        };
     };
     canEdit?: boolean;
     onEdit?: (projectId: number) => void;
