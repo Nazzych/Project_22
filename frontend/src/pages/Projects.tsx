@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { Search, FolderGit2, Folder, Plus, X, Flame, CheckCircle, Star, Layers2, Code2, XCircle } from 'lucide-react';
 import { useProfile } from '../contexts/ProfileContext';
 import { ProjectManage } from '../components/shared/modal/modals/projects/ProjectManage';
+import { Avatar } from '../components/Image';
 import { fetchProjects } from '../api/projects';
 import { useToast } from '../hooks/useToast';
 import { Skeleton } from '../components/LoadingSpinner';
@@ -250,7 +251,7 @@ export function ProjectsHub() {
                                                             <div className="relative group w-fit">
                                                                 <div className="absolute inset-0 bg-gradient-to-tr from-primary to-secondary rounded-full blur-lg opacity-50 group-hover:opacity-100 transition-opacity" />
                                                                 <div className="relative z-10">
-                                                                    <img
+                                                                    <Avatar
                                                                         src={profile?.profile.avatar_url}
                                                                         alt="User avatar"
                                                                         className="h-20 w-20 rounded-full object-cover border border-white/10 shadow-md nz-ring" />

@@ -6,6 +6,7 @@ import { Lesson } from '../../../../../types/curses';
 import { lessonFinish } from '../../../../../api/curses';
 import { cn } from '../../../../../lib/cn';
 import { getCsrfToken } from '../../../../../api/auth';
+import { Image } from '../../../../Image';
 
 interface LessonViewerModalProps {
     courseId: number;
@@ -155,9 +156,9 @@ export function LessonViewerModal({
                                             className="w-full"
                                         />
                                     ) : (
-                                        <img 
+                                        <Image
                                             src={currentLesson.url} 
-                                            alt={currentLesson.title}
+                                            alt={currentLesson.title.slice(0, 2).toUpperCase()}
                                             className="w-full max-h-[460px] object-contain nz-background-secondary"
                                         />
                                     )}

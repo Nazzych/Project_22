@@ -5,7 +5,7 @@ import { useModal } from '../../../hooks/useModal';
 import { Profile } from '../../../types/profile';
 import { useProfile } from "../../../contexts/ProfileContext";
 import { UserDetailModal } from "./UserDetailModal";
-import { Tooltip } from "../../Tooltip";
+import { Avatar } from "../../Image";
 
 interface AdminUserCardProps {
     user: any;
@@ -41,17 +41,11 @@ export function AdminUserCard({ user, onEdit }: AdminUserCardProps) {
                     {/* Аватар */}
                     <div className="relative flex-shrink-0">
                         <div className="w-16 h-16 rounded-full overflow-hidden border border-zinc-700 bg-zinc-900">
-                            {user.profile?.avatar_url ? (
-                                <img 
-                                    src={user.profile.avatar_url} 
-                                    alt={user.username}
-                                    className="w-full h-full object-cover"
-                                />
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center text-3xl font-bold bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white">
-                                    {(user.first_name?.[0] || user.username?.[0] || "?").toUpperCase()}
-                                </div>
-                            )}
+                            <Avatar size="lg"
+                                src={user.profile.avatar_url} 
+                                alt={(user.first_name?.[0] || user.username?.[0] || "?").toUpperCase()}
+                                className="w-full h-full object-cover"
+                            />
                         </div>
 
                         {/* Статусні іконки */}

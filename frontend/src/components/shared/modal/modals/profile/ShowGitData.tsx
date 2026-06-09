@@ -21,6 +21,7 @@ import { EditableProfileGit } from '../../../../../types/profile';
 import { saveGitHubProfile } from '../../../../../api/profile';
 import { getCsrfToken } from '../../../../../api/auth';
 import { useProfile } from '../../../../../contexts/ProfileContext';
+import { Image } from '../../../../Image';
 
 interface GitHubProfileModalProps {
     githubData: Record<string, string | number | null>;
@@ -182,8 +183,8 @@ export function GitHubProfileModal({ githubData, existingBio }: GitHubProfileMod
                     </label>
                     {useAvatar && (
                         <>
-                            <img
-                                src={String(githubData.avatar_url) || '/default-avatar.png'}
+                            <Image
+                                src={String(githubData.avatar_url) || ""}
                                 alt="GitHub Avatar"
                                 className="w-16 h-16 rounded-full border border-border shadow mb-2"
                             />

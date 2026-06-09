@@ -13,6 +13,7 @@ import { getCsrfToken } from '../../../../../api/auth';
 import { adminUpdateUser, adminDeleteUser, adminBanUser } from '../../../../../api/admin';
 import { Profile } from '../../../../../types/profile';
 import { FormModalWithInput } from '../../FormModalWithInput';
+import { Avatar } from '../../../../Image';
 
 interface AdminEditUserModalProps {
     user: any;
@@ -269,17 +270,11 @@ export function AdminEditUserModal({ user, onSuccess }: AdminEditUserModalProps)
             <section className="flex-1 p-6 overflow-y-auto">
                 <div className='flex items-center justify-between flex-wrap gap-4 mb-8 p-2 nz-background-accent border rounded-3xl'>
                     <div className='flex items-center flex-wrap gap-4'>
-                        {user.profile?.avatar_url ? (
-                            <img 
-                                src={user.profile.avatar_url} 
-                                alt={user.username}
-                                className="w-16 h-16 object-cover rounded-full"
-                            />
-                        ) : (
-                            <div className="w-16 h-16 flex items-center justify-center text-2xl font-bold bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white rounded-full">
-                                {user.first_name?.[0] || user.username[0].toUpperCase()}
-                            </div>
-                        )}
+                        <Avatar
+                            src={user.profile.avatar_url} 
+                            alt={user.username.slice(0, 2).toUpperCase()}
+                            className="w-16 h-16 object-cover rounded-full"
+                        />
                         <div>
                             <p className='text-xl font-mono'>{user.first_name} {user.last_name}</p>
                             <p className='nz-text-muted text-[12px] font-mono'>{user.email}</p>

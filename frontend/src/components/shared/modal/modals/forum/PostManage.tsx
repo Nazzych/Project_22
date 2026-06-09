@@ -13,6 +13,7 @@ import { createPost, updatePost, deletePost } from '../../../../../api/forum';
 import { PostFormProps, EditablePost } from '../../../../../types/forum';
 import { motion } from 'framer-motion';
 import axios from 'axios';
+import { Avatar } from '../../../../Image';
 
 export function PostManage({ onSuccess, onDelete, post, content, channel, channelName, is_staff = false }: PostFormProps) {
     const { showToast } = useToast()
@@ -84,7 +85,7 @@ export function PostManage({ onSuccess, onDelete, post, content, channel, channe
                     )}
                     {(post && is_staff) && (
                         <div className="space-y-2 line-clamp-1 overflow-hidden">
-                            <h1 className="flex items-center text-lg gap-2 line-clamp-1"><Info className="w-4 h-4" />Edit Post of -<span className="flex items-center nz-text-muted text-md font-semibold"><img src={post.author?.profile.avatar_url} alt={post.author?.username} className="w-8 h-8 rounded-full mr-2" /> @{post.author?.username}</span></h1>
+                            <h1 className="flex items-center text-lg gap-2 line-clamp-1"><Info className="w-4 h-4" />Edit Post of -<span className="flex items-center nz-text-muted text-md font-semibold"><Avatar src={post.author?.profile.avatar_url} alt={post.author?.username.slice(0, 2).toUpperCase()} size='sm' rounded='full' className="w-8 h-8 mr-2" /> @{post.author?.username}</span></h1>
                         </div>
                     )}
                 </div>

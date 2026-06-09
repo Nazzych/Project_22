@@ -8,7 +8,9 @@ import { getPostComments, createComment, updateComment, deleteComment } from '..
 import { getCsrfToken } from '../../../api/auth'
 import { useToast } from '../../../providers/MessageProvider'
 import { useModal } from '../../../hooks/useModal';
+import { UserProfileModal } from '../../../components/shared/modal/modals/profile/UserProfileModal';
 import { ConfirmModal } from '../../../components/shared/modal/ConfirmModal'
+import { Avatar, ImageFallback } from '../../Image';
 import { Input } from '../../ui/Input';
 import { Button } from '../../ui/Button';
 import { Tooltip } from '../../Tooltip';
@@ -28,6 +30,17 @@ export function PostCard({
     const commentRef = useRef<HTMLInputElement>(null);
     const [showComments, setShowComments] = useState(false);
     const [comments, setComments] = useState([]);
+    const [selectedUser, setSelectedUser] = useState<any>(null);
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
+
+    const OpenUserProfile = (user: any) => {
+        setSelectedUser(user);
+        setIsProfileOpen(true);
+    };
+    const CloseUserProfile = () => {
+        setIsProfileOpen(false);
+        setSelectedUser(null);
+    };
 
     const handleToggleComments = async (post_id: number) => {
         if (!showComments) {
@@ -103,15 +116,20 @@ export function PostCard({
 
     return (
         <div className="mb-8">
+            <UserProfileModal
+                user={selectedUser}
+                isOpen={isProfileOpen}
+                onClose={CloseUserProfile}
+            />
             {/* Пост */}
             <div className="nz-background-secondary rounded-2xl max-h-[500px] p-4 space-y-4 border overflow-y-auto transition-all duration-300 cursor-default">
                 <div className='flex justify-between items-center mb-2'>
                     <div className='flex flex-wrap items-center gap-4'>
                         <div className="w-12 h-12 nz-background-accent rounded-full flex items-center justify-center text-white font-bold border-2">
-                            {logo ? <img className='w-full h-full object-cover rounded-full' src={logo} alt={post.author.username} /> : <span>{post.author.first_name[0]}</span>}
+                            {logo && <ImageFallback className='rounded-full' src={logo} alt={post.author.username} title={post.author.first_name[0]} titleSize='text-xl' />}
                         </div>
                         <div>
-                            <p className="text-white">{name} | <span className='text-[12px] nz-text-muted hover:underline cursor-pointer'>@{post.author.username}</span></p>
+                            <p className="text-white" onClick={() => OpenUserProfile(post.author)}>{name} | <span className='text-[12px] nz-text-muted hover:underline cursor-pointer'>@{post.author.username}</span></p>
                             <p className="nz-text-muted text-sm">{formatDateNumeric(post.created_at)} | {formatRelativeTime(post.created_at, true)}</p>
                         </div>
                     </div>
@@ -120,7 +138,7 @@ export function PostCard({
                             <div>
                                 <Tooltip text="Verified Post">
                                     <span className="p-2 flex items-center justify-center nz-background-accent rounded-full" onClick={(e) => e.stopPropagation()}>
-                                        <BadgeCheck className="w-4 h-4" />
+                                        <BadgeCheck className="w-4 h-4 text-emerald-400" />
                                     </span>
                                 </Tooltip>
                             </div>
@@ -128,9 +146,9 @@ export function PostCard({
                         {(profile?.id === post.author.id || profile?.is_staff) && (
                             <ActionsCell
                                 actions={[
-                                    { label: "Edit", icon: <Edit className="w-4 h-4" />, onClick: () => OpenEditPost(post) },
+                                    { label: "Edit", icon: <Edit className="w-4 h-4" />, onClick: () => OpenEditPost(post), variant: 'edit' },
                                     { label: "Delete", icon: <Trash2 className="w-4 h-4" />, onClick: () => clickDeletePost(post.id), variant: 'danger' },
-                                    { label: "Share", icon: <Share2 className="w-4 h-4" />, onClick: () => {} },
+                                    { label: "Share", icon: <Share2 className="w-4 h-4" />, onClick: () => {}, variant: 'share' },
                                 ]}
                             />
                         )}
@@ -214,13 +232,7 @@ export function PostCard({
                                     <div className="relative flex gap-3 hover:nz-background-accent p-2 rounded-lg transition-colors cursor-pointer">
                                         <div className="flex items-center gap-4">
                                             <div className="flex items-center gap-3">
-                                                {comment.author.profile.avatar_url ? (
-                                                    <img className='w-8 h-8 object-cover rounded-full' src={comment.author.profile.avatar_url} alt={comment.author.username} />
-                                                ) : (
-                                                    <div className="w-8 h-8 nz-background-accent rounded-full flex items-center justify-center text-white font-bold border-2">
-                                                        {comment.author.first_name[0]}{comment.author.last_name[0]}
-                                                    </div>
-                                                )}
+                                                <Avatar size="sm" src={comment.author.profile.avatar_url} alt={comment.author.username} />
                                                 <div>
                                                     <p className="w-fit font-medium text-white text-xs hover:underline cursor-pointer">@{comment.author.username}</p>
                                                     <p className="text-xs cursor-text">{comment.content}</p>

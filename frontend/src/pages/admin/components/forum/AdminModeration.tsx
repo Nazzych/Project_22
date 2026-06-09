@@ -7,6 +7,7 @@ import { useToast } from '../../../../providers/MessageProvider'
 import { Channels } from '../../../../types/forum';
 import { useModal } from '../../../../hooks/useModal';
 import { ConfirmModal } from '../../../../components/shared/modal/ConfirmModal'
+import { ImageFallback } from '../../../../components/Image';
 
 export default function AdminModeration() {
     const { showToast } = useToast();
@@ -98,13 +99,7 @@ export default function AdminModeration() {
                         <div key={channel.id} className="bg-nz-background-secondary border border-border rounded-2xl p-4">
                             <div className="flex justify-between">
                                 <div className="flex items-center gap-4">
-                                    {channel.logo ? (
-                                        <img src={channel.logo} alt={channel.name} className="w-16 h-16 object-cover rounded-2xl" />
-                                    ) : (
-                                        <div className="w-16 h-16 bg-gradient-to-br from-amber-500 to-red-500 rounded-2xl flex items-center justify-center text-white font-bold">
-                                            {channel.name[0]}
-                                        </div>
-                                    )}
+                                    <ImageFallback src={channel.logo} alt={channel.name} title={channel.name.slice(0, 2).toUpperCase()} titleSize="text-xl" className="w-16 h-16 rounded-2xl" />
                                     <div>
                                         <p className="font-semibold text-white line-clamp-1">{channel.name}</p>
                                         <p className="text-xs nz-text-muted line-clamp-1">@{channel.owner_username}</p>

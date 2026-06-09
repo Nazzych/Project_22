@@ -9,7 +9,7 @@ const variantStyles: Record<NonNullable<ButtonProps['variant']>, string> = {
     btn_accent: 'nz-background-accent nz-text-accent hover:nz-bg-hover hover:nz-text-hover',
     btn_secondary: 'nz-background-secondary nz-text-secondary hover:nz-bg-hover hover:nz-text-hover',
     btn_muted: 'nz-background-muted nz-text-muted hover:nz-bg-hover hover:nz-text-hover',
-    btn_disabled: 'nz-bg-disabled border-none',
+    btn_disabled: 'nz-bg-disabled border-none cursor-not-allowed',
     btn_success: 'border border-emerald-500 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 hover:text-emerald-300 backdrop-blur-xl transition-all',
     btn_warning: 'border border-amber-500 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 hover:text-amber-300 backdrop-blur-xl transition-all',
     btn_info: 'border border-sky-500 bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 hover:text-sky-300 backdrop-blur-xl transition-all',

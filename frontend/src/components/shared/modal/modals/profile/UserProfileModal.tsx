@@ -1,10 +1,11 @@
 import React from 'react';
-import { X, Trophy, Calendar, MapPin, Github, Twitter, Linkedin, Youtube, Link as LinkIcon } from 'lucide-react';
+import { X, ShieldCheck, BadgeCheck, Crown, Calendar, MapPin, Github, Twitter, Linkedin, Youtube } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Profile } from '../../../../../types/profile';
 import { Card } from '../../../../ui/Card';
 import { Button } from '../../../../ui/Button';
 import { formatJoinDate } from '../../../../../lib/formatDate';
+import { Avatar } from '../../../../Image';
 
 interface UserProfileModalProps {
     user: Profile | null;
@@ -27,33 +28,66 @@ export const UserProfileModal = ({ user, isOpen, onClose }: UserProfileModalProp
                         exit={{ opacity: 0, scale: 0.95 }}
                         className="w-full flex justify-center" // ← Горизонтальний формат
                     >
-                        <Card size='wf' variant='card_primary' className="lg:mx-28 border overflow-hidden">
+                        <Card size='wf' variant='card_primary' className="md:mx-52 border-4 overflow-hidden overflow-y-auto max-h-[85vh]">
                             <div className="flex flex-col md:flex-row">
                                 {/* Ліва частина — аватар + основна інфо */}
-                                <div className="md:w-2/5 bg-gradient-to-br from-violet-600 via-fuchsia-600 to-pink-600 p-8 flex flex-col items-center justify-center relative">
-                                    <Button variant='btn_glass'
+                                <div className="md:w-2/5 bg-gradient-to-br from-violet-800 via-fuchsia-800 to-pink-800 p-8 flex flex-wrap flex-row md:flex-col gap-2 items-center justify-center relative">
+                                    <Button variant='btn_glass' size='icon'
                                         onClick={onClose}
-                                        className="absolute top-4 right-4 p-2 rounded-full transition-colors"
+                                        className="absolute top-4 right-4 p-2 rounded-full backdrop-blur-md"
                                     >
                                         <X className="w-5 h-5 text-white" />
                                     </Button>
 
-                                    <div className="w-40 h-40 rounded-3xl overflow-hidden border-4 shadow-2xl mb-6">
-                                        {p.avatar_url ? (
-                                            <img src={p.avatar_url} alt={user.username} className="w-full h-full object-cover" />
-                                        ) : (
-                                            <div className="w-full h-full  flex items-center justify-center text-7xl font-bold text-white">
-                                                {user.username[0].toUpperCase()}
-                                            </div>
+                                    <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-3xl overflow-hidden border-2 shadow-2xl">
+                                        <Avatar src={user.profile?.avatar_url} alt={user.username} rounded='3xl' className="w-32 h-32 md:w-40 md:h-40 insert-0" />
+
+                                        {user.is_staff && (
+                                            <>
+                                                <div className='absolute top-1 right-1 nz-background-primary text-md border font-semibold p-1 rounded-full flex items-center gap-1'>
+                                                    <BadgeCheck className="w-6 h-6 text-emerald-400" />
+                                                </div>
+                                                <div className="absolute bottom-0 right-0 nz-background-primary text-md border font-semibold px-2 py-1 rounded-full flex items-center gap-1">
+                                                    {user.is_superuser ? (
+                                                        <>
+                                                            <Crown className="w-5 h-5 text-yellow-400" />
+                                                            <span>Owner</span>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <ShieldCheck className="w-5 h-5 text-blue-400" />
+                                                            <span>Admin</span>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </>
                                         )}
                                     </div>
+                                    
+                                    <div className='space-y-2 md:space-y-6'>
+                                        <div>
+                                            <h2 className="text-3xl font-bold text-white line-clamp-2">
+                                                {user.first_name}
+                                            </h2>
+                                            <p className="text-zinc-200 text-lg line-clamp-1 md:line-clamp-2">@{user.username}</p>
+                                        </div>
 
-                                    <h2 className="text-3xl font-bold text-white text-center">
-                                        {user.first_name} {user.last_name}
-                                    </h2>
-                                    <p className="text-zinc-200 text-lg">@{user.username}</p>
-
-                                    <div className="mt-6 flex gap-6 text-center">
+                                        <div className="hidden md:flex flex-wrap gap-6 text-center">
+                                            <div>
+                                                <div className="text-3xl font-bold text-white">#{p.global_rank || '—'}</div>
+                                                <div className="text-xs text-white/70">RANK</div>
+                                            </div>
+                                            <div>
+                                                <div className="text-3xl font-bold text-white">{p.total_points || 0}</div>
+                                                <div className="text-xs text-white/70">POINTS</div>
+                                            </div>
+                                            <div>
+                                                <div className="text-3xl font-bold text-white">{p.problems_solved || 0}</div>
+                                                <div className="text-xs text-white/70">SOLVED</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="flex md:hidden flex-wrap gap-6 text-center">
                                         <div>
                                             <div className="text-3xl font-bold text-white">#{p.global_rank || '—'}</div>
                                             <div className="text-xs text-white/70">RANK</div>
@@ -70,11 +104,13 @@ export const UserProfileModal = ({ user, isOpen, onClose }: UserProfileModalProp
                                 </div>
 
                                 {/* Права частина — детальна інформація */}
-                                <div className="md:w-3/5 p-8 space-y-6 nz-background-primary">
+                                <div className="md:w-4/5 p-8 space-y-6 nz-background-primary">
                                     {p.bio && (
                                         <div>
                                             <h3 className="text-sm uppercase tracking-widest nz-text-muted mb-2">About</h3>
-                                            <p className="text-zinc-300 leading-relaxed">{p.bio}</p>
+                                            <div className="max-h-36 lg:max-h-52 text-zinc-300 pr-2 border-b custom-scrollbar overflow-y-auto leading-relaxed whitespace-pre-wrap">
+                                                {p.bio}
+                                            </div>
                                         </div>
                                     )}
 

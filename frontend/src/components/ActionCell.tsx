@@ -9,7 +9,7 @@ export type ActionItem = {
     label: string;
     icon: ReactNode;
     onClick: () => void;
-    variant?: 'default' | 'danger';
+    variant?: 'default' | 'danger' | 'edit' | 'share';
 };
 
 type ActionsCellProps = {
@@ -84,6 +84,8 @@ export const ActionsCell = ({
                             className={cn(
                                 "flex w-full items-center p-1.5 text-sm hover:nz-background-primary transition-colors",
                                 action.variant === 'danger' && "text-red-400 hover:text-red-300",
+                                action.variant === 'edit' && "text-yellow-400 hover:text-yellow-300",
+                                action.variant === 'share' && "text-blue-400 hover:text-blue-300",
                                 index === 0 && "rounded-t-md",
                                 index === actions.length - 1 && "rounded-b-md"
                             )}
@@ -135,14 +137,14 @@ export function ActionsCellInChannel({ onEdit, onDelete }: ActionsCellPropsForum
                 <div className="absolute right-16 top-14 w-32 rounded-md shadow-lg border nz-background-accent z-50">
                     <button 
                         onClick={(e) => { e.stopPropagation(); setOpen(false); onEdit(); }} 
-                        className="flex items-center w-full text-left px-3 py-2 hover:nz-background-primary rounded-t-md"
+                        className="flex items-center w-full text-left px-3 py-2 nz-text-secondary hover:nz-background-primary rounded-t-md"
                     >
                         <Edit className='w-4 h-4 mr-2' /> Edit
                     </button>
 
                     <button 
                         onClick={(e) => { e.stopPropagation(); setOpen(false); onDelete(); }} 
-                        className="flex items-center w-full text-left px-3 py-2 hover:nz-background-primary rounded-b-md"
+                        className="flex items-center w-full text-left px-3 py-2 nz-text-destructive hover:nz-background-primary rounded-b-md"
                     >
                         <Trash2 className='w-4 h-4 mr-2' /> Delete
                     </button>

@@ -20,6 +20,7 @@ import { ChannelPage } from '../pages/ChannelPage';
 import AdminPanel from '../pages/admin/AdminPanel'
 import { AdminRoute } from './ProtectedRoute';
 import ChallengePage from '../pages/ChallengePage';
+import ShortLinkHandler from '../components/ShortLinkHandler';
 
 export default function AppRoutes() {
     return (
@@ -40,6 +41,7 @@ export default function AppRoutes() {
                     <Route path="/projects/:ownerId/:projectIdSlug" element={<ProjectPage />} />
                     <Route path="/forum" element={<ITForum />} />
                     <Route path="/forum/channel/:channelId/:name" element={<ChannelPage />} />
+                    <Route path="/s/*" element={<ShortLinkHandler />} />
 
                     {/* Роут адміністратора */}
                     <Route element={<AdminRoute />}>

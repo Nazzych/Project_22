@@ -1,9 +1,10 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { Plus, Trash2, FileText } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../../../../ui/Button';
 import { Input } from '../../../../ui/Input';
 import { Textarea } from '../../../../ui/Textarea';
+import { Tooltip } from '../../../../Tooltip';
 
 interface QuizQuestion {
     id: string;
@@ -112,26 +113,27 @@ export function QuizChallengeManage({ questions, setQuestions }: QuizChallengeMa
                         animate={{ opacity: 1, height: "auto" }}
                         exit={{ opacity: 0, height: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="overflow-hidden border rounded-2xl p-5 bg-card/50 backdrop-blur-sm shadow-sm"
+                        className="overflow-hidden border rounded-2xl p-5 nz-background-accent backdrop-blur-sm shadow-sm"
                     >
                         <div className="flex justify-between items-center mb-4 pb-3 border-b border-border">
                             <span className="text-muted-foreground font-medium text-sm">
                                 Question {index + 1}
                                 {question.backend_question_id && (
-                                    <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded-full">
+                                    <span className="ml-2 px-2 py-0.5 nz-background-secondary nz-text-accent text-xs rounded-full">
                                         #{question.backend_question_id}
                                     </span>
                                 )}
                             </span>
                             {questions.length > 1 && (
-                                <button
-                                    type="button"
-                                    onClick={() => removeQuestion(question.id)}
-                                    className="p-1.5 hover:bg-destructive/10 rounded-lg transition-all text-destructive hover:text-destructive/90"
-                                    title="Remove question"
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                </button>
+                                <Tooltip text="Remove question">
+                                    <button
+                                        type="button" title='Remove question'
+                                        onDoubleClick={() => removeQuestion(question.id)}
+                                        className="p-1.5 rounded-lg transition-all nz-text-destructive hover:nz-bg-destructive"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
+                                </Tooltip>
                             )}
                         </div>
 

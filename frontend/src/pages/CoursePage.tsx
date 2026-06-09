@@ -10,6 +10,7 @@ import { formatDateNumeric } from '../lib/formatDate';
 import { cn } from '../lib/cn';
 import axios from 'axios';
 
+import { ImageFallback } from '../components/Image';
 import { Card, CardContent, CardHeader } from '../components/ui/Card';
 import { UserProfileModal } from '../components/shared/modal/modals/profile/UserProfileModal';
 import { LessonManage } from '../components/shared/modal/modals/admin/LesonManage';
@@ -268,16 +269,10 @@ export function CoursePage() {
                 <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/50 to-black/70" />
                 <div className="relative p-4 pt-12 sm:p-6 sm:pt-14 h-full flex flex-col">
                     <div className="flex flex-col sm:flex-row flex-wrap items-start gap-4 sm:gap-8 flex-1 w-full">
-                        {/* Аватар */}
                         <div className="flex flex-col items-center gap-2 w-full sm:w-auto">
+                            {/* Аватар */}
                             <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-2xl border-4 overflow-hidden flex-shrink-0">
-                                {course.image ? (
-                                    <img src={course.image} alt={course.title} className="w-full h-full object-cover" />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-4xl sm:text-5xl font-bold bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white cursor-default">
-                                        {course.title[0].toUpperCase()}
-                                    </div>
-                                )}
+                                <ImageFallback src={course?.image} alt={course.title} title={course.title} />
                             </div>
                             <AnimatePresence>
                                 {isExpanded && (

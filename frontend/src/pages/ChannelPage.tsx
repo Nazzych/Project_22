@@ -20,6 +20,8 @@ import { useToast } from '../providers/MessageProvider';
 import { useModal } from '../hooks/useModal';
 import { useProfile } from '../contexts/ProfileContext';
 import { Tooltip } from '../components/Tooltip';
+import { UserProfileModal } from '../components/shared/modal/modals/profile/UserProfileModal';
+import { Image, ImageFallback } from '../components/Image';
 
 
 export function ChannelPage () {
@@ -35,6 +37,17 @@ export function ChannelPage () {
     const [showLogoModal, setShowLogoModal] = useState(false);
     //TODO: const [subscribed, setSubscribed] = useState(false);
     const toggleExpande = () => setIsExpanded(!isExpanded);
+    const [selectedUser, setSelectedUser] = useState<any>(null);
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
+
+    const OpenUserProfile = (user: any) => {
+        setSelectedUser(user);
+        setIsProfileOpen(true);
+    };
+    const CloseUserProfile = () => {
+        setIsProfileOpen(false);
+        setSelectedUser(null);
+    };
 
     const fetchChannelData = async () => {
         if (!channelId) return;
@@ -245,22 +258,22 @@ export function ChannelPage () {
 
     return (
         <div>
+            <UserProfileModal
+                user={selectedUser} 
+                isOpen={isProfileOpen} 
+                onClose={CloseUserProfile} 
+            />
             {/* Шапка каналу */}
             {showLogoModal && (
                 <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
                     <div className="relative text-center max-w-md w-full">
                         <div className="mx-auto mb-4 w-52 h-52 md:w-72 md:h-72 rounded-full overflow-hidden border-[10px] border-white/10 shadow-2xl">
-                            {channel.logo ? (
-                                <img 
-                                    src={channel.logo} 
-                                    alt={channel.name} 
-                                    className="w-full h-full object-cover" 
-                                />
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center text-8xl font-bold bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white">
-                                    {channel.name[0].toUpperCase()}
-                                </div>
-                            )}
+                            <ImageFallback titleSize='text-7xl'
+                                src={channel.logo}
+                                alt={channel.name} 
+                                title={channel.name.slice(0, 2).toUpperCase()}
+                                className="w-full h-full object-cover" 
+                            />
                         </div>
                         <div className="hidden lg:block nz-background-accent p-1 space-y-2 rounded-xl">
                             <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2 tracking-tight line-clamp-2">
@@ -280,7 +293,7 @@ export function ChannelPage () {
                         <div className="absolute top-16 right-5">
                             <Tooltip text="Verified Channel">
                                 <span className="p-2 flex items-center justify-center nz-background-accent rounded-full" onClick={(e) => e.stopPropagation()}>
-                                    <BadgeCheck className="w-6 h-6" />
+                                    <BadgeCheck className="w-6 h-6 text-emerald-400" />
                                 </span>
                             </Tooltip>
                         </div>
@@ -297,9 +310,9 @@ export function ChannelPage () {
                 {/* Банер — розтягується на весь фон */}
                 {channel.banner && (
                     <div className="absolute inset-0">
-                        <img 
-                            src={channel.banner} 
-                            alt="banner" 
+                        <Image 
+                            src={channel.banner}
+                            alt="banner"
                             className="w-full h-full object-cover" 
                         />
                     </div>
@@ -311,14 +324,15 @@ export function ChannelPage () {
                 <div className="relative p-6 pt-14 h-full flex flex-col">
                     <div className="flex flex-wrap items-start gap-5 flex-1">
                         {/* Аватар */}
-                        <div onClick={() => setShowLogoModal(true)} className="w-24 h-24 rounded-2xl bg-zinc-800 border-4 border-zinc-900 overflow-hidden flex-shrink-0 cursor-pointer">
-                            {channel.logo ? (
-                                <img src={channel.logo} alt={channel.name} className="w-full h-full object-cover" />
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center text-5xl font-bold bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white">
-                                    {channel.name[0].toUpperCase()}
-                                </div>
-                            )}
+                        <div className={cn("w-24 h-24 rounded-2xl border-4 border-zinc-900 overflow-hidden flex-shrink-0") + (channel.logo ? " cursor-pointer hover:border-violet-500" : "")} >
+                            <span onClick={channel.logo ? () => setShowLogoModal(true) : undefined} >
+                                <ImageFallback 
+                                    src={channel.logo} 
+                                    alt={channel.name} 
+                                    title={channel.name.slice(0, 2).toUpperCase()}
+                                    className="w-full h-full object-cover" 
+                                />
+                            </span>
                         </div>
 
                         {/* Назва + кнопка */}
@@ -332,7 +346,7 @@ export function ChannelPage () {
                             </div>
 
                             <p className="flex items-center text-zinc-300 text-sm mt-1 gap-2">
-                                <span className="hover:underline cursor-pointer">@{channel.owner?.username}</span> <span className={cn("flex items-center gap-2 " + (isExpanded ? "opacity-0" : "opacity-100"))}>• <Button size="sm" variant='btn_glass' className="flex items-center gap-2" disabled={isExpanded}><Users className="w-4 h-5" />Join us</Button></span>
+                                <span className="hover:underline cursor-pointer" onClick={() => OpenUserProfile(channel?.owner)}>@{channel.owner?.username}</span> <span className={cn("flex items-center gap-2 " + (isExpanded ? "opacity-0" : "opacity-100"))}>• <Button size="sm" variant='btn_glass' className="flex items-center gap-2" disabled={isExpanded}><Users className="w-4 h-5" />Join us</Button></span>
                             </p>
 
                             {/* Розгорнутий опис */}
@@ -378,7 +392,7 @@ export function ChannelPage () {
                     <div className="absolute top-4 left-28">
                         <Tooltip text="Verified Channel">
                             <span className="p-2 flex items-center justify-center nz-background-accent rounded-full" onClick={(e) => e.stopPropagation()}>
-                                <BadgeCheck className="w-4 h-4" />
+                                <BadgeCheck className="w-4 h-4 text-emerald-400" />
                             </span>
                         </Tooltip>
                     </div>

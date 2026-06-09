@@ -2,6 +2,7 @@ import React, { useRef, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { ProgressBar } from '../components/ui/ProgressBar'
+import { Avatar } from '../components/Image'
 import {
     Crown,
     ShieldCheck,
@@ -145,10 +146,10 @@ export function Profile() {
                         <div className="relative group w-fit">
                             <div className="absolute inset-0 bg-gradient-to-tr from-primary to-secondary rounded-full blur-lg opacity-50 group-hover:opacity-100 transition-opacity" />
                             <div className="relative z-10">
-                                <img
+                                <Avatar size='2xl'
                                     src={profile?.profile.avatar_url}
                                     alt="User avatar"
-                                    className="h-28 w-28 rounded-full object-cover border border-white/10 shadow-md nz-ring" />
+                                    className="border" />
                                 <div className="absolute bottom-1 -right-2 nz-background-accent nz-foreground border border-primary text-xs font-bold px-2 py-1 rounded-full shadow-sm">
                                     LVL {profile?.profile.total_points || "0"}
                                 </div>
@@ -158,7 +159,6 @@ export function Profile() {
                                     <Crown className="w-6 h-6" />
                                 </div>
                             )}
-
                             {profile?.is_staff && !profile?.is_superuser && (
                                 <div className="absolute -top-1 -right-1 nz-background-secondary p-1 rounded-2xl border-2 z-50">
                                     <ShieldCheck className="w-6 h-6" />

@@ -11,6 +11,7 @@ import { ChannelManage } from '../../../../components/shared/modal/modals/forum/
 import { getCsrfToken } from '../../../../api/auth';
 import { ConfirmModal } from '../../../../components/shared/modal/ConfirmModal';
 import { ActionsCell } from '../../../../components/ActionCell';
+import { ImageFallback } from '../../../../components/Image';
 import { Tooltip } from '../../../../components/Tooltip';
 
 export default function AdminChannelsList() {
@@ -119,9 +120,10 @@ export default function AdminChannelsList() {
                                         {/* Аватар */}
                                         <div className="w-16 lg:w-28 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center text-2xl font-bold text-white overflow-hidden mb-3">
                                             {channel.logo ? (
-                                                <img
+                                                <ImageFallback
                                                     src={channel.logo}
                                                     alt={channel.name}
+                                                    title={channel.name.slice(0, 2).toUpperCase()}
                                                     className="w-full h-full object-cover"
                                                 />
                                             ) : (
@@ -134,7 +136,7 @@ export default function AdminChannelsList() {
                                                 <div>
                                                     <Tooltip text="Verified Channel">
                                                         <span className="p-2 flex items-center justify-center nz-background-accent rounded-full" onClick={(e) => e.stopPropagation()}>
-                                                            <BadgeCheck className="w-4 h-4" />
+                                                            <BadgeCheck className="w-4 h-4 text-emerald-400" />
                                                         </span>
                                                     </Tooltip>
                                                 </div>
@@ -142,9 +144,9 @@ export default function AdminChannelsList() {
                                             {(profile?.id === channel.owner?.id || profile?.is_staff) && (
                                                 <ActionsCell
                                                     actions={[
-                                                        { label: "Edit", icon: <Edit className="w-4 h-4" />, onClick: () => OpenEditChannel(channel) },
+                                                        { label: "Edit", icon: <Edit className="w-4 h-4" />, onClick: () => OpenEditChannel(channel), variant: 'edit' },
                                                         { label: "Delete", icon: <Trash2 className="w-4 h-4" />, onClick: () => handleDeleteChannel(channel.id), variant: 'danger' },
-                                                        { label: "Share", icon: <Share2 className="w-4 h-4" />, onClick: () => {} },
+                                                        { label: "Share", icon: <Share2 className="w-4 h-4" />, onClick: () => {}, variant: 'share' },
                                                     ]}
                                                 />
                                             )}

@@ -1,6 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useRef } from 'react';
 import { 
-    BookOpen, Tag, Trophy, Clock, MoreVertical, Edit2, Circle, CircleCheck,
+    BookOpen, Tag, Trophy, Clock, Edit2, Circle, CircleCheck,
     Eye, EyeClosed
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -13,6 +13,7 @@ import { useToast } from '../../../providers/MessageProvider';
 import { deleteCourse } from '../../../api/admin';
 import { formatRelativeTime } from '../../../lib/formatDate';
 import { CourseManage } from '../../../components/shared/modal/modals/admin/CourseManage';
+import { Image } from '../../Image';
 import { Course, CourseCardProps } from '../../../types/curses';
 import { Tooltip } from '../../Tooltip';
 import { cn } from '../../../lib/cn';
@@ -148,10 +149,10 @@ export const CourseCard = ({
             {/* Обкладинка / Іконка */}
             <div className="h-40 bg-gradient-to-br from-zinc-800 to-zinc-950 relative overflow-hidden">
                 {course.image ? (
-                    <img
-                        src={course.image} 
+                    <Image
+                        src={course.image}
                         alt={course.title}
-                        className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                        className="w-full h-full opacity-80 group-hover:opacity-100 transition-opacity"
                     />
                 ) : (
                     <div className="absolute inset-0 flex items-center justify-center">

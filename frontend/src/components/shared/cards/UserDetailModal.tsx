@@ -3,6 +3,7 @@ import { Calendar, Mail, MapPin, Youtube, Github, Twitter, Linkedin, Award, Lock
 import { Button } from '../../ui/Button';
 import { Profile } from '../../../types/profile';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Avatar } from '../../Image';
 
 interface UserDetailModalProps {
     user: any;
@@ -17,14 +18,8 @@ export function UserDetailModal({ user, onEdit }: UserDetailModalProps) {
         <div className="space-y-8 overflow-hidden">
             {/* Аватар + ім'я */}
             <div className="flex items-center gap-5">
-                <div className="min-w-24 h-24 rounded-full overflow-hidden border-4 border-zinc-700">
-                    {profile?.avatar_url ? (
-                        <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center text-5xl font-bold text-white">
-                            {user.first_name?.[0] || user.username[0].toUpperCase()}
-                        </div>
-                    )}
+                <div className="rounded-full overflow-hidden border-4">
+                    <Avatar src={profile.avatar_url} alt={user.username.slice(0, 2).toUpperCase()} size='xl' className="object-cover" />
                 </div>
 
                 <div className='max-h-[15vh] overflow-y-auto'>
@@ -156,7 +151,7 @@ export function UserDetailModal({ user, onEdit }: UserDetailModalProps) {
 
             {/* Кнопки дій */}
             {!user.is_superuser && (
-                <div className="flex gap-3 pt-4 border-t border-zinc-700">
+                <div className="flex gap-3 pt-4 border-t">
                     <Button 
                         variant="btn_glass" 
                         className="flex-1"

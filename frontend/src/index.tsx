@@ -6,6 +6,7 @@ import { AuthProvider } from './providers/AuthProvider';
 import { ToastProvider } from './providers/MessageProvider';
 import { ProfileProvider } from './providers/ProfileProvider';
 import { ModalProvider } from './providers/ModalProvider';
+import { ShareProvider } from './providers/ShareProvider';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
@@ -14,7 +15,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                 <AuthProvider>
                     <ProfileProvider>
                         <ModalProvider>
-                            <App />
+                            <ShareProvider>
+                                <App />
+                            </ShareProvider>
                         </ModalProvider>
                     </ProfileProvider>
                 </AuthProvider>

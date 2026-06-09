@@ -21,6 +21,7 @@ import { CodeEditor } from '../components/CodeEditor';
 import { ActionsCell } from '../components/ActionCell';
 import { cn } from '../lib/cn';
 import { UserProfileModal } from '../components/shared/modal/modals/profile/UserProfileModal';
+import { ImageFallback, Avatar } from '../components/Image';
 
 
 const ProjectPage = () => {
@@ -452,17 +453,14 @@ const ProjectPage = () => {
                 <div className="flex flex-col md:flex-row gap-6 relative z-10">
                     {/* Project Icon/Image */}
                     <div className="h-32 w-full md:w-32 rounded-2xl overflow-hidden shrink-0 border-2 shadow-xl">
-                        {project.image ? (
-                            <img
-                                src={project.image}
-                                alt={project.title}
-                                className="w-full h-full object-cover"
-                            />
-                        ) : (
-                            <div className="flex justify-center items-center h-full w-full nz-background-accent">
-                                <Folder className="w-16 h-16 text-muted-foreground" />
-                            </div>
-                        )}
+                        <ImageFallback
+                            src={project.image}
+                            alt={project.title}
+                            title={project.title}
+                            iconSize='w-16 h-16'
+                            fallbackIcon={<Folder className='w-52 h-52' />}
+                            className="w-full h-full object-cover"
+                        />
                     </div>
 
                     {/* Project Info */}
@@ -492,7 +490,7 @@ const ProjectPage = () => {
 
                         <div className="flex flex-wrap items-center gap-4 text-sm nz-text-muted">
                             <div className="flex items-center gap-2">
-                                <img
+                                <Avatar size='sm'
                                     src={project.owner.profile.avatar_url}
                                     alt="-"
                                     className="w-8 h-8 border object-cover rounded-full"

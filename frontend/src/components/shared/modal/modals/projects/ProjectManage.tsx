@@ -15,6 +15,7 @@ import { projectUpdate } from '../../../../../api/admin';
 import { EditableProject, ProjectFormProps } from '../../../../../types/projects';
 import { motion } from 'framer-motion';
 import axios from 'axios';
+import { Image } from '../../../../Image';
 
 const tabs = ['General', 'README', 'Files'] as const;
 type Tab = typeof tabs[number];
@@ -220,7 +221,7 @@ export function ProjectManage({ onSuccess, onDelete, isAdminMode, project }: Pro
                                 onChange={handleSelectChange}
                             />
                             {form.image && (
-                                <img
+                                <Image
                                     src={form.image}
                                     alt="Preview"
                                     className="w-full h-48 object-cover rounded-lg border border-border"
