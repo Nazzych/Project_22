@@ -41,7 +41,7 @@ export default function AppRoutes() {
                     <Route path="/projects/:ownerId/:projectIdSlug" element={<ProjectPage />} />
                     <Route path="/forum" element={<ITForum />} />
                     <Route path="/forum/channel/:channelId/:name" element={<ChannelPage />} />
-                    <Route path="/s/*" element={<ShortLinkHandler />} />
+                    <Route path="/s/:type/:id/:slug" element={<ShortLinkHandler />} />
 
                     {/* Роут адміністратора */}
                     <Route element={<AdminRoute />}>

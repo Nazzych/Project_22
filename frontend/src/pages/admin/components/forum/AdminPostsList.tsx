@@ -133,6 +133,7 @@ export default function AdminPostsList() {
                                 logo={post.author.profile.avatar_url}
                                 name={`${post.author.first_name} ${post.author.last_name}`}
                                 post={post}
+                                inChannel={false}
                                 expandedPosts={expandedPosts}
                                 toggleExpand={toggleExpand}
                                 OpenEditPost={OpenEditPost}

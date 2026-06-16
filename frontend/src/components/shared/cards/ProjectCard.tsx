@@ -1,15 +1,16 @@
+import { useRef, useState } from 'react';
 import { Settings, Pen, Folders, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { ProjectCardProps, Project } from '../../../types/projects';
 import { Card, CardHeader, CardContent } from '../../ui/Card';
-import { useRef, useState } from 'react';
 import { useModal } from '../../../hooks/useModal';
 import { ConfirmModal } from '../../shared/modal/ConfirmModal';
 import { ProjectManage } from '../../shared/modal/modals/projects/ProjectManage';
 import { Avatar, ImageFallback } from '../../Image';
+import { deleteProject } from '../../../api/projects';
 import { getCsrfToken } from '../../../api/auth';
 import { useToast } from '../../../hooks/useToast';
-import { deleteProject } from '../../../api/projects';
+import { slugify } from '../../../lib/slugify';
 
 export const ProjectCard = ({
     id,
@@ -28,13 +29,6 @@ export const ProjectCard = ({
     const tagRef = useRef<HTMLSpanElement>(null);
     const { openModal, closeModal } = useModal();
     const { showToast } = useToast();
-
-    const slugify = (text: string) =>
-        text
-            .toLowerCase()
-            .trim()
-            .replace(/[\s\W-]+/g, '-')
-            .replace(/^-+|-+$/g, '');
 
     const handleView = () => {
         const slug = slugify(title);

@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Users, ChevronDown, ChevronUp, SendHorizonal, MessageCirclePlusIcon, MessageSquare, Pen, Heart, Repeat, MessageCircleMore, Share2, VolumeOff, XCircle, BadgeCheck } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useParams, Link, useSearchParams } from 'react-router-dom';
+import { ArrowLeft, Users, ChevronDown, ChevronUp, SendHorizonal, MessageCirclePlusIcon, MessageSquare, Pen, Heart, Repeat, MessageCircleMore, Share2, VolumeOff, XCircle, BadgeCheck, ClipboardCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import { cn } from '../lib/cn';
@@ -22,6 +22,7 @@ import { useProfile } from '../contexts/ProfileContext';
 import { Tooltip } from '../components/Tooltip';
 import { UserProfileModal } from '../components/shared/modal/modals/profile/UserProfileModal';
 import { Image, ImageFallback } from '../components/Image';
+import { useShare } from '../providers/ShareProvider';
 
 
 export function ChannelPage () {
@@ -32,11 +33,39 @@ export function ChannelPage () {
 
     const [channel, setChannel] = useState<Channels | null>(null);
     const [posts, setPosts] = useState<Posts[]>([]);
+    const [searchParams] = useSearchParams();
+    const highlightPostId = searchParams.get('postId');
     const [loading, setLoading] = useState(true);
+    const [loadingLink, setLoadingLink] = useState(false);
     const [isExpanded, setIsExpanded] = useState(false);
     const [showLogoModal, setShowLogoModal] = useState(false);
     //TODO: const [subscribed, setSubscribed] = useState(false);
     const toggleExpande = () => setIsExpanded(!isExpanded);
+    const { copyShareLink } = useShare();
+    const [copied, setCopied] = useState(false);
+    const copyTimeoutRef = useRef<number | null>(null);
+
+    const handleShare = async (channel: any) => {
+        try {
+            await copyShareLink('channel', channel.id, channel.slug, channel.name);
+            setLoadingLink(true);
+        } finally {
+            setLoadingLink(false);
+            setCopied(true);
+            if (copyTimeoutRef.current) window.clearTimeout(copyTimeoutRef.current);
+            copyTimeoutRef.current = window.setTimeout(() => {
+                setCopied(false);
+                copyTimeoutRef.current = null;
+            }, 2000);
+        }
+    };
+
+    useEffect(() => {
+        return () => {
+            if (copyTimeoutRef.current) window.clearTimeout(copyTimeoutRef.current);
+        };
+    }, []);
+
     const [selectedUser, setSelectedUser] = useState<any>(null);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
 
@@ -76,6 +105,32 @@ export function ChannelPage () {
     useEffect(() => {
         fetchChannelData();
     }, [channelId]);
+
+    const sortedPosts = React.useMemo(() => {
+        if (!highlightPostId || !posts?.length) return posts;
+
+        return [...posts].sort((a, b) => {
+            if (String(a.id) === highlightPostId) return -1;
+            if (String(b.id) === highlightPostId) return 1;
+            return 0;
+        });
+    }, [posts, highlightPostId]);
+
+    useEffect(() => {
+        if (highlightPostId) {
+            setTimeout(() => {
+                const element = document.getElementById(`post-${highlightPostId}`);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    element.classList.add('ring-2', 'ring-blue-500', 'bg-blue-500/10');
+
+                    setTimeout(() => {
+                        element.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-500/10');
+                    }, 4000);
+                }
+            }, 400);
+        }
+    }, [highlightPostId]);
 
     const [expandedPosts, setExpandedPosts] = useState<Record<number, boolean>>({});
     function toggleExpand(id: number) {
@@ -379,7 +434,17 @@ export function ChannelPage () {
                                         </div>
                                         <div className="mt-6 flex flex-wrap gap-x-2 gap-y-3 text-sm text-zinc-400">
                                             <Button size="sm" variant='btn_glass' className="flex items-center gap-2"><Users className="w-4 h-5" />Join</Button>
-                                            <Button size="sm" variant='btn_glass' className="flex items-center gap-2"><Share2 className="w-4 h-5" />Share</Button>
+                                            <Button size="sm" variant='btn_glass' className="flex items-center gap-2" onClick={() => handleShare(channel)} disabled={copied} isLoading={loadingLink}>
+                                                {copied ? (
+                                                    <>
+                                                        <ClipboardCheck className='w-4 h-4' />Copied
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Share2 className="w-4 h-5" />Share
+                                                    </>
+                                                )}
+                                            </Button>
                                             <Button size="sm" variant='btn_glass' className="flex items-center gap-2"><VolumeOff className="w-4 h-5" />Mute</Button>
                                         </div>
                                     </motion.div>
@@ -425,12 +490,13 @@ export function ChannelPage () {
                     <hr className="flex-grow nz-border border-2 rounded" />
                 </div>
                 {posts && posts.length > 0 ? (
-                    posts.map((post) => (
+                    (sortedPosts || posts).map((post) => (
                         <PostCard
                             logo={channel.logo}
                             name={channel.name}
                             key={post.id}
                             post={post}
+                            inChannel={channel.id}
                             expandedPosts={expandedPosts}
                             toggleExpand={toggleExpand}
                             OpenEditPost={OpenEditPost}
@@ -445,7 +511,7 @@ export function ChannelPage () {
                 )}
             </div>
             {profile?.email === channel.owner.email && (
-                <div className="absolute bottom-[0.5rem] left-100 p-2 flex items-center gap-2 border border-border w-[95vw] md:w-[67.5vw] lg:w-[50vw] nz-background-secondary rounded-t-3xl">
+                <div className="absolute bottom-[0.5rem] left-100 p-2 flex items-center gap-2 border border-border w-[95vw] md:w-[67.5vw] lg:w-[50vw] nz-background-primary rounded-t-3xl">
                     <Textarea rows={2} name="content"
                         placeholder="Write something in the channel..."
                         className="resize-none rounded-2xl"
@@ -453,7 +519,7 @@ export function ChannelPage () {
                             textareaRef.current = e.target;
                         }}
                     />
-                    <Button onClick={() => {handleSend()}} variant="btn_primary" size="sm" className="rounded-full">
+                    <Button onClick={() => {handleSend()}} variant="btn_secondary" size="sm" className="rounded-full">
                         <SendHorizonal className="w-4 h-4" />
                     </Button>
                 </div>

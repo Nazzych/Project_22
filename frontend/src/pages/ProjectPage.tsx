@@ -2,9 +2,10 @@ import { ArrowLeft, Star, Calendar, Github, TriangleAlert, Code2, MessageCircle,
 import { FullscreenFileView } from '../components/shared/modal/modals/projects/FileView';
 import { useParams } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown'
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { getProject, getTree, getFile, downloadFile, updateFile, deleteFile, renameFile } from '../api/projects';
 import { Project, FileNode, extensionToLanguage, languageColors } from '../types/projects';
+import { useShare } from '../providers/ShareProvider';
 import { useToast } from '../providers/MessageProvider';
 import { Link, useNavigate } from 'react-router-dom';
 import { LoadingSpinner } from '../components/LoadingSpinner';
@@ -21,7 +22,9 @@ import { CodeEditor } from '../components/CodeEditor';
 import { ActionsCell } from '../components/ActionCell';
 import { cn } from '../lib/cn';
 import { UserProfileModal } from '../components/shared/modal/modals/profile/UserProfileModal';
+import { RenderTree } from '../components/RenderTree';
 import { ImageFallback, Avatar } from '../components/Image';
+import { slugify } from '../lib/slugify';
 
 
 const ProjectPage = () => {
@@ -34,6 +37,7 @@ const ProjectPage = () => {
     const { showToast } = useToast();
     const { openModal, closeModal } = useModal();
     const [loading, setLoading] = useState(true);
+    const [loadingLink, setLoadingLink] = useState(false);
     const [copied, setCopied] = useState(false);
     const [saved, setSaved] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
@@ -41,6 +45,24 @@ const ProjectPage = () => {
     const [fileContent, setFileContent] = useState<string>('');
     const [selectedUser, setSelectedUser] = useState<any>(null);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const { copyShareLink } = useShare();
+    const [copiedLink, setCopiedLink] = useState(false);
+    const copyTimeoutRef = useRef<number | null>(null);
+
+    const handleShare = (proj: any) => {
+        try {
+            copyShareLink('project', proj.owner.id, `${proj.id}-${slugify(proj.title)}`, proj.title);
+            setLoadingLink(true);
+        } finally {
+            setLoadingLink(false);
+            setCopiedLink(true);
+            if (copyTimeoutRef.current) window.clearTimeout(copyTimeoutRef.current);
+            copyTimeoutRef.current = window.setTimeout(() => {
+                setCopiedLink(false);
+                copyTimeoutRef.current = null;
+            }, 2000);
+        }
+    };
 
     var isModified = editContent !== fileContent;
 
@@ -115,53 +137,6 @@ const ProjectPage = () => {
         if (newTab !== activeTab) {
             setActiveTab(newTab);
         }
-    };
-
-    const RenderTree = ({
-        node,
-        prefix = '',
-        isLast = true,
-        isRoot = true,
-    }: {
-        node: FileNode;
-        prefix?: string;
-        isLast?: boolean;
-        isRoot?: boolean;
-    }) => {
-        const connector = isRoot ? '' : isLast ? '└── ' : '├── ';
-        const icon =
-            node.type === 'folder' ? (
-                <Folder className="inline w-4 h-4 mr-1 text-yellow-500" />
-            ) : (
-                <File className="inline w-4 h-4 mr-1 text-blue-500" />
-            );
-
-        const newPrefix = prefix + (isLast ? '    ' : '│   ');
-        const children = node.children || [];
-//? {node.name.replace ("root", "main")}
-        return (
-            <>
-                <div className="font-mono text-sm">
-                    <span className="nz-text-muted">{prefix + connector}</span>
-                    {icon}
-                    {node.name.replace ("root", "CODEHUB")}
-                </div>
-                {/* <div className="font-mono text-sm m-2">
-                    <span className="nz-text-muted">{prefix + connector}</span>
-                    <span className='p-1 nz-background-accent rounded-md w-fit'>{icon}{node.name}</span>
-                </div> */}
-
-                {children.map((child, index) => (
-                    <RenderTree
-                    key={child.name + child.type}
-                    node={child}
-                    prefix={newPrefix}
-                    isLast={index === children.length - 1}
-                    isRoot={false}
-                    />
-                ))}
-            </>
-        );
     };
 
     const [structure, setStructure] = useState<FileNode | null>(null);
@@ -470,14 +445,52 @@ const ProjectPage = () => {
                                 <h1 className="text-3xl md:text-4xl font-bold line-clamp-2">
                                     {project.title}
                                 </h1>
+
+                                <div className="flex flex-wrap items-center mt-3 gap-4 text-sm nz-text-muted">
+                                    <div className="flex items-center gap-2">
+                                        <Avatar size='sm'
+                                            src={project.owner.profile.avatar_url}
+                                            alt="-"
+                                            className="w-8 h-8 border object-cover rounded-full"
+                                        />
+                                        <span className="font-medium nz-foreground hover:underline hover:cursor-pointer" onClick={() => OpenUserProfile(project.owner)}>
+                                            @{project.owner.username}
+                                        </span>
+                                    </div>
+                                    <span className='text-xl font-bold'>•</span>
+                                    <div className="flex items-center gap-1">
+                                        <Calendar className="h-4 w-4" />
+                                        <span>{formatJoinDate(project.created_at)}</span>
+                                    </div>
+                                    <span className='text-xl font-bold'>•</span>
+                                    <div className="inline-flex items-center gap-2">
+                                        {project.status === 'active' && <Activity className="w-4 h-4 nz-text-primary" />}
+                                        {project.status === 'completed' && <CheckCircle2 className="w-4 h-4 nz-text-accent" />}
+                                        {project.status === 'archived' && <Archive className="w-4 h-4 nz-text-secondary" />}
+                                        <span className="font-medium capitalize">
+                                            {project.status || 'unknown'}
+                                        </span>
+                                    </div>
+                                    {project.github_url && (
+                                        <>                                
+                                            <span className='text-xl font-bold'>•</span>
+                                            <div>
+                                                <Link to={String (project.github_url)} target="_blank" className="flex items-center gap-1 hover:text-sky-400 transition-colors">
+                                                    <Github className="h-4 w-4" />
+                                                    View to GitHub
+                                                </Link>
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
                             </div>
 
                             {/* Action Buttons */}
-                            <div className="flex flex-wrap">
+                            <div className="flex flex-wrap flex-row md:flex-col gap-2">
                                 <Button
                                     variant="btn_secondary"
                                     size="sm"
-                                    className="glass h-9 text-yellow-400 border-yellow-400/30 hover:bg-yellow-400/10"
+                                    className="glass h-9 text-yellow-400 border-yellow-400/30"
                                 >
                                     <Star className="h-4 w-4 mr-2 fill-current text-yellow-400" />
                                     <span className='text-yellow-400'>Star</span>
@@ -485,45 +498,25 @@ const ProjectPage = () => {
                                         {project.stars.toLocaleString()}
                                     </span>
                                 </Button>
+                                <Button disabled={copiedLink} isLoading={loadingLink}
+                                    variant="btn_secondary"
+                                    size="sm"
+                                    className="glass h-9 border-blue-400/30"
+                                    onClick={() => handleShare(project)}
+                                >
+                                    {copiedLink ? (
+                                        <>
+                                            <CopyCheck className="h-4 w-4 mr-2 text-green-400" />
+                                            <span className='text-green-400'>Link copied!</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Share2 className="h-4 w-4 mr-2 text-sky-400" />
+                                            <span className='text-sky-400'>Share</span>
+                                        </>
+                                    )}
+                                </Button>
                             </div>
-                        </div>
-
-                        <div className="flex flex-wrap items-center gap-4 text-sm nz-text-muted">
-                            <div className="flex items-center gap-2">
-                                <Avatar size='sm'
-                                    src={project.owner.profile.avatar_url}
-                                    alt="-"
-                                    className="w-8 h-8 border object-cover rounded-full"
-                                />
-                                <span className="font-medium nz-foreground hover:underline hover:cursor-pointer" onClick={() => OpenUserProfile(project.owner)}>
-                                    @{project.owner.username}
-                                </span>
-                            </div>
-                            <span className='text-xl font-bold'>•</span>
-                            <div className="flex items-center gap-1">
-                                <Calendar className="h-4 w-4" />
-                                <span>{formatJoinDate(project.created_at)}</span>
-                            </div>
-                            <span className='text-xl font-bold'>•</span>
-                            <div className="inline-flex items-center gap-2">
-                                {project.status === 'active' && <Activity className="w-4 h-4 nz-text-primary" />}
-                                {project.status === 'completed' && <CheckCircle2 className="w-4 h-4 nz-text-accent" />}
-                                {project.status === 'archived' && <Archive className="w-4 h-4 nz-text-secondary" />}
-                                <span className="font-medium capitalize">
-                                    {project.status || 'unknown'}
-                                </span>
-                            </div>
-                            {project.github_url && (
-                                <>                                
-                                    <span className='text-xl font-bold'>•</span>
-                                    <div>
-                                        <Link to={String (project.github_url)} target="_blank" className="flex items-center gap-1 hover:text-sky-400 transition-colors">
-                                            <Github className="h-4 w-4" />
-                                            View to GitHub
-                                        </Link>
-                                    </div>
-                                </>
-                            )}
                         </div>
                     </div>
                 </div>

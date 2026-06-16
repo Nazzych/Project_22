@@ -1,3 +1,4 @@
+import { number } from "zod";
 import { Profile } from "./profile";
 
 export type Posts = {
@@ -40,6 +41,7 @@ export interface PostCardProps {
     logo: string;
     name: string;
     post: Posts;
+    inChannel: boolean | number;
     expandedPosts: Record<number, boolean>;
     toggleExpand: (id: number) => void;
     OpenEditPost: (post: Posts) => void;

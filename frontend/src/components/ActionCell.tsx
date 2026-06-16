@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, ReactNode } from 'react';
 import { MoreVertical } from 'lucide-react';
-import { Edit, Trash2 } from 'lucide-react';
+import { Edit, Trash2, ClipboardCheck } from 'lucide-react';
 import { ActionsCellPropsForum } from '../types/forum';
 import { Button } from './ui/Button';
 import { cn } from '../lib/cn';
@@ -32,6 +32,7 @@ export const ActionsCell = ({
     menuWidth = "w-32"
 }: ActionsCellProps) => {
     const [open, setOpen] = useState(false);
+    const [tempCopiedIndex, setTempCopiedIndex] = useState<number | null>(null);
     const menuRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -73,27 +74,43 @@ export const ActionsCell = ({
                         menuClassName
                     )}
                 >
-                    {actions.map((action, index) => (
-                        <button
-                            key={index}
-                            onClick={(e) => {
-                                e.stopPropagation();
+                    {actions.map((action, index) => {
+                        const isCopied = tempCopiedIndex === index;
+                        const handleClick = (e: React.MouseEvent) => {
+                            e.stopPropagation();
+
+                            if (action.variant === 'share') {
+                                // show copied state for 1s, then close menu
+                                setTempCopiedIndex(index);
+                                action.onClick();
+                                setTimeout(() => {
+                                    setTempCopiedIndex(null);
+                                    setOpen(false);
+                                }, 1000);
+                            } else {
                                 setOpen(false);
                                 action.onClick();
-                            }}
-                            className={cn(
-                                "flex w-full items-center p-1.5 text-sm hover:nz-background-primary transition-colors",
-                                action.variant === 'danger' && "text-red-400 hover:text-red-300",
-                                action.variant === 'edit' && "text-yellow-400 hover:text-yellow-300",
-                                action.variant === 'share' && "text-blue-400 hover:text-blue-300",
-                                index === 0 && "rounded-t-md",
-                                index === actions.length - 1 && "rounded-b-md"
-                            )}
-                        >
-                            <span className="mr-3">{action.icon}</span>
-                            {action.label}
-                        </button>
-                    ))}
+                            }
+                        };
+
+                        return (
+                            <button
+                                key={index}
+                                onClick={handleClick}
+                                className={cn(
+                                    "flex w-full items-center p-1.5 text-sm hover:nz-background-primary transition-colors",
+                                    action.variant === 'danger' && "text-red-400 hover:text-red-300",
+                                    action.variant === 'edit' && "text-yellow-400 hover:text-yellow-300",
+                                    action.variant === 'share' && "text-blue-400 hover:text-blue-300",
+                                    index === 0 && "rounded-t-md",
+                                    index === actions.length - 1 && "rounded-b-md"
+                                )}
+                            >
+                                <span className="mr-3">{isCopied ? <ClipboardCheck className="w-4 h-4" /> : action.icon}</span>
+                                {isCopied ? 'Copied' : action.label}
+                            </button>
+                        );
+                    })}
                 </div>
             )}
         </div>

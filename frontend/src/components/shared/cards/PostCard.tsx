@@ -14,11 +14,13 @@ import { Avatar, ImageFallback } from '../../Image';
 import { Input } from '../../ui/Input';
 import { Button } from '../../ui/Button';
 import { Tooltip } from '../../Tooltip';
+import { useShare } from '../../../providers/ShareProvider';
 
 export function PostCard({
     logo,
     name,
     post,
+    inChannel,
     expandedPosts,
     toggleExpand,
     OpenEditPost,
@@ -32,6 +34,11 @@ export function PostCard({
     const [comments, setComments] = useState([]);
     const [selectedUser, setSelectedUser] = useState<any>(null);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const { copyShareLink } = useShare();
+
+    const handleShare = (post: any) => {
+        copyShareLink('post', post.id, String(inChannel));
+    };
 
     const OpenUserProfile = (user: any) => {
         setSelectedUser(user);
@@ -122,14 +129,14 @@ export function PostCard({
                 onClose={CloseUserProfile}
             />
             {/* Пост */}
-            <div className="nz-background-secondary rounded-2xl max-h-[500px] p-4 space-y-4 border overflow-y-auto transition-all duration-300 cursor-default">
+            <div id={`post-${post.id}`} className="nz-background-secondary rounded-2xl max-h-[500px] p-4 space-y-4 border overflow-y-auto transition-all duration-300 cursor-default">
                 <div className='flex justify-between items-center mb-2'>
                     <div className='flex flex-wrap items-center gap-4'>
                         <div className="w-12 h-12 nz-background-accent rounded-full flex items-center justify-center text-white font-bold border-2">
                             {logo && <ImageFallback className='rounded-full' src={logo} alt={post.author.username} title={post.author.first_name[0]} titleSize='text-xl' />}
                         </div>
                         <div>
-                            <p className="text-white" onClick={() => OpenUserProfile(post.author)}>{name} | <span className='text-[12px] nz-text-muted hover:underline cursor-pointer'>@{post.author.username}</span></p>
+                            <p className="text-white" onClick={() => OpenUserProfile(post.author)}>{name} | <span className='text-[12px] font-bold nz-text-muted hover:underline cursor-pointer'>@{post.author.username}</span></p>
                             <p className="nz-text-muted text-sm">{formatDateNumeric(post.created_at)} | {formatRelativeTime(post.created_at, true)}</p>
                         </div>
                     </div>
@@ -148,7 +155,7 @@ export function PostCard({
                                 actions={[
                                     { label: "Edit", icon: <Edit className="w-4 h-4" />, onClick: () => OpenEditPost(post), variant: 'edit' },
                                     { label: "Delete", icon: <Trash2 className="w-4 h-4" />, onClick: () => clickDeletePost(post.id), variant: 'danger' },
-                                    { label: "Share", icon: <Share2 className="w-4 h-4" />, onClick: () => {}, variant: 'share' },
+                                    { label: "Share", icon: <Share2 className="w-4 h-4" />, onClick: () => handleShare(post), variant: 'share' },
                                 ]}
                             />
                         )}

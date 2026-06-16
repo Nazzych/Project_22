@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
@@ -8,7 +9,6 @@ import { PostManage } from '../components/shared/modal/modals/forum/PostManage'
 import { ChannelManage } from '../components/shared/modal/modals/forum/ChannelManager'
 import { ChannelsSection } from '../components/shared/cards/ChannelCard'
 import { PostCard } from '../components/shared/cards/PostCard'
-import { useNavigate } from 'react-router-dom'
 import { useToast } from '../providers/MessageProvider'
 import { Posts, Channels } from '../types/forum'
 import { useModal } from '../hooks/useModal';
@@ -46,14 +46,17 @@ export function ITForum() {
     const [posts, setPosts] = useState<Posts[]>([]);
     const [channels, setChannels] = useState<Channels[]>([]);
     const [expandedPosts, setExpandedPosts] = useState<Record<number, boolean>>({});
-
+    
     function toggleExpand(id: number) {
         setExpandedPosts(prev => ({
             ...prev,
             [id]: !prev[id]
         }));
     }
-
+    
+    const [searchParams] = useSearchParams();
+    const highlightPostId = searchParams.get('postId');
+    
     // Завантаження постів.
     const loadPoasts = async () => {
         setLoadingPosts(true);
@@ -86,6 +89,43 @@ export function ITForum() {
         loadChannels();
     }, []);
 
+    const sortedPosts = React.useMemo(() => {
+        if (!highlightPostId || !posts?.length) return posts;
+
+        return [...posts].sort((a, b) => {
+            if (String(a.id) === highlightPostId) return -1;
+            if (String(b.id) === highlightPostId) return 1;
+            return 0; // інші залишаються в попередньому порядку
+        });
+    }, [posts, highlightPostId]);
+
+    useEffect(() => {
+        if (highlightPostId) {
+            setTimeout(() => {
+                const element = document.getElementById(`post-${highlightPostId}`);
+                    if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                    // Add structural highlight classes and animate a calm blue blink for 2s
+                    element.classList.add('ring-2', 'rounded-lg');
+
+                    const keyframes = [
+                        { boxShadow: '0 0 0 6px rgba(59,130,246,0.35)', backgroundColor: 'rgba(59,130,246,0.08)' },
+                        { boxShadow: '0 0 0 0 rgba(59,130,246,0)', backgroundColor: 'rgba(59,130,246,0)' }
+                    ];
+
+                    const anim = element.animate(keyframes, { duration: 500, iterations: 4, easing: 'ease-in-out', direction: 'alternate' });
+
+                    // Cleanup after animation (2 seconds total)
+                    anim.onfinish = () => {
+                        element.classList.remove('ring-2', 'rounded-lg');
+                        element.style.boxShadow = '';
+                        element.style.backgroundColor = '';
+                    };
+                }
+            }, 400);
+        }
+    }, [highlightPostId]);
 
     const clickDeletePost = async (post_id: number) => {
         openModal({
@@ -436,12 +476,13 @@ export function ITForum() {
                                 </div>
                             ) : (
                                 posts.length !== 0 ? (
-                                    posts.map((post) => (
+                                    sortedPosts.map((post) => (
                                         <PostCard
                                             key={post.id}
                                             logo={post.author.profile.avatar_url}
                                             name={post.author.first_name}
                                             post={post}
+                                            inChannel={false}
                                             expandedPosts={expandedPosts}
                                             toggleExpand={toggleExpand}
                                             OpenEditPost={OpenEditPost}

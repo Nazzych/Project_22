@@ -12,6 +12,7 @@ import { useToast } from '../../../providers/MessageProvider';
 import { ChallangeManage } from '../modal/modals/admin/ChallangeManage';
 import { deleteTask } from '../../../api/admin';
 import { ChallengeCardProps, LANGUAGE_LABELS } from '../../../types/tasks';
+import { slugify } from '../../../lib/slugify';
 import { cn } from '../../../lib/cn';
 
 export const ChallengeCard = ({
@@ -22,9 +23,6 @@ export const ChallengeCard = ({
     const navigate = useNavigate();
     const { openModal, closeModal } = useModal();
     const { showToast } = useToast();
-
-    const slugify = (text: string) =>
-        text.toLowerCase().trim().replace(/[\s\W-]+/g, '-').replace(/^-+|-+$/g, '');
 
     const handleView = () => {
         const slug = slugify(challenge.title);

@@ -1,6 +1,8 @@
 import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { decodePath } from '../lib/encoder';   // ← змініть шлях якщо потрібно
+import { decodePath } from '../lib/encoder';
+import { slugify } from '../lib/slugify';
+import { forumList, getChannel } from '../api/forum';
 
 export default function ShortLinkHandler() {
     const location = useLocation();
@@ -15,13 +17,13 @@ export default function ShortLinkHandler() {
         const parts = pathAfterS.split('/').filter(Boolean);
 
         console.log("Parts:", parts);
-
+        
         if (parts.length < 3) {
             navigate('/', { replace: true });
             return;
         }
 
-        const [codedId, codedType, codedSlug] = parts;
+        const [codedType, codedId, codedSlug] = parts;
 
         const tryDecode = async () => {
             const possibleTypes = ['channel', 'post', 'challenge', 'course', 'project'];
@@ -29,27 +31,51 @@ export default function ShortLinkHandler() {
             for (const typeValue of possibleTypes) {
                 try {
                     const decoded = await decodePath(codedId, codedType, codedSlug, typeValue);
-
                     let targetPath = '';
-
                     switch (decoded.type) {
-                        case 'channel': targetPath = `/forum/channel/${decoded.id}`; break;
-                        case 'post':    targetPath = `/forum/post/${decoded.id}`; break;
-                        case 'challenge': targetPath = `/challenges/${decoded.id}`; break;
-                        case 'course':  targetPath = `/courses/${decoded.id}`; break;
-                        case 'project': targetPath = `/projects/${decoded.id}`; break;
-                        default: continue;
-                    }
-
-                    if (decoded.slug && decoded.slug !== 'share') {
-                        targetPath += `/${decoded.slug}`;
+                        case 'channel':
+                            targetPath = `/forum/channel/${decoded.id}`;
+                            if (decoded.slug && decoded.slug !== 'share') targetPath += `/${decoded.slug}`;
+                            break;
+                        case 'post':
+                            // Try to find post and its channel, then redirect to channel view with highlight
+                            try {
+                                const channelId = Number(decoded.slug) || 0
+                                if (channelId) {
+                                    try {
+                                        const channelData = await getChannel(Number(channelId));
+                                        const slug = channelData.slug || slugify(channelData.name) || '';
+                                        targetPath = `/forum/channel/${channelId}/${slug}?postId=${decoded.id}`;
+                                        break;
+                                    } catch (e) {
+                                        // fallback to forum listing if channel fetch fails
+                                        console.error('Failed fetching channel for post redirect', e);
+                                    }
+                                }
+                            } catch {
+                                console.error('Error decoding post url!')
+                            }
+                            // fallback: redirect to forum listing and highlight the post by id
+                            targetPath = `/forum?postId=${decoded.id}`;
+                            break;
+                        case 'challenge':
+                            targetPath = `/challenges/${decoded.id}`;
+                            break;
+                        case 'course':
+                            targetPath = `/courses/${decoded.id}`;
+                            break;
+                        case 'project':
+                            targetPath = `/projects/${decoded.id}/${decoded.slug}`;
+                            break;
+                        default:
+                            continue;
                     }
 
                     console.log(`✅ Successfully decoded! Redirecting to: ${targetPath}`);
                     navigate(targetPath, { replace: true });
                     return;
                 } catch (e) {
-                    // console.log(`Failed with type ${typeValue}`);
+                    console.error(`Failed with type ${typeValue}`);
                     continue;
                 }
             }
