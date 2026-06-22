@@ -1,6 +1,7 @@
 # views.py (apps/dashboard/courses/).
 #*Підключення бібліотек.
 from django.shortcuts import get_object_or_404
+import logging
 from django.db import models, transaction
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import action
@@ -63,10 +64,11 @@ class CourseViewSet (viewsets.ModelViewSet):
             target_id = instance_id,
             details = {"title": title}
         )
-    # ==================== СТВОРЕННЯ НОВИХ УРОКІВ ====================
-    @action(detail=True, methods=["POST"], url_path='lessons')
-    def lessons(self, request, pk=None):
-        """Створення нових уроків"""
+
+    # ==================== ПОВНЕ ОНОВЛЕННЯ ПОРЯДКУ УРОКІВ ====================
+    @action(detail=True, methods=["PUT"], url_path='lessons/reorder')
+    def reorder_lessons(self, request, pk=None):
+        """Повне оновлення порядку всіх уроків"""
         course = self.get_object()
         lessons_data = request.data
 
@@ -74,84 +76,26 @@ class CourseViewSet (viewsets.ModelViewSet):
             return Response({"type": "error", "message": "Expected a list of lessons"}, 
                           status=status.HTTP_400_BAD_REQUEST)
 
-        result = []
-        with transaction.atomic():
-            max_order = Lesson.objects.filter(course=course).aggregate(
-                models.Max('order')
-            )['order__max'] or 0
-
-            current_order = max_order + 1
-
-            for item in lessons_data:
-                item.pop('id', None)   # важливо при створенні
-
-                serializer = LessonSerializer(data=item)
-                if serializer.is_valid():
-                    serializer.save(course=course, order=current_order)
-                    result.append(serializer.data)
-                    current_order += 1
-                else:
-                    return Response({"type": "error", "errors": serializer.errors}, 
-                                  status=status.HTTP_400_BAD_REQUEST)
-
-        return Response({
-            "type": "success",
-            "message": f"{len(result)} lessons created successfully",
-            "lessons": result
-        }, status=status.HTTP_201_CREATED)
-
-    # ==================== ОНОВЛЕННЯ УРОКІВ ====================
-    @action(detail=True, methods=["PUT"], url_path='lessons-update')
-    def update_lessons(self, request, pk=None):
-        """Оновлення уроків + безпечна зміна порядку"""
-        course = self.get_object()
-        lessons_data = request.data
-
-        if not isinstance(lessons_data, list):
-            return Response({"type": "error", "message": "Expected a list of lessons"}, 
-                            status=status.HTTP_400_BAD_REQUEST)
-
-        result = []
         with transaction.atomic():
             for item in lessons_data:
                 lesson_id = item.get("id")
-                if not lesson_id:
-                    return Response({
-                        "type": "error",
-                        "message": "Field 'id' is required for update"
-                    }, status=status.HTTP_400_BAD_REQUEST)
+                new_order = item.get("order")
 
-                lesson = get_object_or_404(Lesson, id=lesson_id, course=course)
-
-                # Оновлюємо урок БЕЗ order (щоб уникнути конфлікту)
-                update_data = {k: v for k, v in item.items() if k != 'order'}
-                serializer = LessonSerializer(lesson, data=update_data, partial=True)
-
-                if serializer.is_valid():
-                    serializer.save()
-                    result.append(serializer.data)
-                else:
-                    return Response({"type": "error", "errors": serializer.errors}, 
+                if not lesson_id or new_order is None:
+                    return Response({"type": "error", "message": "Each lesson must have id and order"}, 
                                   status=status.HTTP_400_BAD_REQUEST)
 
-            # Після всіх змін — повністю перераховуємо порядок
-            self._force_reorder_lessons(course)
+                Lesson.objects.filter(id=lesson_id, course=course).update(order=new_order)
+
+        # Повертаємо оновлений список уроків
+        updated_lessons = Lesson.objects.filter(course=course).order_by('order')
+        serializer = LessonSerializer(updated_lessons, many=True)
 
         return Response({
             "type": "success",
-            "message": f"{len(result)} lessons updated successfully",
-            "lessons": result
+            "message": "Lessons reordered successfully",
+            "lessons": serializer.data
         }, status=status.HTTP_200_OK)
-
-
-    def _force_reorder_lessons(self, course):
-        """Примусово перераховує порядок усіх уроків (1, 2, 3...)"""
-        lessons = list(course.lessons.all().order_by('order'))
-        
-        for new_order, lesson in enumerate(lessons, start=1):
-            if lesson.order != new_order:
-                # Raw update — обходимо save() моделі повністю
-                Lesson.objects.filter(id=lesson.id).update(order=new_order)
 
 #Видалення уроку з курсу.
     @action (detail = True, methods = ["DELETE"], url_path = "lessons/(?P<lesson_id>\\d+)")
@@ -160,6 +104,11 @@ class CourseViewSet (viewsets.ModelViewSet):
         course = self.get_object()
         lesson = get_object_or_404 (Lesson, id = lesson_id, course = course)
         lesson.delete()
+        # After deletion, ensure orders are contiguous
+        try:
+            self._force_reorder_lessons(course)
+        except Exception:
+            logging.getLogger(__name__).exception("Failed to reorder lessons after delete for course %s", course.id)
 
         return Response ({
             "type": "success",

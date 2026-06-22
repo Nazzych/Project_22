@@ -11,6 +11,9 @@ class LessonSerializer (serializers.ModelSerializer):
         model = Lesson
         fields = ["id", "title", "content", "order", "url", "created_at", "updated_at"]
         read_only_fields = ["id", "created_at", "updated_at"]
+        extra_kwargs = {
+            "order": {"required": False},
+        }
 
 #Клас серелізатора для відображення списку курсів.
 class CourseListSerializer (serializers.ModelSerializer):
@@ -47,10 +50,10 @@ class CourseCreateUpdateSerializer (serializers.ModelSerializer):
     class Meta:
         model = Course
         fields = [
-            "id", "title", "description", "image", "level",
+            "id", "author", "title", "description", "image", "level",
             "category", "points", "tags"
         ]
-        read_only_fields = ["id"]
+        read_only_fields = ["id", "author"]
         extra_kwargs = {
             "title": {"required": True},
             "description": {"required": True},

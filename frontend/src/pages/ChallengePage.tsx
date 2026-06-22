@@ -11,6 +11,7 @@ import { getChallenge } from '../api/tasks';
 import { Tasks } from '../types/tasks';
 import { cn } from '../lib/cn';
 
+import { Tooltip } from '../components/Tooltip';
 import CodeChallengeView from '../components/challenges/CodeChallengeView';
 import QuizChallengeView from '../components/challenges/QuizChallengeView';
 
@@ -123,10 +124,12 @@ export default function ChallengePage() {
                 </div>
 
                 <div className="w-full lg:w-fit pr-2 flex justify-center items-center gap-4">
-                    <div className="flex items-center gap-1.5 text-amber-400">
-                        <Trophy className="w-5 h-5" />
-                        <span className="font-medium">{challenge.points} pts</span>
-                    </div>
+                    <Tooltip text='Your prize'>
+                        <div className="flex items-center gap-1.5 text-amber-400 group">
+                            <Trophy className="w-5 h-5 group-hover:text-indigo-400" />
+                            <span className="font-medium group-hover:text-indigo-400">{challenge.points} pts</span>
+                        </div>
+                    </Tooltip>
                     <div className={cn("px-3 py-1 text-xs font-medium rounded-full", colorClass)}>
                         {challenge.difficulty.toUpperCase()}
                     </div>

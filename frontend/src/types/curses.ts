@@ -11,6 +11,7 @@ export interface Course {
     points: number;
     image: string;
     created_at: string;
+    updated_at: string;
     lessons: Lesson;
     lessons_count: number;
     completed_lessons_count: number;

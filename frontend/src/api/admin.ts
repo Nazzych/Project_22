@@ -94,7 +94,7 @@ export async function createLessons(courseId: number, form: any) {
 }
 
 export async function updateLessons(courseId: number, form: any) {
-    const response = await axios.put(`${API_BASE}/admin/courses/${courseId}/lessons/`, form, {
+    const response = await axios.put(`${API_BASE}/admin/courses/${courseId}/lessons/reorder/`, form, {
         withCredentials: true,
     });
     return response.data;

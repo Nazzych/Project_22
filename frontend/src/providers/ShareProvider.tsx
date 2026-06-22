@@ -33,7 +33,7 @@ export const ShareProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         try {
             const link = await generateShareLink(type, id, slug);
             await navigator.clipboard.writeText(link);
-            showToast("info", "CLIPBOARD", `Link for - ${title || "None"} (${type}) copied to clipboard!`);
+            showToast("info", "CLIPBOARD", `Link for - "${title || "None"}" (${type}) copied to clipboard!`);
         } catch (err) {
             showToast("error", "Error generating share link", "Can't copy link into clipboard. Please try again later.");
         }

@@ -501,17 +501,17 @@ const ProjectPage = () => {
                                 <Button disabled={copiedLink} isLoading={loadingLink}
                                     variant="btn_secondary"
                                     size="sm"
-                                    className="glass h-9 border-blue-400/30"
+                                    className="glass h-9 border-blue-400/30 space-x-2"
                                     onClick={() => handleShare(project)}
                                 >
                                     {copiedLink ? (
                                         <>
-                                            <CopyCheck className="h-4 w-4 mr-2 text-green-400" />
-                                            <span className='text-green-400'>Link copied!</span>
+                                            <CopyCheck className="h-4 w-4 text-green-400" />
+                                            <span className='text-green-400'>Copied!</span>
                                         </>
                                     ) : (
                                         <>
-                                            <Share2 className="h-4 w-4 mr-2 text-sky-400" />
+                                            <Share2 className="h-4 w-4 text-sky-400" />
                                             <span className='text-sky-400'>Share</span>
                                         </>
                                     )}

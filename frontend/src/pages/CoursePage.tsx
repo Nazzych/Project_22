@@ -1,10 +1,11 @@
 // pages/CourseDetailPage.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ChevronLeft, Plus, XCircle, Trophy, PlayCircle, Lock, CheckCircle, ChevronUp, ChevronDown, Share2, Play, MessageCirclePlusIcon, PlusCircle, Unlock, Edit, Trash2 } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, Plus, XCircle, Coins, PlayCircle, Lock, CheckCircle, ChevronUp, ChevronDown, Share2, Play, MessageCirclePlusIcon, PlusCircle, Unlock, Edit, Trash2, CopyCheck } from 'lucide-react';
 import { useProfile } from '../contexts/ProfileContext'
 import { useToast } from '../providers/MessageProvider';
 import { useModal } from '../hooks/useModal';
+import { useShare } from '../providers/ShareProvider';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatDateNumeric } from '../lib/formatDate';
 import { cn } from '../lib/cn';
@@ -35,10 +36,29 @@ export function CoursePage() {
     const [course, setCourse] = useState<Course | null>(null);
     const [lessons, setLessons] = useState<any>([]);
     const [loading, setLoading] = useState(true);
+    const [loadingLink, setLoadingLink] = useState(false);
     const [isExpanded, setIsExpanded] = useState(false);
     const toggleExpande = () => setIsExpanded(!isExpanded);
     const [selectedUser, setSelectedUser] = useState<any>(null);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const { copyShareLink } = useShare();
+    const [copiedLink, setCopiedLink] = useState(false);
+    const copyTimeoutRef = useRef<number | null>(null);
+
+    const handleShare = (curse: any) => {
+        try {
+            copyShareLink('course', curse.id, "", curse.title);
+            setLoadingLink(true);
+        } finally {
+            setLoadingLink(false);
+            setCopiedLink(true);
+            if (copyTimeoutRef.current) window.clearTimeout(copyTimeoutRef.current);
+            copyTimeoutRef.current = window.setTimeout(() => {
+                setCopiedLink(false);
+                copyTimeoutRef.current = null;
+            }, 2000);
+        }
+    };
 
     const OpenUserProfile = (user: any) => {
         setSelectedUser(user);
@@ -153,13 +173,13 @@ export function CoursePage() {
         content: (
             <LessonManage
                 courseId={Number(course?.id)}
-                lesson={null}
+                initialLessons={null}
                 onSuccess={() => {loadCourseData(); closeModal()}}
             />
         ),
     });}
 
-    const OpenEditLesson = (lesson: Lesson) => {
+    const OpenEditLessons = (lessons: Lesson[]) => {
         openModal({
             id: 'course-edit-lesson',
             width: "xl",
@@ -168,14 +188,14 @@ export function CoursePage() {
                 <span className="flex items-center gap-2">
                 <div className="w-fit nz-background-accent rounded-lg py-1 px-4 flex flex-row justify-center items-center gap-2">
                     <Edit className="w-5 h-5" />
-                    <span className="nz-foreground">Edit lesson</span>
+                    <span className="nz-foreground">Edit lessons</span>
                 </div>
             </span>
         ),
         content: (
             <LessonManage
                 courseId={Number(course?.id)}
-                lesson={lesson}
+                initialLessons={lessons}
                 onSuccess={loadCourseData}
             />
         ),
@@ -186,7 +206,7 @@ export function CoursePage() {
             if (courseId && lesson_id) {
                 await getCsrfToken();
                 await deleteLesson(Number(courseId), Number(lesson_id));
-                showToast('success', 'Lesson deleted', 'Your lesson has been successfully deleted.');
+                showToast('info', 'Lesson deleted', 'Your lesson has been successfully deleted.');
                 setLessons(lessons.filter((lesson: Lesson) => lesson.id !== lesson_id));
             }
         } catch (err) {
@@ -283,13 +303,21 @@ export function CoursePage() {
                                         transition={{ duration: 0.45 }}
                                         className="overflow-hidden md:max-w-[125px] w-full"
                                     >
-                                        <div className="grid grid-cols-2 lg:grid-cols-1 gap-x-4 gap-y-2 text-xs nz-text-muted w-full">
+                                        <div className="w-full grid grid-cols-2 lg:grid-cols-1 gap-x-4 gap-y-2 text-xs nz-text-muted cursor-default">
                                             <div className='flex justify-between flex-wrap'>
                                                 <span className="block">Created</span>
                                                 <span className="font-medium text-white">
                                                     {formatDateNumeric(course.created_at)}
                                                 </span>
                                             </div>
+                                            {course.updated_at && (
+                                                <div className='flex justify-between flex-wrap'>
+                                                    <span className="block">Updated</span>
+                                                    <span className="font-medium nz-text-secondary">
+                                                        {formatDateNumeric(course.updated_at)}
+                                                    </span>
+                                                </div>
+                                            )}
                                             <div className='flex justify-between flex-wrap'>
                                                 <span className="block">Students</span>
                                                 <span className="font-medium text-white">0</span>
@@ -297,7 +325,7 @@ export function CoursePage() {
                                             <div className='flex justify-between flex-wrap'>
                                                 <span className="block">Points</span>
                                                 <span className="flex items-center gap-1 font-medium text-white">
-                                                    <Trophy className="w-3 h-3 text-amber-400" />
+                                                    <Coins className="w-4 h-4 text-amber-400" />
                                                     {course.points ? course.points : "Free"}
                                                 </span>
                                             </div>
@@ -366,7 +394,17 @@ export function CoursePage() {
                                             {lessons.length !== 0 && (
                                                 <Button size="sm" variant='btn_glass' className="flex items-center gap-2" onClick={beginStudy}><Play className="w-4 h-5" />{lessons[0].is_unlocked ? "Countinue" : "Begin"}</Button>
                                             )}
-                                            <Button size="sm" variant='btn_glass' className="flex items-center gap-2"><Share2 className="w-4 h-5" />Share</Button>
+                                            <Button disabled={copiedLink} isLoading={loadingLink} size="sm" variant='btn_glass' className="flex items-center gap-2" onClick={() => handleShare(course)}>
+                                                {copiedLink ? (
+                                                    <>
+                                                        <CopyCheck className="h-4 w-4" />Link copied!
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Share2 className="w-4 h-5" />Share
+                                                    </>
+                                                )}
+                                            </Button>
                                         </div>
                                     </motion.div>
                                 )}
@@ -421,12 +459,30 @@ export function CoursePage() {
                     Curse Lessons
                 </h2>
                 {profile?.is_staff && (
-                    <Button variant='btn_glass' className='flex items-center gap-2' onClick={OpenAddLesson}>
-                        <Plus className="w-4 h-4" />
-                        Add Lesson
-                    </Button>
-                )}
-            </div>
+                    <div className="flex gap-3">
+                        {/* Кнопка створення нових уроків */}
+                        <Button 
+                            variant='btn_glass' 
+                            className='flex items-center gap-2'
+                            onClick={() => OpenAddLesson()}   // створення
+                        >
+                            <Plus className="w-4 h-4" />
+                            Add Lesson
+                        </Button>
+
+                        {/* Кнопка редагування всіх уроків (якщо вони є) */}
+                        {lessons && lessons.length > 0 && (
+                            <Button 
+                                variant='btn_glass' 
+                                className='flex items-center gap-2'
+                                onClick={() => OpenEditLessons(lessons)}   // редагування
+                            >
+                                <Edit className="w-4 h-4" />
+                                Edit Lessons
+                            </Button>
+                        )}
+                    </div>
+                )}            </div>
 {/* Список уроків */}
             <div>
                 <div className="space-y-4">
@@ -469,7 +525,6 @@ export function CoursePage() {
                                             <div className='absolute top-5 -right-3.5'>
                                                 <ActionsCell className='border rounded-full'
                                                     actions={[
-                                                        { label: "Edit", icon: <Edit className="w-4 h-4" />, onClick: () => OpenEditLesson(lesson), variant: 'default' },
                                                         { label: "Delete", icon: <Trash2 className="w-4 h-4" />, onClick: () => handleDeleteLesson(lesson.id), variant: 'danger' },
                                                     ]}
                                                 />

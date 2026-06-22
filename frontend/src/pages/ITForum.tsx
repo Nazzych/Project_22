@@ -123,7 +123,7 @@ export function ITForum() {
                         element.style.backgroundColor = '';
                     };
                 }
-            }, 400);
+            }, 500);
         }
     }, [highlightPostId]);
 

@@ -14,7 +14,7 @@ class LessonSerializer (serializers.ModelSerializer):
     class Meta:
         model = Lesson
         fields = ["id", "title", "content", "order", "url"]
-        read_only_fields = ["id", "course", "order"]
+        read_only_fields = ["id", "course"]
 
     def update(self, instance, validated_data):
         # проходимо по всіх полях і оновлюємо існуючий об’єкт
@@ -31,6 +31,7 @@ class CourseSerializer (serializers.ModelSerializer):
     class Meta:
         model = Course
         fields = ["id", "author", "title", "description", "tags", "level", "category", "points", "image", "created_at", "lessons_count"]
+        read_only_fields = ["id", "author", "created_at"]
 #?>.
 
 
@@ -43,6 +44,7 @@ class LessonWithProgressSerializer (serializers.ModelSerializer):
     class Meta:
         model = Lesson
         fields = ["id", "title", "content", "order", "url", "is_unlocked", "is_completed", "completed_at"]
+        read_only_fields = ["id", "completed_at"]
 
     def get_is_unlocked (self, obj):
         user = self.context.get ("user")
@@ -77,7 +79,8 @@ class CourseWithProgressSerializer (serializers.ModelSerializer):
 
     class Meta:
         model = Course
-        fields = ["id", "author", "title", "description", "tags", "level", "category", "points", "image", "created_at", "lessons", "lessons_count", "completed_lessons_count"]
+        fields = ["id", "author", "title", "description", "tags", "level", "category", "points", "image", "created_at", "updated_at", "lessons", "lessons_count", "completed_lessons_count"]
+        read_only_fields = ["id", "author", "created_at"]
 
     def get_lessons (self, obj):
         """Повертає уроки з прогресом користувача"""

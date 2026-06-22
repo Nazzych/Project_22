@@ -120,15 +120,27 @@ export function ChannelPage () {
         if (highlightPostId) {
             setTimeout(() => {
                 const element = document.getElementById(`post-${highlightPostId}`);
-                if (element) {
+                    if (element) {
                     element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    element.classList.add('ring-2', 'ring-blue-500', 'bg-blue-500/10');
 
-                    setTimeout(() => {
-                        element.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-500/10');
-                    }, 4000);
+                    // Add structural highlight classes and animate a calm blue blink for 2s
+                    element.classList.add('ring-2', 'rounded-lg');
+
+                    const keyframes = [
+                        { boxShadow: '0 0 0 6px rgba(59,130,246,0.35)', backgroundColor: 'rgba(59,130,246,0.08)' },
+                        { boxShadow: '0 0 0 0 rgba(59,130,246,0)', backgroundColor: 'rgba(59,130,246,0)' }
+                    ];
+
+                    const anim = element.animate(keyframes, { duration: 500, iterations: 4, easing: 'ease-in-out', direction: 'alternate' });
+
+                    // Cleanup after animation (2 seconds total)
+                    anim.onfinish = () => {
+                        element.classList.remove('ring-2', 'rounded-lg');
+                        element.style.boxShadow = '';
+                        element.style.backgroundColor = '';
+                    };
                 }
-            }, 400);
+            }, 500);
         }
     }, [highlightPostId]);
 

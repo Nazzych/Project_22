@@ -37,7 +37,7 @@ export function PostCard({
     const { copyShareLink } = useShare();
 
     const handleShare = (post: any) => {
-        copyShareLink('post', post.id, String(inChannel));
+        copyShareLink('post', post.id, String(inChannel), post.title);
     };
 
     const OpenUserProfile = (user: any) => {
