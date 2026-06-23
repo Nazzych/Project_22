@@ -9,6 +9,7 @@ import { useModal } from '../../../../../hooks/useModal';
 import { getCsrfToken } from '../../../../../api/auth';
 import { createLessons, updateLessons } from '../../../../../api/admin';
 import { Lesson } from '../../../../../types/curses';
+import { cn } from '../../../../../lib/cn';
 
 interface LessonManageProps {
     courseId: number;
@@ -27,29 +28,33 @@ export function LessonManage({
 
     const initial = Array.isArray(initialLessons) ? initialLessons : initialLessons ? [initialLessons] : [];
 
-    // Початковий стан + сортування
     const [lessons, setLessons] = useState<Lesson[]>(() => {
         const base = initial.length > 0 ? initial : [{
-            id: '',
+            id: Date.now().toString(),
             title: '',
             content: '',
             url: '',
             order: 1
         }];
-        return [...base].sort(lesson => lesson.order);
+        return [...base].sort((a, b) => (a.order || 0) - (b.order || 0));
     });
+
+    // Допоміжна функція сортування
+    const sortLessons = (list: Lesson[]): Lesson[] => {
+        return [...list].sort((a, b) => (a.order || 0) - (b.order || 0));
+    };
 
     const addLesson = () => {
         setLessons(prev => {
             const maxOrder = Math.max(...prev.map(l => l.order || 0), 0);
             const newLesson: Lesson = {
-                id: '',
+                id: Date.now().toString(),
                 title: '',
                 content: '',
                 url: '',
                 order: maxOrder + 1
             };
-            return [...prev, newLesson].sort(lesson => lesson.order);
+            return sortLessons([...prev, newLesson]);
         });
     };
 
@@ -58,55 +63,71 @@ export function LessonManage({
             showToast('warning', 'Minimum one lesson', 'You need to keep at least one lesson.');
             return;
         }
-        setLessons(prev => 
-            prev.filter(lesson => lesson.id !== id)
-            .sort(lesson => lesson.order)
-        );
+        setLessons(prev => sortLessons(prev.filter(l => l.id !== id)));
     };
 
     const updateLesson = (id: string, field: keyof Lesson, value: string | number) => {
-        setLessons(prev => 
-            prev.map(lesson =>
-                lesson.id === id ? { ...lesson, [field]: value } : lesson
-            )
-        );
+        setLessons(prev => prev.map(lesson =>
+            lesson.id === id ? { ...lesson, [field]: value } : lesson
+        ));
     };
 
-    // Swap тільки order-ів двох уроків
+    // ========== UP ==========
     const moveLessonUp = (index: number) => {
+        // Якщо урок уже перший, вище підняти не можна
         if (index === 0) return;
 
-        setLessons(prev => {
-            const newLessons = [...prev];
-            const current = newLessons[index];
-            const above = newLessons[index - 1];
+        // Робимо копію поточного масиву уроків
+        const newLessons = [...lessons];
 
-            // Міняємо тільки order
-            const temp = current.order;
-            current.order = above.order;
-            above.order = temp;
+        const currentLesson = { ...newLessons[index] };
+        const aboveLesson = { ...newLessons[index - 1] }; // Той, що над ним
 
-            // Сортуємо за новим order
-            return newLessons.sort((a, b) => (a.order || 0) - (b.order || 0));
-        });
+        // Твоя логіка обміну order-ами
+        const currentLessOrder = currentLesson.order;
+        currentLesson.order = aboveLesson.order;
+        aboveLesson.order = currentLessOrder;
+
+        // Замінюємо старі уроки на наші оновлені
+        newLessons[index] = aboveLesson;
+        newLessons[index - 1] = currentLesson;
+
+        // Використовуємо твою функцію сортування і оновлюємо стейт
+        const sorted = sortLessons(newLessons);
+        setLessons(sorted);
+
+        const debugInfo = sorted
+            .map(l => `${l.title || 'Untitled'} (order: ${l.order})`)
+            .join(" | ");
+        showToast("info", "[DEBUG] After Up", debugInfo);
+        console.info(`After Up: ${debugInfo}.`)
     };
 
+    // ========== DOWN ==========
     const moveLessonDown = (index: number) => {
+        // Якщо урок останній, нижче опустити не можна
         if (index === lessons.length - 1) return;
 
-        setLessons(prev => {
-            const newLessons = [...prev];
-            const current = newLessons[index];
-            const below = newLessons[index + 1];
+        const newLessons = [...lessons];
 
-            // Міняємо тільки order
-            const temp = current.order;
-            current.order = below.order;
-            below.order = temp;
+        const currentLesson = { ...newLessons[index] };
+        const belowLesson = { ...newLessons[index + 1] }; // Той, що під ним
 
-            // Сортуємо за новим order
-            return newLessons.sort((a, b) => (a.order || 0) - (b.order || 0));
-        });
+        const currentLessOrder = currentLesson.order;
+        currentLesson.order = belowLesson.order;
+        belowLesson.order = currentLessOrder;
+
+        newLessons[index] = belowLesson;
+        newLessons[index + 1] = currentLesson;
+
+        const sorted = sortLessons(newLessons);
+        setLessons(sorted);
+
+        const debugInfo = sorted
+            .map(l => `${l.title || 'Untitled'} (order: ${l.order})`)
+            .join(" | ");
+        showToast("info", "[DEBUG] After Down", debugInfo);
+        console.info(`After Down: ${debugInfo}.`)
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -125,7 +146,7 @@ export function LessonManage({
 
             const payload = lessons.map((lesson, idx) => ({
                 ...lesson,
-                order: idx + 1   // фінальна нумерація перед відправкою
+                order: idx + 1
             }));
 
             if (initial.length > 0) {
@@ -147,13 +168,16 @@ export function LessonManage({
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-8 max-h-[75vh] overflow-y-auto pr-2">
-            {/* ... решта JSX без змін ... */}
+        <form onSubmit={handleSubmit} className="space-y-8 max-h-[75vh] pr-2 overflow-y-auto scrollbar-thin scrollbar-track-transparent">
+            {/* ... (верхня частина з заголовком і кнопкою Add Lesson) ... */}
             <div className="flex nz-background-primary items-center justify-between sticky top-0 pb-4 border-b z-10">
-                <h2 className="text-2xl font-semibold">
-                    {initial.length > 0 ? 'Edit Lessons' : 'Create Lessons'}
-                </h2>
-                <Button type="button" variant="btn_secondary" onClick={addLesson} className="flex items-center gap-2">
+                <div>
+                    <h2 className="text-2xl font-semibold">
+                        {initial.length > 0 ? 'Edit Lessons' : 'Create Lessons'}
+                    </h2>
+                    <p className="text-xs nz-text-muted mt-0.5 tracking-wide">Manage course structure and dynamic ordering</p>
+                </div>
+                <Button type="button" variant="btn_secondary" size='sm' onClick={addLesson} className="flex items-center gap-2">
                     <Plus className="w-4 h-4" />
                     Add Lesson
                 </Button>
@@ -163,10 +187,14 @@ export function LessonManage({
                 {lessons.map((lesson, index) => (
                     <div key={lesson.id} className="border rounded-2xl p-6 nz-background-accent">
                         <div className="flex justify-between items-center mb-4">
-                            <h3 className="font-medium text-lg">Lesson {index + 1}</h3>
-                            
-                            <div className="flex items-center gap-2">
-                                <Button
+                            <div className="flex items-center gap-3">
+                                <h3 className="font-medium text-lg">Lesson {index + 1}</h3>
+                                <span className="text-xs font-mono font-semibold px-2.5 py-1 nz-background-primary rounded-md border">
+                                    DB Order: {lesson.order}
+                                </span>
+                            </div>
+                            <div className="flex items-center">
+                                <Button className={cn('rounded-l-full', index === 0 && 'cursor-not-allowed')}
                                     type="button"
                                     variant="btn_secondary"
                                     size="sm"
@@ -175,7 +203,7 @@ export function LessonManage({
                                 >
                                     <ChevronUp className="w-4 h-4" />
                                 </Button>
-                                <Button
+                                <Button className={cn('rounded-none', index === lessons.length - 1 && 'cursor-not-allowed')}
                                     type="button"
                                     variant="btn_secondary"
                                     size="sm"
@@ -186,7 +214,7 @@ export function LessonManage({
                                 </Button>
 
                                 {lessons.length > 1 && (
-                                    <Button
+                                    <Button className='rounded-r-full'
                                         type="button"
                                         variant="btn_destructive"
                                         size="sm"
@@ -198,25 +226,16 @@ export function LessonManage({
                             </div>
                         </div>
 
-                        {/* Поле Order як індикатор */}
-                        <div className="grid md:grid-cols-2 gap-4 mb-5">
-                            <div>
-                                <label className="block text-sm font-medium mb-1.5">Lesson Title</label>
-                                <Input
-                                    value={lesson.title}
-                                    onChange={(e) => updateLesson(lesson.id, 'title', e.target.value)}
-                                    placeholder="e.g. Variables and Data Types"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium mb-1.5">Order</label>
-                                <div className="px-4 py-2 bg-zinc-800/70 rounded text-center font-medium">
-                                    {lesson.order}
-                                </div>
-                            </div>
+                        <div className='mb-5'>
+                            <label className="block text-sm font-medium mb-1.5">Lesson Title</label>
+                            <Input
+                                value={lesson.title}
+                                onChange={(e) => updateLesson(lesson.id, 'title', e.target.value)}
+                                placeholder="e.g. Variables and Data Types"
+                            />
                         </div>
 
-                        {/* Контент і URL — без змін */}
+                        {/* Контент і URL */}
                         <div className="space-y-5">
                             <div>
                                 <label className="block text-sm font-medium mb-1.5">Lesson Content</label>
@@ -242,7 +261,7 @@ export function LessonManage({
                 ))}
             </div>
 
-            {/* Кнопки Cancel / Save — без змін */}
+            {/* Кнопки внизу */}
             <div className="sticky bottom-0 nz-background-primary pt-6 border-t flex gap-3">
                 <Button type="button" variant="btn_secondary" onClick={closeModal} disabled={loading} className="flex-1">
                     Cancel

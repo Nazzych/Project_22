@@ -162,7 +162,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
                     value={value}
                     onChange={onChange}
                     className={cn(
-                        "flex h-10 w-full rounded-xl nz-bg-input nz-text-input focus:nz-ring px-3 py-2 text-sm transition duration-300 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50",
+                        "flex h-10 w-full rounded-xl nz-bg-input nz-text-input focus:nz-ring px-3 py-2 text-sm font-medium transition duration-300 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50",
                         icon && "pl-10",
                         className
                     )}
